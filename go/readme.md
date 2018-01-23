@@ -60,7 +60,6 @@ var (
 		"CamelCase",
 		"it will be inferred from the right-hand side",
 		"should be of the form \"",
-		"error strings should",
 	}
 )
 ```
