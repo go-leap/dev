@@ -3,7 +3,7 @@ package udevhs
 import (
 	"strings"
 
-	"github.com/metaleap/go-util/run"
+	"github.com/go-leap/run"
 )
 
 // All these are initially set via the first call to `HasHsDevEnv`.
@@ -47,24 +47,25 @@ func HasHsDevEnv() bool {
 	}
 	if cmdout, cmderr, err = urun.CmdExec("stack", "--numeric-version", "--no-terminal", "--color", "never"); err == nil && cmderr == "" && cmdout != "" {
 		if StackVersion = strings.TrimSpace(cmdout); StackVersion != "" {
+			argsver, argshelp := []string{"--version"}, []string{"--help"}
 			urun.CmdsTryStart(map[string]*urun.CmdTry{
-				"ghc-mod":             {Ran: &Has_ghcmod, Args: []string{"--version"}},
-				"ghc-hare":            {Ran: &Has_hare, Args: []string{"--version"}},
-				"hsimport":            {Ran: &Has_hsimport, Args: []string{"--version"}},
-				"hasktags":            {Ran: &Has_hasktags, Args: []string{"--help"}},
-				"lushtags":            {Ran: &Has_lushtags, Args: []string{"--help"}},
-				"hothasktags":         {Ran: &Has_hothasktags, Args: []string{"--help"}},
-				"dead-code-detection": {Ran: &Has_deadcodedetect, Args: []string{"--version"}},
+				"ghc-mod":             {Ran: &Has_ghcmod, Args: argsver},
+				"ghc-hare":            {Ran: &Has_hare, Args: argsver},
+				"hsimport":            {Ran: &Has_hsimport, Args: argsver},
+				"hasktags":            {Ran: &Has_hasktags, Args: argshelp},
+				"lushtags":            {Ran: &Has_lushtags, Args: argshelp},
+				"hothasktags":         {Ran: &Has_hothasktags, Args: argshelp},
+				"dead-code-detection": {Ran: &Has_deadcodedetect, Args: argsver},
 				"pointfree":           {Ran: &Has_pointfree},
 				"pointful":            {Ran: &Has_pointful},
 				"refactor":            {Ran: &Has_apply_refact},
-				"hoogle":              {Ran: &Has_hoogle, Args: []string{"--version"}},
-				"hlint":               {Ran: &Has_hlint, Args: []string{"--version"}},
-				"doctest":             {Ran: &Has_doctest, Args: []string{"--version"}},
-				"intero":              {Ran: &Has_intero, Args: []string{"--version"}},
-				"hindent":             {Ran: &Has_hindent, Args: []string{"--version"}},
-				"brittany":            {Ran: &Has_brittany, Args: []string{"--version"}},
-				"stylish-haskell":     {Ran: &Has_stylish_haskell, Args: []string{"--version"}},
+				"hoogle":              {Ran: &Has_hoogle, Args: argsver},
+				"hlint":               {Ran: &Has_hlint, Args: argsver},
+				"doctest":             {Ran: &Has_doctest, Args: argsver},
+				"intero":              {Ran: &Has_intero, Args: argsver},
+				"hindent":             {Ran: &Has_hindent, Args: argsver},
+				"brittany":            {Ran: &Has_brittany, Args: argsver},
+				"stylish-haskell":     {Ran: &Has_stylish_haskell, Args: argsver},
 				"ht-refact":           {Ran: &Has_htrefact},
 				"ht-daemon":           {Ran: &Has_htdaemon, Args: []string{"hows'it hangin holmes"}},
 			})

@@ -32,6 +32,18 @@ var (
 ```
 All these are initially set via the first call to `HasHsDevEnv`.
 
+```go
+var (
+	// HlintIgnore contains lints to be ignored, passed via `--ignore` args to hlint during `LintHlint`.
+	HlintIgnore = []string{
+
+		"Use infix",
+		"Use camelCase",
+		"Use String",
+	}
+)
+```
+
 #### func  HasHsDevEnv
 
 ```go
@@ -39,3 +51,14 @@ func HasHsDevEnv() bool
 ```
 HasHsDevEnv detects (in its first call) the local installation of `stack` plus
 numerous well-known Haskell developer tools.
+
+#### func  LintHlint
+
+```go
+func LintHlint(filePaths []string) (msgs udev.SrcMsgs)
+```
+LintHlint runs the `hlint` program for the specified `filePaths`. The returned
+`SrcMsgs` will have at least `Msg`, `Ref` and all 4 `Pos` fields set. The
+`SrcMsg.Misc` field might be set (to Module or Decl or Module.Decl) or not. If
+an hlint offers an edit suggestion, it is stored in `SrcMsg.Data` under the
+`From`, `To` and `Note` keys.
