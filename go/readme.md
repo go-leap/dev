@@ -45,6 +45,16 @@ var (
 
 ```go
 var (
+	PkgsByDir map[string]*Pkg
+	PkgsByImP map[string]*Pkg
+	PkgsErrs  []*Pkg
+
+	ShortenImpPaths *strings.Replacer
+)
+```
+
+```go
+var (
 	GuruScopes        string
 	GuruScopeExclPkgs = map[string]bool{}
 )
@@ -94,6 +104,12 @@ Gopaths returns all paths listed in the `GOPATH` environment variable.
 
 ```go
 func Gorename(cmdName string, filePath string, offset int, newName string, eol string) (fileEdits udev.SrcMsgs, err error)
+```
+
+#### func  GuruMinimalScopeFor
+
+```go
+func GuruMinimalScopeFor(goFilePath string) (pkgScope string, shouldRefresh bool)
 ```
 
 #### func  HasGoDevEnv
@@ -164,6 +180,24 @@ func LintMvDan(cmdname string, pkgimppath string) udev.SrcMsgs
 func LintViaPkgImpPath(cmdname string, pkgimppath string, inclstderr bool) (msgs udev.SrcMsgs)
 ```
 
+#### func  PkgImpPathsToNamesInLn
+
+```go
+func PkgImpPathsToNamesInLn(ln string, curPkgDir string) string
+```
+
+#### func  PkgsByName
+
+```go
+func PkgsByName(name string) (pkgImpPaths []string)
+```
+
+#### func  PkgsForFiles
+
+```go
+func PkgsForFiles(filePaths ...string) (pkgs []*Pkg, shouldRefresh bool)
+```
+
 #### func  QueryCallees_Guru
 
 ```go
@@ -198,6 +232,12 @@ func QueryDefDecl_GoDef(fullsrcfilepath string, srcin string, bytepos string) (d
 
 ```go
 func QueryDefLoc_Godef(fullsrcfilepath string, srcin string, bytepos string) *udev.SrcMsg
+```
+
+#### func  QueryDefLoc_Gogetdoc
+
+```go
+func QueryDefLoc_Gogetdoc(fullsrcfilepath string, srcin string, bytepos string) *udev.SrcMsg
 ```
 
 #### func  QueryDef_Guru
@@ -248,6 +288,12 @@ func QueryWhat_Guru(fullsrcfilepath string, srcin string, bytepos string) (*guru
 func QueryWhicherrs_Guru(fullsrcfilepath string, srcin string, bytepos1 string, bytepos2 string, altScopes string) (gwe *gurujson.WhichErrs, err error)
 ```
 
+#### func  RefreshPkgs
+
+```go
+func RefreshPkgs() error
+```
+
 #### type Gogetdoc
 
 ```go
@@ -268,6 +314,12 @@ type Gogetdoc struct {
 }
 ```
 
+
+#### func  Query_Gogetdoc
+
+```go
+func Query_Gogetdoc(fullsrcfilepath string, srcin string, bytepos string, onlyDocAndDecl bool, docFromPlainToMarkdown bool) *Gogetdoc
+```
 
 #### type Guru
 
@@ -308,4 +360,80 @@ func (me *Guru) Matches(pM *gurujson.DescribeMember, lowerCaseQuery string) bool
 
 ```go
 func (me *Guru) Swap(i int, j int)
+```
+
+#### type PackageError
+
+```go
+type PackageError struct {
+	ImportStack []string // shortest path from package named on command line to this one
+	Pos         string   // position of error (if present, file:line:col)
+	Err         string   // the error itself
+}
+```
+
+copied over from `go list` src because that cmd outputs this stuff but one
+cannot import it from anywhere
+
+#### type Pkg
+
+```go
+type Pkg struct {
+	ApproxLoC int // 0 unless/until calling CountLoC()
+	build.Package
+	Errs udev.SrcMsgs
+
+	Deps        []string        `json:",omitempty"` // all (recursively) imported dependencies
+	Target      string          `json:",omitempty"` // install path
+	Shlib       string          `json:",omitempty"` // the shared library that contains this package (only set when -linkshared)
+	StaleReason string          `json:",omitempty"` // why is Stale true?
+	Stale       bool            `json:",omitempty"` // would 'go install' do anything for this package?
+	Standard    bool            `json:",omitempty"` // is this package part of the standard Go library?
+	Incomplete  bool            `json:",omitempty"` // was there an error loading this package or dependencies?
+	Error       *PackageError   `json:",omitempty"` // error loading this package (not dependencies)
+	DepsErrors  []*PackageError `json:",omitempty"` // errors loading dependencies
+}
+```
+
+
+#### func (*Pkg) CountLoC
+
+```go
+func (me *Pkg) CountLoC()
+```
+
+#### func (*Pkg) Dependants
+
+```go
+func (me *Pkg) Dependants() []string
+```
+
+#### func (*Pkg) GoFilePaths
+
+```go
+func (me *Pkg) GoFilePaths(inclTests bool) []string
+```
+
+#### func (*Pkg) Importers
+
+```go
+func (me *Pkg) Importers() []string
+```
+
+#### func (*Pkg) IsSortedPriorTo
+
+```go
+func (me *Pkg) IsSortedPriorTo(pkg interface{}) bool
+```
+
+#### func (*Pkg) IsSortedPriorToByDeps
+
+```go
+func (me *Pkg) IsSortedPriorToByDeps(cmp *Pkg) bool
+```
+
+#### func (*Pkg) String
+
+```go
+func (me *Pkg) String() string
 ```

@@ -35,8 +35,8 @@ type SrcMsg struct {
 func SrcMsgFromLn(line string) (item *SrcMsg) {
 	if lnbits := ustr.Split(line, ":"); len(lnbits) >= 3 {
 		if msgpos, fpath := 3, lnbits[0]; len(fpath) > 0 {
-			pos1ln := int(ustr.ToInt(lnbits[1], 0))
-			pos1ch := int(ustr.ToInt(lnbits[2], 0))
+			pos1ln := ustr.ToInt(lnbits[1], 0)
+			pos1ch := ustr.ToInt(lnbits[2], 0)
 			if pos1ln == 0 {
 				pos1ln, msgpos = 1, 1
 			} else if pos1ch == 0 {

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"path/filepath"
-	"strings"
 
 	gurujson "golang.org/x/tools/cmd/guru/serial"
 
@@ -283,95 +282,95 @@ func QueryDefDecl_GoDef(fullsrcfilepath string, srcin string, bytepos string) (d
 	args := append(cmdArgs_Godef(fullsrcfilepath, srcin, bytepos), "-t")
 	if cmdout, cmderr, err := urun.CmdExecStdin(srcin, filepath.Dir(fullsrcfilepath), "godef", args...); err != nil {
 		defdecl = err.Error()
-	} else if cmdout = ustr.Trim(cmdout); cmdout == "" && cmderr != "" && !(strings.HasPrefix(cmderr, "godef: ") && (ustr.Has(cmderr, "found") || ustr.Has(cmderr, "error finding import path for"))) {
+	} else if cmdout = ustr.Trim(cmdout); cmdout == "" && cmderr != "" && !(ustr.Pref(cmderr, "godef: ") && (ustr.Has(cmderr, "found") || ustr.Has(cmderr, "error finding import path for"))) {
 		defdecl = cmderr
 	} else if cmdout != "" {
-		defdecl = strings.TrimSpace(ustr.Join(ustr.Sans(ustr.Map(ustr.Split(cmdout, "\n"), foreachln), ""), "\n"))
+		defdecl = ustr.Trim(ustr.Join(ustr.Sans(ustr.Map(ustr.Split(cmdout, "\n"), foreachln), ""), "\n"))
 	}
 	return
 }
 
-// func QueryDefLoc_Gogetdoc(fullsrcfilepath string, srcin string, bytepos string) *udev.SrcMsg {
-// 	if ggd := Query_Gogetdoc(fullsrcfilepath, srcin, bytepos, true, false); ggd != nil && len(ggd.Pos) > 0 {
-// 		if srcref := udev.SrcMsgFromLn(ggd.Pos); srcref != nil {
-// 			return srcref
-// 		}
-// 	}
-// 	return nil
-// }
+func QueryDefLoc_Gogetdoc(fullsrcfilepath string, srcin string, bytepos string) *udev.SrcMsg {
+	if ggd := Query_Gogetdoc(fullsrcfilepath, srcin, bytepos, true, false); ggd != nil && len(ggd.Pos) > 0 {
+		if srcref := udev.SrcMsgFromLn(ggd.Pos); srcref != nil {
+			return srcref
+		}
+	}
+	return nil
+}
 
 func queryModSrcIn(fullsrcfilepath string, srcin string) string {
 	return fullsrcfilepath + "\n" + ustr.From(len([]byte(srcin))) + "\n" + srcin
 }
 
-// func Query_Gogetdoc(fullsrcfilepath string, srcin string, bytepos string, onlyDocAndDecl bool, docFromPlainToMarkdown bool) *Gogetdoc {
-// 	var ggd Gogetdoc
-// 	cmdargs := []string{"-json", "-u", "-linelength", "50", "-pos", fullsrcfilepath + ":#" + bytepos}
-// 	if len(srcin) > 0 {
-// 		cmdargs = append(cmdargs, "-modified")
-// 		srcin = queryModSrcIn(fullsrcfilepath, srcin)
-// 	}
-// 	cmdout, cmderr, err := urun.CmdExecStdin(srcin, "", "gogetdoc", cmdargs...)
-// 	if cmdout, cmderr = ustr.Trim(cmdout), ustr.Trim(cmderr); err == nil && len(cmdout) > 0 {
-// 		if err = json.Unmarshal([]byte(cmdout), &ggd); err == nil {
-// 			ggd.DocUrl = ggd.ImpP + "#"
-// 			if ispkgstd := (ggd.ImpP == "builtin"); docFromPlainToMarkdown {
-// 				if (!ispkgstd) && PkgsByImP != nil {
-// 					if pkg := PkgsByImP[ggd.ImpP]; pkg != nil {
-// 						ispkgstd = pkg.Standard
-// 					}
-// 				}
-// 				if ispkgstd {
-// 					ggd.Doc = strings.Replace(ggd.Doc, "\n\t", "\n\n\t", -1)
-// 					ggd.Doc = strings.Replace(ggd.Doc, "\n\n\n", "\n\n", -1)
-// 				}
-// 			}
-// 			dochash := ggd.Name
-// 			if !onlyDocAndDecl {
-// 				if ustr.Pref(ggd.Decl, "func (") {
-// 					ggd.Type = ggd.Decl[6:ustr.Pos(ggd.Decl, ")")]
-// 				} else if Has_guru && ustr.Pref(ggd.Decl, "field ") {
-// 					if gw, e := QueryWhat_Guru(fullsrcfilepath, srcin, bytepos); e != nil {
-// 						err = e
-// 					} else {
-// 						for _, encl := range gw.Enclosing {
-// 							if encl.Description == "composite literal" || encl.Description == "selector" {
-// 								if gd, e := QueryDesc_Guru(fullsrcfilepath, srcin, ustr.From(encl.Start)); gd != nil {
-// 									if gd.Type != nil {
-// 										ggd.Type = gd.Type.Type
-// 									} else if encl.Description != "selector" && gd.Value != nil {
-// 										ggd.Type = gd.Value.Type
-// 									}
-// 								} else if e != nil {
-// 									err = e
-// 								}
-// 								break
-// 							}
-// 						}
-// 					}
-// 				}
-// 				if err == nil {
-// 					if ggd.Type != "" {
-// 						_, ggd.Type = ustr.BreakOnFirst(ggd.Type, " ")
-// 						_, ggd.Type = ustr.BreakOnLast(ggd.Type, ".")
-// 					}
-// 					if ggd.Type = strings.TrimLeft(ggd.Type, "*[]"); len(ggd.Type) > 0 {
-// 						dochash = ggd.Type + "." + dochash
-// 					}
-// 					ggd.DocUrl += dochash
-// 					ggd.ImpN = ggd.Pkg
-// 					if len(ggd.Type) > 0 || ggd.Name != ggd.ImpN {
-// 						if ggd.ImpN != "" {
-// 							ggd.ImpN = "_" + ggd.ImpN + "_ · "
-// 						}
-// 						ggd.ImpN += strings.TrimLeft(ggd.Type+"."+ggd.Name, ".")
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
-// 	if ggd.ErrMsgs = ustr.Trim(strings.Replace(cmderr, "gogetdoc: no documentation found", "", -1)); err != nil {
-// 		ggd.Err = err.Error()
-// 	}
-// 	return &ggd
-// }
+func Query_Gogetdoc(fullsrcfilepath string, srcin string, bytepos string, onlyDocAndDecl bool, docFromPlainToMarkdown bool) *Gogetdoc {
+	var ggd Gogetdoc
+	cmdargs := []string{"-json", "-u", "-linelength", "50", "-pos", fullsrcfilepath + ":#" + bytepos}
+	if len(srcin) > 0 {
+		cmdargs = append(cmdargs, "-modified")
+		srcin = queryModSrcIn(fullsrcfilepath, srcin)
+	}
+	cmdout, cmderr, err := urun.CmdExecStdin(srcin, "", "gogetdoc", cmdargs...)
+	if cmdout, cmderr = ustr.Trim(cmdout), ustr.Trim(cmderr); err == nil && len(cmdout) > 0 {
+		if err = json.Unmarshal([]byte(cmdout), &ggd); err == nil {
+			ggd.DocUrl = ggd.ImpP + "#"
+			if ispkgstd := (ggd.ImpP == "builtin"); docFromPlainToMarkdown {
+				if (!ispkgstd) && PkgsByImP != nil {
+					if pkg := PkgsByImP[ggd.ImpP]; pkg != nil {
+						ispkgstd = pkg.Standard
+					}
+				}
+				if ispkgstd {
+					ggd.Doc = ustr.Replace(ggd.Doc, "\n\t", "\n\n\t")
+					ggd.Doc = ustr.Replace(ggd.Doc, "\n\n\n", "\n\n")
+				}
+			}
+			dochash := ggd.Name
+			if !onlyDocAndDecl {
+				if ustr.Pref(ggd.Decl, "func (") {
+					ggd.Type = ggd.Decl[6:ustr.Pos(ggd.Decl, ")")]
+				} else if Has_guru && ustr.Pref(ggd.Decl, "field ") {
+					if gw, errgw := QueryWhat_Guru(fullsrcfilepath, srcin, bytepos); errgw != nil {
+						err = errgw
+					} else {
+						for _, encl := range gw.Enclosing {
+							if encl.Description == "composite literal" || encl.Description == "selector" {
+								if gd, errgd := QueryDesc_Guru(fullsrcfilepath, srcin, ustr.From(encl.Start)); gd != nil {
+									if gd.Type != nil {
+										ggd.Type = gd.Type.Type
+									} else if encl.Description != "selector" && gd.Value != nil {
+										ggd.Type = gd.Value.Type
+									}
+								} else if errgd != nil {
+									err = errgd
+								}
+								break
+							}
+						}
+					}
+				}
+				if err == nil {
+					if ggd.Type != "" {
+						_, ggd.Type = ustr.BreakOnFirst(ggd.Type, " ")
+						_, ggd.Type = ustr.BreakOnLast(ggd.Type, ".")
+					}
+					if ggd.Type = ustr.TrimL(ggd.Type, "*[]"); len(ggd.Type) > 0 {
+						dochash = ggd.Type + "." + dochash
+					}
+					ggd.DocUrl += dochash
+					ggd.ImpN = ggd.Pkg
+					if len(ggd.Type) > 0 || ggd.Name != ggd.ImpN {
+						if ggd.ImpN != "" {
+							ggd.ImpN = "_" + ggd.ImpN + "_ · "
+						}
+						ggd.ImpN += ustr.TrimL(ggd.Type+"."+ggd.Name, ".")
+					}
+				}
+			}
+		}
+	}
+	if ggd.ErrMsgs = ustr.Trim(ustr.Replace(cmderr, "gogetdoc: no documentation found", "")); err != nil {
+		ggd.Err = err.Error()
+	}
+	return &ggd
+}
