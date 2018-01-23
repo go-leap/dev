@@ -6,8 +6,8 @@ import (
 	"github.com/go-leap/run"
 )
 
-// All these are initially set via the first call to `HasHsDevEnv`.
 var (
+	// All these are initially set via the first call to `HasHsDevEnv`.
 	StackVersion string
 
 	Has_hindent         bool

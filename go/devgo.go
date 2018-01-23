@@ -78,11 +78,6 @@ func GopathSrc(subDirNames ...string) (gps string) {
 	return
 }
 
-// GopathSrcGithub essentially calls `GopathSrc` with `"github.com"`, then `gitHubName` and the given `subDirNames`.
-func GopathSrcGithub(gitHubName string, subDirNames ...string) string {
-	return GopathSrc(append([]string{"github.com", gitHubName}, subDirNames...)...)
-}
-
 // HasGoDevEnv detects (in its first call) the local installation of `go` plus numerous well-known Go developer tools.
 func HasGoDevEnv() bool {
 	var cmdout, cmderr string

@@ -7,6 +7,7 @@
 
 ```go
 var (
+	// All these are initially set via the first call to `HasHsDevEnv`.
 	StackVersion string
 
 	Has_hindent         bool
@@ -30,7 +31,6 @@ var (
 	Has_apply_refact    bool
 )
 ```
-All these are initially set via the first call to `HasHsDevEnv`.
 
 ```go
 var (
