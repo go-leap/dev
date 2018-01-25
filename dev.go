@@ -79,16 +79,20 @@ func CmdExecOnSrc(inclStderr bool, perLine func(string) string, cmdName string, 
 // `perLine` may be `nil`, otherwise it is called for each line prior to being ultimately passed to `SrcMsgFromLn`.
 func CmdExecOnSrcIn(dir string, inclStderr bool, perLine func(string) string, cmdName string, cmdArgs ...string) SrcMsgs {
 	var output []byte
+	var err error
 	cmd := exec.Command(cmdName, cmdArgs...)
 	cmd.Dir = dir
 	if inclStderr {
-		output, _ = cmd.CombinedOutput()
+		output, err = cmd.CombinedOutput()
 	} else {
-		output, _ = cmd.Output()
+		output, err = cmd.Output()
 	}
 	cmdout := ustr.Trim(string(output))
+	if err != nil {
+		cmdout = err.Error()
+	}
 	msgs := SrcMsgsFromLns(ustr.Map(ustr.Split(cmdout, "\n"), perLine))
-	if len(msgs) == 0 && cmdout != "" && dir == "" && inclStderr && perLine == nil {
+	if len(msgs) == 0 && (err != nil || (cmdout != "" && dir == "" && inclStderr && perLine == nil)) {
 		msgs = append(msgs, &SrcMsg{Msg: cmdout, Pos1Ch: 1, Pos1Ln: 1})
 	}
 	return msgs

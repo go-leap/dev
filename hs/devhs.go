@@ -7,6 +7,11 @@ import (
 )
 
 var (
+	// Sensible default args for running `stack`
+	StackArgs = []string{"--dump-logs", "--no-time-in-log", "--no-install-ghc", "--skip-ghc-check", "--skip-msys", "--no-terminal", "--color", "never", "--jobs", "8", "--verbosity", "info"}
+	// Additional sensible default args for running `stack build`
+	StackArgsBuild = []string{"--copy-bins", "--no-haddock", "--no-open", "--no-haddock-internal", "--no-haddock-deps", "--no-keep-going", "--no-test", "--no-rerun-tests", "--no-bench", "--no-run-benchmarks", "--no-cabal-verbose", "--no-split-objs"}
+
 	// All these are initially set via the first call to `HasHsDevEnv`.
 	StackVersion string
 
