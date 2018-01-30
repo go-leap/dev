@@ -6,6 +6,9 @@ import (
 	"text/scanner"
 )
 
+// Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while lexing.
+//
+// If `errs` has a `len` greater than 0, `tokenStream` will be empty (and vice versa).
 func Lex(filePath string, src string) (tokenStream []Token, errs []*LexError) {
 	tokenStream = make([]Token, 0, len(src)/4) // a shot in the dark for an initial cap that's better than default 0. could be sub-optimal for source files of several 100s of MB — revisit when that becomes realistic/common
 
@@ -60,9 +63,9 @@ func Lex(filePath string, src string) (tokenStream []Token, errs []*LexError) {
 			}
 		case scanner.Comment:
 			if strings.HasPrefix(sym, "//") {
-				on(&TokenComment{Token: sym[2:]})
+				on(&TokenComment{SingleLine: true, Token: sym[2:]})
 			} else if strings.HasPrefix(sym, "/*") && strings.HasSuffix(sym, "*/") {
-				on(&TokenComment{Token: sym[2 : len(sym)-2]})
+				on(&TokenComment{SingleLine: false, Token: sym[2 : len(sym)-2]})
 			} else {
 				lexer.Error(nil, "unexpected comment format")
 			}
