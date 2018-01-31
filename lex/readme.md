@@ -56,6 +56,7 @@ package.
 
 ```go
 type TokenChar struct {
+	TokenInfo
 	Token rune
 }
 ```
@@ -67,6 +68,7 @@ TokenChar holds a `rune` that was scanned from a quoted literal.
 ```go
 type TokenComment struct {
 	Token string
+	TokenInfo
 
 	// SingleLine denotes whether the comment started with `//` (as opposed to `/*`), it does not actually reflect the number of lines in `Token`.
 	SingleLine bool
@@ -80,6 +82,7 @@ TokenComment holds a comment `string` that was scanned from a `// ..` or `/* ..
 
 ```go
 type TokenFloat struct {
+	TokenInfo
 	Token float64
 }
 ```
@@ -91,16 +94,29 @@ TokenFloat holds a `float64` that was scanned from a literal.
 ```go
 type TokenIdent struct {
 	Token string
+	TokenInfo
 }
 ```
 
 TokenIdent holds a `string` that was scanned from an unquoted alphanumeric range
 of characters.
 
+#### type TokenInfo
+
+```go
+type TokenInfo struct {
+	scanner.Position
+	LineIndent int
+}
+```
+
+TokenInfo is embedded by all `Token` implementers.
+
 #### type TokenInt
 
 ```go
 type TokenInt struct {
+	TokenInfo
 	Token int64
 }
 ```
@@ -112,6 +128,7 @@ TokenInt holds an `int64` that was scanned from a literal.
 ```go
 type TokenOther struct {
 	Token string
+	TokenInfo
 }
 ```
 
@@ -125,6 +142,7 @@ characters.
 ```go
 type TokenStr struct {
 	Token string
+	TokenInfo
 }
 ```
 
@@ -134,6 +152,7 @@ TokenStr holds the unquoted `string` that was scanned from a quoted literal.
 
 ```go
 type TokenUInt struct {
+	TokenInfo
 	Token uint64
 }
 ```

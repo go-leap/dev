@@ -18,19 +18,19 @@ func (me *LexError) String() string { return me.Error() }
 
 // Token is the interface implemented by the various `TokenFoo` structs in this package.
 type Token interface {
-	setPos(*scanner.Position)
+	init(*scanner.Position, int)
 }
 
 // TokenChar holds a `rune` that was scanned from a quoted literal.
 type TokenChar struct {
-	tokenBase
+	TokenInfo
 	Token rune
 }
 
 // TokenComment holds a comment `string` that was scanned from a `// ..` or `/* .. */` fragment, sans the separators.
 type TokenComment struct {
 	Token string
-	tokenBase
+	TokenInfo
 
 	// SingleLine denotes whether the comment started with `//` (as opposed to `/*`), it does not actually reflect the number of lines in `Token`.
 	SingleLine bool
@@ -38,42 +38,46 @@ type TokenComment struct {
 
 // TokenFloat holds a `float64` that was scanned from a literal.
 type TokenFloat struct {
-	tokenBase
+	TokenInfo
 	Token float64
 }
 
 // TokenIdent holds a `string` that was scanned from an unquoted alphanumeric range of characters.
 type TokenIdent struct {
 	Token string
-	tokenBase
+	TokenInfo
 }
 
 // TokenInt holds an `int64` that was scanned from a literal.
 type TokenInt struct {
-	tokenBase
+	TokenInfo
 	Token int64
 }
 
 // TokenOther holds (typically, but not guaranteed, uni-`rune`) `string`s that are theoretically anything-not-fitting-other-token-types, but in practice for the most part typically interpreted as operator, separation or punctuation characters.
 type TokenOther struct {
 	Token string
-	tokenBase
+	TokenInfo
 }
 
 // TokenStr holds the unquoted `string` that was scanned from a quoted literal.
 type TokenStr struct {
 	Token string
-	tokenBase
+	TokenInfo
 }
 
 // TokenUInt holds an `uint64` that was scanned from a literal exceeding the maximum-possible `int64`.
 type TokenUInt struct {
-	tokenBase
+	TokenInfo
 	Token uint64
 }
 
-type tokenBase struct {
+// TokenInfo is embedded by all `Token` implementers.
+type TokenInfo struct {
 	scanner.Position
+	LineIndent int
 }
 
-func (me *tokenBase) setPos(pos *scanner.Position) { me.Position = *pos }
+func (me *TokenInfo) init(pos *scanner.Position, indent int) {
+	me.Position, me.LineIndent = *pos, indent
+}

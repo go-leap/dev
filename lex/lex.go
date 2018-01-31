@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 	"text/scanner"
+	"unicode"
 )
 
 // Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while lexing.
@@ -11,10 +12,13 @@ import (
 // If `errs` has a `len` greater than 0, `tokenStream` will be empty (and vice versa).
 func Lex(filePath string, src string) (tokenStream []Token, errs []*LexError) {
 	tokenStream = make([]Token, 0, len(src)/4) // a shot in the dark for an initial cap that's better than default 0. could be sub-optimal for source files of several 100s of MB — revisit when that becomes realistic/common
-
-	var lexer scanner.Scanner
+	var (
+		onlyspacesinlinesofar = true
+		lineindent            int
+		lexer                 scanner.Scanner
+	)
 	lexer.Init(strings.NewReader(src)).Filename = filePath
-	lexer.Mode = scanner.ScanChars | scanner.ScanComments | scanner.ScanFloats | scanner.ScanIdents | scanner.ScanInts | scanner.ScanRawStrings | scanner.ScanStrings
+	lexer.Whitespace, lexer.Mode = 1<<'\r', scanner.ScanChars|scanner.ScanComments|scanner.ScanFloats|scanner.ScanIdents|scanner.ScanInts|scanner.ScanRawStrings|scanner.ScanStrings
 	lexer.Error = func(_ *scanner.Scanner, msg string) {
 		err := &LexError{msg: msg, Pos: lexer.Position}
 		err.Pos.Filename = filePath
@@ -22,8 +26,8 @@ func Lex(filePath string, src string) (tokenStream []Token, errs []*LexError) {
 	}
 
 	on := func(token Token) {
-		if len(errs) == 0 {
-			token.setPos(&lexer.Position)
+		if onlyspacesinlinesofar = false; len(errs) == 0 {
+			token.init(&lexer.Position, lineindent)
 			tokenStream = append(tokenStream, token)
 		}
 	}
@@ -70,7 +74,16 @@ func Lex(filePath string, src string) (tokenStream []Token, errs []*LexError) {
 				lexer.Error(nil, "unexpected comment format")
 			}
 		default:
-			on(&TokenOther{Token: sym})
+			for _, r := range sym[:1] {
+				if !unicode.IsSpace(r) {
+					on(&TokenOther{Token: sym})
+				} else if r == '\n' {
+					lineindent, onlyspacesinlinesofar = 0, true
+				} else if onlyspacesinlinesofar {
+					lineindent++
+				}
+				break
+			}
 		}
 	}
 	return
