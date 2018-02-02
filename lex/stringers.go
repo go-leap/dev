@@ -15,10 +15,6 @@ func (me *TokenFloat) String() string {
 	return strconv.FormatFloat(me.Token, 'g', -1, 64)
 }
 
-func (me *TokenInt) String() string {
-	return strconv.FormatInt(me.Token, 10)
-}
-
 func (me *TokenUint) String() string {
 	return strconv.FormatUint(me.Token, 10)
 }

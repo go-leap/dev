@@ -57,12 +57,6 @@ type TokenIdent struct {
 	TokenMeta
 }
 
-// TokenInt holds an `int64` that was scanned from a literal.
-type TokenInt struct {
-	TokenMeta
-	Token int64
-}
-
 // TokenOther holds (typically, but not guaranteed, uni-`rune`) `string`s that are theoretically anything-not-fitting-other-token-types, but in practice for the most part typically interpreted as operator, separation or punctuation characters.
 type TokenOther struct {
 	Token string
@@ -79,6 +73,7 @@ type TokenStr struct {
 // TokenUint holds an `uint64` that was scanned from a literal exceeding the maximum-possible `int64`.
 type TokenUint struct {
 	TokenMeta
+	Base  int
 	Token uint64
 }
 

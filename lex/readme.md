@@ -126,23 +126,6 @@ of characters.
 func (me *TokenIdent) String() string
 ```
 
-#### type TokenInt
-
-```go
-type TokenInt struct {
-	TokenMeta
-	Token int64
-}
-```
-
-TokenInt holds an `int64` that was scanned from a literal.
-
-#### func (*TokenInt) String
-
-```go
-func (me *TokenInt) String() string
-```
-
 #### type TokenMeta
 
 ```go
@@ -226,6 +209,7 @@ func (me *TokenStr) String() (s string)
 ```go
 type TokenUint struct {
 	TokenMeta
+	Base  int
 	Token uint64
 }
 ```

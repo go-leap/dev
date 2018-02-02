@@ -69,12 +69,17 @@ func Lex(filePath string, src string) (tokenStream []IToken, errs []*Error) {
 				lexer.Error(nil, errfloat.Error())
 			}
 		case scanner.Int:
-			if i, errint := strconv.ParseInt(sym, 0, 64); errint == nil {
-				on(&TokenInt{Token: i})
-			} else if errnum, _ := errint.(*strconv.NumError); errnum == nil || errnum.Err != strconv.ErrRange {
-				lexer.Error(nil, errint.Error())
-			} else if u, erruint := strconv.ParseUint(sym, 0, 64); erruint == nil {
-				on(&TokenUint{Token: u})
+			base := 0
+			if l := len(sym); l > 2 && sym[0] == '0' && (sym[1] == 'x' || sym[1] == 'X') {
+				base = 16
+			} else if l > 1 && sym[0] == '0' {
+				base = 8
+			}
+			if u, erruint := strconv.ParseUint(sym, 0, 64); erruint == nil {
+				if base == 0 {
+					base = 10
+				}
+				on(&TokenUint{Token: u, Base: base})
 			} else {
 				lexer.Error(nil, erruint.Error())
 			}
