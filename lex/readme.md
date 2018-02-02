@@ -52,23 +52,12 @@ type Token interface {
 Token is the interface implemented by the various `TokenFoo` structs in this
 package.
 
-#### type TokenChar
-
-```go
-type TokenChar struct {
-	TokenInfo
-	Token rune
-}
-```
-
-TokenChar holds a `rune` that was scanned from a quoted literal.
-
 #### type TokenComment
 
 ```go
 type TokenComment struct {
 	Token string
-	TokenInfo
+	TokenMeta
 
 	// SingleLine denotes whether the comment started with `//` (as opposed to `/*`), it does not actually reflect the number of lines in `Token`.
 	SingleLine bool
@@ -82,7 +71,7 @@ TokenComment holds a comment `string` that was scanned from a `// ..` or `/* ..
 
 ```go
 type TokenFloat struct {
-	TokenInfo
+	TokenMeta
 	Token float64
 }
 ```
@@ -94,41 +83,41 @@ TokenFloat holds a `float64` that was scanned from a literal.
 ```go
 type TokenIdent struct {
 	Token string
-	TokenInfo
+	TokenMeta
 }
 ```
 
 TokenIdent holds a `string` that was scanned from an unquoted alphanumeric range
 of characters.
 
-#### type TokenInfo
-
-```go
-type TokenInfo struct {
-	scanner.Position
-	LineIndent int
-}
-```
-
-TokenInfo is embedded by all `Token` implementers.
-
 #### type TokenInt
 
 ```go
 type TokenInt struct {
-	TokenInfo
+	TokenMeta
 	Token int64
 }
 ```
 
 TokenInt holds an `int64` that was scanned from a literal.
 
+#### type TokenMeta
+
+```go
+type TokenMeta struct {
+	scanner.Position
+	LineIndent int
+}
+```
+
+TokenMeta is embedded by all `Token` implementers.
+
 #### type TokenOther
 
 ```go
 type TokenOther struct {
 	Token string
-	TokenInfo
+	TokenMeta
 }
 ```
 
@@ -137,12 +126,23 @@ theoretically anything-not-fitting-other-token-types, but in practice for the
 most part typically interpreted as operator, separation or punctuation
 characters.
 
+#### type TokenRune
+
+```go
+type TokenRune struct {
+	TokenMeta
+	Token rune
+}
+```
+
+TokenRune holds a `rune` that was scanned from a quoted literal.
+
 #### type TokenStr
 
 ```go
 type TokenStr struct {
 	Token string
-	TokenInfo
+	TokenMeta
 }
 ```
 
@@ -152,7 +152,7 @@ TokenStr holds the unquoted `string` that was scanned from a quoted literal.
 
 ```go
 type TokenUInt struct {
-	TokenInfo
+	TokenMeta
 	Token uint64
 }
 ```

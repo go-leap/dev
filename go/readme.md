@@ -68,6 +68,7 @@ var (
 		"ALL_CAPS",
 		"underscore",
 		"CamelCase",
+		"should not use dot imports",
 		"it will be inferred from the right-hand side",
 		"should be of the form \"",
 		"error strings should",

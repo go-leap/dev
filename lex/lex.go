@@ -39,7 +39,7 @@ func Lex(filePath string, src string) (tokenStream []Token, errs []*LexError) {
 			on(&TokenIdent{Token: sym})
 		case scanner.Char:
 			if c, _, _, errchr := strconv.UnquoteChar(sym[1:], '\''); errchr == nil {
-				on(&TokenChar{Token: c})
+				on(&TokenRune{Token: c})
 			} else {
 				lexer.Error(nil, errchr.Error())
 			}
