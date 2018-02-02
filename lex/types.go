@@ -18,9 +18,14 @@ type Error struct {
 // Error implements the `error` interface.
 func (me *Error) Error() string { return me.msg }
 
-// Token is the interface implemented by the various `TokenFoo` structs in this package.
-type Token interface {
+type IPos interface {
+	Pos() *TokenMeta
+}
+
+// IToken is the interface implemented by the various `TokenFoo` structs in this package.
+type IToken interface {
 	fmt.Stringer
+	IPos
 	init(*scanner.Position, int)
 	Meta() *TokenMeta
 }
@@ -87,5 +92,9 @@ func (me *TokenMeta) init(pos *scanner.Position, indent int) {
 }
 
 func (me *TokenMeta) Meta() *TokenMeta {
+	return me
+}
+
+func (me *TokenMeta) Pos() *TokenMeta {
 	return me
 }

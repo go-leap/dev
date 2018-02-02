@@ -8,7 +8,7 @@
 #### func  Lex
 
 ```go
-func Lex(filePath string, src string) (tokenStream []Token, errs []*Error)
+func Lex(filePath string, src string) (tokenStream []IToken, errs []*Error)
 ```
 Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while
 lexing.
@@ -40,18 +40,34 @@ func (me *Error) Error() string
 ```
 Error implements the `error` interface.
 
-#### type Token
+#### type IPos
 
 ```go
-type Token interface {
+type IPos interface {
+	Pos() *TokenMeta
+}
+```
+
+
+#### func  Pos
+
+```go
+func Pos(tokens []IToken, fallback IPos, fallbackFilePath string) IPos
+```
+
+#### type IToken
+
+```go
+type IToken interface {
 	fmt.Stringer
+	IPos
 
 	Meta() *TokenMeta
 	// contains filtered or unexported methods
 }
 ```
 
-Token is the interface implemented by the various `TokenFoo` structs in this
+IToken is the interface implemented by the various `TokenFoo` structs in this
 package.
 
 #### type TokenComment
@@ -142,6 +158,12 @@ TokenMeta is embedded by all `Token` implementers.
 
 ```go
 func (me *TokenMeta) Meta() *TokenMeta
+```
+
+#### func (*TokenMeta) Pos
+
+```go
+func (me *TokenMeta) Pos() *TokenMeta
 ```
 
 #### type TokenOther

@@ -7,11 +7,21 @@ import (
 	"unicode"
 )
 
+func Pos(tokens []IToken, fallback IPos, fallbackFilePath string) IPos {
+	if l := len(tokens); l > 0 {
+		return tokens[l-1]
+	}
+	if fallback != nil {
+		return fallback
+	}
+	return &TokenMeta{Position: scanner.Position{Line: 1, Column: 1, Filename: fallbackFilePath}}
+}
+
 // Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while lexing.
 //
 // If `errs` has a `len` greater than 0, `tokenStream` will be empty (and vice versa).
-func Lex(filePath string, src string) (tokenStream []Token, errs []*Error) {
-	tokenStream = make([]Token, 0, len(src)/4) // a shot in the dark for an initial cap that's better than default 0. could be sub-optimal for source files of several 100s of MB — revisit when that becomes realistic/common
+func Lex(filePath string, src string) (tokenStream []IToken, errs []*Error) {
+	tokenStream = make([]IToken, 0, len(src)/4) // a shot in the dark for an initial cap that's better than default 0. could be sub-optimal for source files of several 100s of MB — revisit when that becomes realistic/common
 	var (
 		onlyspacesinlinesofar = true
 		lineindent            int
@@ -25,7 +35,7 @@ func Lex(filePath string, src string) (tokenStream []Token, errs []*Error) {
 		tokenStream, errs = nil, append(errs, err)
 	}
 
-	on := func(token Token) {
+	on := func(token IToken) {
 		if onlyspacesinlinesofar = false; len(errs) == 0 {
 			token.init(&lexer.Position, lineindent)
 			tokenStream = append(tokenStream, token)
