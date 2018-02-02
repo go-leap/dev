@@ -100,7 +100,7 @@ type TokenFloat struct {
 }
 ```
 
-TokenFloat holds a `float64` that was scanned from a literal.
+TokenFloat holds a `float64` that was scanned from a floating-point literal.
 
 #### func (*TokenFloat) String
 
@@ -214,8 +214,7 @@ type TokenUint struct {
 }
 ```
 
-TokenUint holds an `uint64` that was scanned from a literal exceeding the
-maximum-possible `int64`.
+TokenUint holds an `uint64` that was scanned from an integral literal.
 
 #### func (*TokenUint) String
 

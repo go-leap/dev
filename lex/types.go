@@ -45,7 +45,7 @@ type TokenComment struct {
 	SingleLine bool
 }
 
-// TokenFloat holds a `float64` that was scanned from a literal.
+// TokenFloat holds a `float64` that was scanned from a floating-point literal.
 type TokenFloat struct {
 	TokenMeta
 	Token float64
@@ -70,7 +70,7 @@ type TokenStr struct {
 	Raw bool
 }
 
-// TokenUint holds an `uint64` that was scanned from a literal exceeding the maximum-possible `int64`.
+// TokenUint holds an `uint64` that was scanned from an integral literal.
 type TokenUint struct {
 	TokenMeta
 	Base  int
