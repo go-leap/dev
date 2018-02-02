@@ -1,24 +1,28 @@
 package udevlex
 
 import (
+	"fmt"
 	"text/scanner"
 )
 
-// LexError holds a message returned by `Error` and `String`, plus additional positional details.
-type LexError struct {
+func Err(pos *scanner.Position, msg string) *Error {
+	return &Error{Pos: *pos, msg: msg}
+}
+
+// Error holds a message returned by `Error` and `String`, plus additional positional details.
+type Error struct {
 	msg string
 	Pos scanner.Position
 }
 
 // Error implements the `error` interface.
-func (me *LexError) Error() string { return me.msg }
-
-// String implements the `fmt.Stringer` interface.
-func (me *LexError) String() string { return me.Error() }
+func (me *Error) Error() string { return me.msg }
 
 // Token is the interface implemented by the various `TokenFoo` structs in this package.
 type Token interface {
+	fmt.Stringer
 	init(*scanner.Position, int)
+	Meta() *TokenMeta
 }
 
 // TokenRune holds a `rune` that was scanned from a quoted literal.
@@ -66,8 +70,8 @@ type TokenStr struct {
 	TokenMeta
 }
 
-// TokenUInt holds an `uint64` that was scanned from a literal exceeding the maximum-possible `int64`.
-type TokenUInt struct {
+// TokenUint holds an `uint64` that was scanned from a literal exceeding the maximum-possible `int64`.
+type TokenUint struct {
 	TokenMeta
 	Token uint64
 }
@@ -80,4 +84,8 @@ type TokenMeta struct {
 
 func (me *TokenMeta) init(pos *scanner.Position, indent int) {
 	me.Position, me.LineIndent = *pos, indent
+}
+
+func (me *TokenMeta) Meta() *TokenMeta {
+	return me
 }

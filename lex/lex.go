@@ -10,7 +10,7 @@ import (
 // Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while lexing.
 //
 // If `errs` has a `len` greater than 0, `tokenStream` will be empty (and vice versa).
-func Lex(filePath string, src string) (tokenStream []Token, errs []*LexError) {
+func Lex(filePath string, src string) (tokenStream []Token, errs []*Error) {
 	tokenStream = make([]Token, 0, len(src)/4) // a shot in the dark for an initial cap that's better than default 0. could be sub-optimal for source files of several 100s of MB — revisit when that becomes realistic/common
 	var (
 		onlyspacesinlinesofar = true
@@ -20,7 +20,7 @@ func Lex(filePath string, src string) (tokenStream []Token, errs []*LexError) {
 	lexer.Init(strings.NewReader(src)).Filename = filePath
 	lexer.Whitespace, lexer.Mode = 1<<'\r', scanner.ScanChars|scanner.ScanComments|scanner.ScanFloats|scanner.ScanIdents|scanner.ScanInts|scanner.ScanRawStrings|scanner.ScanStrings
 	lexer.Error = func(_ *scanner.Scanner, msg string) {
-		err := &LexError{msg: msg, Pos: lexer.Position}
+		err := Err(&lexer.Position, msg)
 		err.Pos.Filename = filePath
 		tokenStream, errs = nil, append(errs, err)
 	}
@@ -61,7 +61,7 @@ func Lex(filePath string, src string) (tokenStream []Token, errs []*LexError) {
 			} else if errnum, _ := errint.(*strconv.NumError); errnum == nil || errnum.Err != strconv.ErrRange {
 				lexer.Error(nil, errint.Error())
 			} else if u, erruint := strconv.ParseUint(sym, 0, 64); erruint == nil {
-				on(&TokenUInt{Token: u})
+				on(&TokenUint{Token: u})
 			} else {
 				lexer.Error(nil, erruint.Error())
 			}
