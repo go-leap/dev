@@ -35,6 +35,9 @@ func (me *TokenRune) String() string {
 	return strconv.QuoteRune(me.Token)
 }
 
-func (me *TokenStr) String() string {
-	return strconv.Quote(me.Token)
+func (me *TokenStr) String() (s string) {
+	if s = strconv.Quote(me.Token); me.Raw {
+		s = "`" + s[1:len(s)-1] + "`"
+	}
+	return s
 }

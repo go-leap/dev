@@ -209,6 +209,7 @@ func (me *TokenRune) String() string
 type TokenStr struct {
 	Token string
 	TokenMeta
+	Raw bool
 }
 ```
 
@@ -217,7 +218,7 @@ TokenStr holds the unquoted `string` that was scanned from a quoted literal.
 #### func (*TokenStr) String
 
 ```go
-func (me *TokenStr) String() string
+func (me *TokenStr) String() (s string)
 ```
 
 #### type TokenUint

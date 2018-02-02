@@ -55,7 +55,10 @@ func Lex(filePath string, src string) (tokenStream []IToken, errs []*Error) {
 			}
 		case scanner.RawString, scanner.String:
 			if s, errstr := strconv.Unquote(sym); errstr == nil {
-				on(&TokenStr{Token: s})
+				if tok != scanner.RawString && strings.HasPrefix(sym, "`") && strings.HasSuffix(sym, "`") {
+					tok = scanner.RawString
+				}
+				on(&TokenStr{Token: s, Raw: tok == scanner.RawString})
 			} else {
 				lexer.Error(nil, errstr.Error())
 			}

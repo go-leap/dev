@@ -73,6 +73,7 @@ type TokenOther struct {
 type TokenStr struct {
 	Token string
 	TokenMeta
+	Raw bool
 }
 
 // TokenUint holds an `uint64` that was scanned from a literal exceeding the maximum-possible `int64`.
