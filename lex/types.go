@@ -57,8 +57,14 @@ type TokenIdent struct {
 	TokenMeta
 }
 
-// TokenOther holds (typically, but not guaranteed, uni-`rune`) `string`s that are theoretically anything-not-fitting-other-token-types, but in practice for the most part typically interpreted as operator, separation or punctuation characters.
+// TokenOther holds a `string` that is a consecutive sequence (1 or more characters) of anything-not-fitting-other-token-types.
 type TokenOther struct {
+	Token string
+	TokenMeta
+}
+
+// TokenSep holds a (uni-`rune`) `string` that matched one of `Lex`s specified `standAloneSeps`.
+type TokenSep struct {
 	Token string
 	TokenMeta
 }

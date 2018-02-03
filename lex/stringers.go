@@ -23,6 +23,10 @@ func (me *TokenIdent) String() string {
 	return me.Token
 }
 
+func (me *TokenSep) String() string {
+	return me.Token
+}
+
 func (me *TokenOther) String() string {
 	return me.Token
 }

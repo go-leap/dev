@@ -5,10 +5,20 @@
 
 ## Usage
 
+#### func  IndentBasedChunks
+
+```go
+func IndentBasedChunks(tokens []IToken, minIndent int) (chunks [][]IToken)
+```
+IndentBasedChunks breaks up `tokens` into a number of `chunks`: each
+'non-indented' line (with `LineIndent` <= `minIndent`) in `tokens` begins a new
+'chunk' and any subsequent 'indented' (`LineIndex` > `minIndent`) lines also
+belong to it.
+
 #### func  Lex
 
 ```go
-func Lex(filePath string, src string) (tokenStream []IToken, errs []*Error)
+func Lex(filePath string, src string, standAloneSeps ...string) (tokenStream []IToken, errs []*Error)
 ```
 Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while
 lexing.
@@ -54,6 +64,8 @@ type IPos interface {
 ```go
 func Pos(tokens []IToken, fallback IPos, fallbackFilePath string) IPos
 ```
+Pos returns the last in `tokens`, or `fallback`, or a new `TokenMeta` at
+position 1,1 for `fallbackFilePath`.
 
 #### type IToken
 
@@ -158,10 +170,8 @@ type TokenOther struct {
 }
 ```
 
-TokenOther holds (typically, but not guaranteed, uni-`rune`) `string`s that are
-theoretically anything-not-fitting-other-token-types, but in practice for the
-most part typically interpreted as operator, separation or punctuation
-characters.
+TokenOther holds a `string` that is a consecutive sequence (1 or more
+characters) of anything-not-fitting-other-token-types.
 
 #### func (*TokenOther) String
 
@@ -184,6 +194,24 @@ TokenRune holds a `rune` that was scanned from a quoted literal.
 
 ```go
 func (me *TokenRune) String() string
+```
+
+#### type TokenSep
+
+```go
+type TokenSep struct {
+	Token string
+	TokenMeta
+}
+```
+
+TokenSep holds a (uni-`rune`) `string` that matched one of `Lex`s specified
+`standAloneSeps`.
+
+#### func (*TokenSep) String
+
+```go
+func (me *TokenSep) String() string
 ```
 
 #### type TokenStr
