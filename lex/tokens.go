@@ -3,7 +3,7 @@ package udevlex
 type Tokens []IToken
 
 func (me Tokens) BreakOnIndent() (indented Tokens, outdented Tokens) {
-	ln, out, minindent := 1, false, me[0].Meta().LineIndent
+	ln, out, minindent := me[0].Meta().Line, false, me[0].Meta().LineIndent
 	for _, tok := range me {
 		if out {
 			outdented = append(outdented, tok)
