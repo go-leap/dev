@@ -98,9 +98,13 @@ func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens) {
 }
 
 func (me Tokens) String() string {
+	if len(me) == 0 {
+		return ""
+	}
 	var buf bytes.Buffer
 	for _, tok := range me {
+		buf.WriteRune('·')
 		buf.WriteString(tok.String())
 	}
-	return buf.String()
+	return buf.String()[1:]
 }
