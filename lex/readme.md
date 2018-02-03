@@ -246,6 +246,12 @@ lexing.
 
 If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
 
+#### func (Tokens) BreakOnIndent
+
+```go
+func (me Tokens) BreakOnIndent() (indented Tokens, outdented Tokens)
+```
+
 #### func (Tokens) IndentBasedChunks
 
 ```go
@@ -254,3 +260,15 @@ func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens)
 IndentBasedChunks breaks up `me` into a number of `chunks`: each 'non-indented'
 line (with `LineIndent` <= `minIndent`) in `me` begins a new 'chunk' and any
 subsequent 'indented' (`LineIndex` > `minIndent`) lines also belong to it.
+
+#### func (Tokens) SansComments
+
+```go
+func (me Tokens) SansComments() (sans Tokens)
+```
+
+#### func (Tokens) SubTokens
+
+```go
+func (me Tokens) SubTokens(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int)
+```
