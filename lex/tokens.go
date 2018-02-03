@@ -55,13 +55,9 @@ func (me Tokens) SansComments() (sans Tokens) {
 }
 
 func (me Tokens) SubTokens(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int) {
-	sep, _ := me[0].(*TokenSep)
-	if tail = me; sep == nil || sep.Token != sepOpen {
-		return
-	}
-
+	tail = me
 	for i := 1; i < len(me); i++ {
-		if sep, _ = me[i].(*TokenSep); sep != nil {
+		if sep, _ := me[i].(*TokenSep); sep != nil {
 			if sep.Token == sepOpen {
 				numUnclosed++
 			} else if sep.Token == sepClose {
