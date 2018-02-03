@@ -5,23 +5,6 @@ import (
 	"text/scanner"
 )
 
-func Err(pos *scanner.Position, msg string) *Error {
-	return &Error{Pos: *pos, msg: msg}
-}
-
-// Error holds a message returned by `Error` and `String`, plus additional positional details.
-type Error struct {
-	msg string
-	Pos scanner.Position
-}
-
-// Error implements the `error` interface.
-func (me *Error) Error() string { return me.msg }
-
-type IPos interface {
-	Pos() *TokenMeta
-}
-
 // IToken is the interface implemented by the various `TokenFoo` structs in this package.
 type IToken interface {
 	fmt.Stringer

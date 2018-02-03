@@ -5,27 +5,6 @@
 
 ## Usage
 
-#### func  IndentBasedChunks
-
-```go
-func IndentBasedChunks(tokens []IToken, minIndent int) (chunks [][]IToken)
-```
-IndentBasedChunks breaks up `tokens` into a number of `chunks`: each
-'non-indented' line (with `LineIndent` <= `minIndent`) in `tokens` begins a new
-'chunk' and any subsequent 'indented' (`LineIndex` > `minIndent`) lines also
-belong to it.
-
-#### func  Lex
-
-```go
-func Lex(filePath string, src string, standAloneSeps ...string) (tokenStream []IToken, errs []*Error)
-```
-Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while
-lexing.
-
-If `errs` has a `len` greater than 0, `tokenStream` will be empty (and vice
-versa).
-
 #### type Error
 
 ```go
@@ -62,7 +41,7 @@ type IPos interface {
 #### func  Pos
 
 ```go
-func Pos(tokens []IToken, fallback IPos, fallbackFilePath string) IPos
+func Pos(tokens Tokens, fallback IPos, fallbackFilePath string) IPos
 ```
 Pos returns the last in `tokens`, or `fallback`, or a new `TokenMeta` at
 position 1,1 for `fallbackFilePath`.
@@ -249,3 +228,29 @@ TokenUint holds an `uint64` that was scanned from an integral literal.
 ```go
 func (me *TokenUint) String() string
 ```
+
+#### type Tokens
+
+```go
+type Tokens []IToken
+```
+
+
+#### func  Lex
+
+```go
+func Lex(filePath string, src string, standAloneSeps ...string) (tokens Tokens, errs []*Error)
+```
+Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while
+lexing.
+
+If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
+
+#### func (Tokens) IndentBasedChunks
+
+```go
+func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens)
+```
+IndentBasedChunks breaks up `me` into a number of `chunks`: each 'non-indented'
+line (with `LineIndent` <= `minIndent`) in `me` begins a new 'chunk' and any
+subsequent 'indented' (`LineIndex` > `minIndent`) lines also belong to it.

@@ -16,7 +16,13 @@ func (me *TokenFloat) String() string {
 }
 
 func (me *TokenUint) String() string {
-	return strconv.FormatUint(me.Token, 10)
+	var pref string
+	if me.Base == 16 {
+		pref = "0x"
+	} else if me.Base == 8 {
+		pref = "0"
+	}
+	return pref + strconv.FormatUint(me.Token, me.Base)
 }
 
 func (me *TokenIdent) String() string {

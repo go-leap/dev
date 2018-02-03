@@ -7,22 +7,11 @@ import (
 	"unicode"
 )
 
-// Pos returns the last in `tokens`, or `fallback`, or a new `TokenMeta` at position 1,1 for `fallbackFilePath`.
-func Pos(tokens []IToken, fallback IPos, fallbackFilePath string) IPos {
-	if l := len(tokens); l > 0 {
-		return tokens[l-1]
-	}
-	if fallback != nil {
-		return fallback
-	}
-	return &TokenMeta{Position: scanner.Position{Line: 1, Column: 1, Filename: fallbackFilePath}}
-}
-
 // Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while lexing.
 //
-// If `errs` has a `len` greater than 0, `tokenStream` will be empty (and vice versa).
-func Lex(filePath string, src string, standAloneSeps ...string) (tokenStream []IToken, errs []*Error) {
-	tokenStream = make([]IToken, 0, len(src)/4) // a shot in the dark for an initial cap that's better than default 0. could be sub-optimal for source files of several 100s of MB — revisit when that becomes realistic/common
+// If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
+func Lex(filePath string, src string, standAloneSeps ...string) (tokens Tokens, errs []*Error) {
+	tokens = make(Tokens, 0, len(src)/4) // a shot in the dark for an initial cap that's better than default 0. could be sub-optimal for source files of several 100s of MB — revisit when that becomes realistic/common
 	var (
 		onlyspacesinlinesofar = true
 		lineindent            int
@@ -34,19 +23,18 @@ func Lex(filePath string, src string, standAloneSeps ...string) (tokenStream []I
 	lexer.Error = func(_ *scanner.Scanner, msg string) {
 		err := Err(&lexer.Position, msg)
 		err.Pos.Filename = filePath
-		tokenStream, errs = nil, append(errs, err)
+		tokens, errs = nil, append(errs, err)
 	}
 
 	on := func(token IToken) {
 		if otheraccum != nil {
-			otheraccum, tokenStream = nil, append(tokenStream, otheraccum)
+			otheraccum, tokens = nil, append(tokens, otheraccum)
 		}
 		if onlyspacesinlinesofar = false; len(errs) == 0 && token != nil {
 			token.init(&lexer.Position, lineindent)
-			tokenStream = append(tokenStream, token)
+			tokens = append(tokens, token)
 		}
 	}
-
 	for tok := lexer.Scan(); tok != scanner.EOF; tok = lexer.Scan() {
 		sym := lexer.TokenText()
 		switch tok {
@@ -74,13 +62,13 @@ func Lex(filePath string, src string, standAloneSeps ...string) (tokenStream []I
 				lexer.Error(nil, errfloat.Error())
 			}
 		case scanner.Int:
-			base := 0
+			var base, i int
 			if l := len(sym); l > 2 && sym[0] == '0' && (sym[1] == 'x' || sym[1] == 'X') {
-				base = 16
+				i, base = 2, 16
 			} else if l > 1 && sym[0] == '0' {
-				base = 8
+				i, base = 1, 8
 			}
-			if u, erruint := strconv.ParseUint(sym, 0, 64); erruint == nil {
+			if u, erruint := strconv.ParseUint(sym[i:], base, 64); erruint == nil {
 				if base == 0 {
 					base = 10
 				}
@@ -94,7 +82,7 @@ func Lex(filePath string, src string, standAloneSeps ...string) (tokenStream []I
 			} else if strings.HasPrefix(sym, "/*") && strings.HasSuffix(sym, "*/") {
 				on(&TokenComment{SingleLine: false, Token: sym[2 : len(sym)-2]})
 			} else {
-				lexer.Error(nil, "unexpected comment format")
+				lexer.Error(nil, "unexpected comment format: "+sym)
 			}
 		default:
 			var issep bool
@@ -105,9 +93,9 @@ func Lex(filePath string, src string, standAloneSeps ...string) (tokenStream []I
 				}
 			}
 			if !issep {
-				for _, r := range sym {
+				for _, r := range sym { // as of today, at this point len(sym)==1 always. but we need the r anyway and the iteration would logically hold even for a longer sym
 					if !unicode.IsSpace(r) {
-						if otheraccum == nil {
+						if onlyspacesinlinesofar = false; otheraccum == nil {
 							otheraccum = &TokenOther{Token: ""}
 							otheraccum.init(&lexer.Position, lineindent)
 						}
@@ -122,25 +110,5 @@ func Lex(filePath string, src string, standAloneSeps ...string) (tokenStream []I
 		}
 	}
 	on(nil) // to capture dangling otheraccum if any
-	return
-}
-
-// IndentBasedChunks breaks up `tokens` into a number of `chunks`:
-// each 'non-indented' line (with `LineIndent` <= `minIndent`) in `tokens` begins a new
-// 'chunk' and any subsequent 'indented' (`LineIndex` > `minIndent`) lines also belong to it.
-func IndentBasedChunks(tokens []IToken, minIndent int) (chunks [][]IToken) {
-	var cur int
-	for i, ln, l := 0, 1, len(tokens); i < l; i++ {
-		if i == l-1 {
-			if tlc := tokens[cur:]; len(tlc) > 0 {
-				chunks = append(chunks, tlc)
-			}
-		} else if tpos := tokens[i].Meta(); tpos.LineIndent <= minIndent && tpos.Line != ln {
-			if tlc := tokens[cur:i]; len(tlc) > 0 {
-				chunks = append(chunks, tlc)
-			}
-			cur, ln = i, tpos.Line
-		}
-	}
 	return
 }
