@@ -10,7 +10,7 @@ import (
 // Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while lexing.
 //
 // If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
-func Lex(filePath string, src string, standAloneSeps ...string) (tokens Tokens, errs []*Error) {
+func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps ...string) (tokens Tokens, errs []*Error) {
 	tokens = make(Tokens, 0, len(src)/4) // a shot in the dark for an initial cap that's better than default 0. could be sub-optimal for source files of several 100s of MB — revisit when that becomes realistic/common
 	var (
 		onlyspacesinlinesofar = true
@@ -110,6 +110,8 @@ func Lex(filePath string, src string, standAloneSeps ...string) (tokens Tokens, 
 						otheraccum.Token += sym
 					} else if unaccum(); r == '\n' {
 						lineindent, onlyspacesinlinesofar = 0, true
+					} else if restrictedWhitespace && r != ' ' {
+						lexer.Error(nil, "invalid white-space: only newline and space permissible")
 					} else if onlyspacesinlinesofar {
 						lineindent++
 					}

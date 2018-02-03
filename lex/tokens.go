@@ -1,11 +1,15 @@
 package udevlex
 
+import (
+	"bytes"
+)
+
 type Tokens []IToken
 
-func (me Tokens) BreakOnIndent() (indented Tokens, outdented Tokens) {
-	ln, minindent := me[0].Meta().Line, me[0].Meta().LineIndent
+func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens) {
+	ln := me[0].Meta().Line
 	for i := 1; i < len(me); i++ {
-		if tpos := me[i].Meta(); tpos.Line != ln && tpos.LineIndent <= minindent {
+		if tpos := me[i].Meta(); tpos.Line != ln && tpos.LineIndent <= minIndent {
 			indented, outdented = me[:i], me[i:]
 			return
 		}
@@ -34,6 +38,7 @@ func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent s
 
 // BreakOnOther returns all `Tokens` preceding and succeeding the next occurence of the specified `TokenOther` in `me`, if any — otherwise, `nil,nil` will be returned.
 func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
+	pref = me
 	for i, tok := range me {
 		if toth, _ := tok.(*TokenOther); toth != nil && toth.Token == token {
 			pref, suff = me[:i], me[i+1:]
@@ -90,4 +95,12 @@ func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens) {
 		}
 	}
 	return
+}
+
+func (me Tokens) String() string {
+	var buf bytes.Buffer
+	for _, tok := range me {
+		buf.WriteString(tok.String())
+	}
+	return buf.String()
 }

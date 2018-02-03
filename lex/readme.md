@@ -239,7 +239,7 @@ type Tokens []IToken
 #### func  Lex
 
 ```go
-func Lex(filePath string, src string, standAloneSeps ...string) (tokens Tokens, errs []*Error)
+func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps ...string) (tokens Tokens, errs []*Error)
 ```
 Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while
 lexing.
@@ -255,7 +255,7 @@ func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent s
 #### func (Tokens) BreakOnIndent
 
 ```go
-func (me Tokens) BreakOnIndent() (indented Tokens, outdented Tokens)
+func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens)
 ```
 
 #### func (Tokens) BreakOnOther
@@ -283,6 +283,12 @@ func (me Tokens) SansComments() (sans Tokens)
 ```
 SansComments returns the newly allocated `sans` with a `cap` of `len(me)` and
 containing all `Tokens` in `me` except `TokenComment`s.
+
+#### func (Tokens) String
+
+```go
+func (me Tokens) String() string
+```
 
 #### func (Tokens) SubTokens
 
