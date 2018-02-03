@@ -26,18 +26,23 @@ func Lex(filePath string, src string, standAloneSeps ...string) (tokens Tokens, 
 		tokens, errs = nil, append(errs, err)
 	}
 
-	on := func(token IToken) {
+	unaccum := func() {
 		if otheraccum != nil {
 			if len(errs) == 0 {
 				tokens = append(tokens, otheraccum)
 			}
 			otheraccum = nil
 		}
-		if onlyspacesinlinesofar = false; len(errs) == 0 && token != nil {
+	}
+
+	on := func(token IToken) {
+		unaccum()
+		if onlyspacesinlinesofar = false; len(errs) == 0 {
 			token.init(&lexer.Position, lineindent)
 			tokens = append(tokens, token)
 		}
 	}
+
 	for tok := lexer.Scan(); tok != scanner.EOF; tok = lexer.Scan() {
 		sym := lexer.TokenText()
 		switch tok {
@@ -103,7 +108,7 @@ func Lex(filePath string, src string, standAloneSeps ...string) (tokens Tokens, 
 							otheraccum.init(&lexer.Position, lineindent)
 						}
 						otheraccum.Token += sym
-					} else if r == '\n' {
+					} else if unaccum(); r == '\n' {
 						lineindent, onlyspacesinlinesofar = 0, true
 					} else if onlyspacesinlinesofar {
 						lineindent++
@@ -112,6 +117,6 @@ func Lex(filePath string, src string, standAloneSeps ...string) (tokens Tokens, 
 			}
 		}
 	}
-	on(nil) // to capture dangling otheraccum if any
+	unaccum()
 	return
 }
