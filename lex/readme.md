@@ -246,6 +246,12 @@ lexing.
 
 If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
 
+#### func (Tokens) BreakOnIdent
+
+```go
+func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent string) (pref Tokens, suff Tokens, numUnclosed int)
+```
+
 #### func (Tokens) BreakOnIndent
 
 ```go

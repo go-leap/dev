@@ -14,6 +14,24 @@ func (me Tokens) BreakOnIndent() (indented Tokens, outdented Tokens) {
 	return
 }
 
+func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent string) (pref Tokens, suff Tokens, numUnclosed int) {
+	for i, tok := range me {
+		if tid, _ := tok.(*TokenIdent); tid != nil {
+			if tid.Token == skipForEachOccurrenceOfIdent {
+				numUnclosed++
+			} else if tid.Token == needleIdent {
+				if numUnclosed > 0 {
+					numUnclosed--
+				} else {
+					pref, suff = me[:i], me[i+1:]
+					return
+				}
+			}
+		}
+	}
+	return
+}
+
 // BreakOnOther returns all `Tokens` preceding and succeeding the next occurence of the specified `TokenOther` in `me`, if any — otherwise, `nil,nil` will be returned.
 func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
 	for i, tok := range me {
