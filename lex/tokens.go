@@ -3,14 +3,28 @@ package udevlex
 type Tokens []IToken
 
 func (me Tokens) BreakOnIndent() (indented Tokens, outdented Tokens) {
-	out, curindent := false, me[0].Meta().LineIndent
+	ln, out, minindent := 1, false, me[0].Meta().LineIndent
 	for _, tok := range me {
 		if out {
 			outdented = append(outdented, tok)
-		} else if tpos := tok.Meta(); tpos.LineIndent < curindent {
-			out, outdented = true, append(outdented, tok)
+		} else if tpos := tok.Meta(); tpos.Line != ln && tpos.LineIndent <= minindent {
+			ln, out, outdented = tpos.Line, true, append(outdented, tok)
 		} else {
 			indented = append(indented, tok)
+		}
+	}
+	return
+}
+
+func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
+	var insuffix bool
+	for _, tok := range me {
+		if insuffix {
+			suff = append(suff, tok)
+		} else if toth, _ := tok.(*TokenOther); toth != nil && toth.Token == token {
+			insuffix = true
+		} else {
+			pref = append(pref, tok)
 		}
 	}
 	return

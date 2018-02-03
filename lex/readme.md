@@ -252,6 +252,12 @@ If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
 func (me Tokens) BreakOnIndent() (indented Tokens, outdented Tokens)
 ```
 
+#### func (Tokens) BreakOnOther
+
+```go
+func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens)
+```
+
 #### func (Tokens) IndentBasedChunks
 
 ```go
