@@ -257,6 +257,9 @@ func (me Tokens) BreakOnIndent() (indented Tokens, outdented Tokens)
 ```go
 func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens)
 ```
+BreakOnOther returns all `Tokens` preceding and succeeding the next occurence of
+the specified `TokenOther` in `me`, if any — otherwise, `nil,nil` will be
+returned.
 
 #### func (Tokens) IndentBasedChunks
 
@@ -272,6 +275,8 @@ subsequent 'indented' (`LineIndex` > `minIndent`) lines also belong to it.
 ```go
 func (me Tokens) SansComments() (sans Tokens)
 ```
+SansComments returns the newly allocated `sans` with a `cap` of `len(me)` and
+containing all `Tokens` in `me` except `TokenComment`s.
 
 #### func (Tokens) SubTokens
 

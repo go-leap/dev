@@ -3,33 +3,29 @@ package udevlex
 type Tokens []IToken
 
 func (me Tokens) BreakOnIndent() (indented Tokens, outdented Tokens) {
-	ln, out, minindent := me[0].Meta().Line, false, me[0].Meta().LineIndent
-	for _, tok := range me {
-		if out {
-			outdented = append(outdented, tok)
-		} else if tpos := tok.Meta(); tpos.Line != ln && tpos.LineIndent <= minindent {
-			ln, out, outdented = tpos.Line, true, append(outdented, tok)
-		} else {
-			indented = append(indented, tok)
+	ln, minindent := me[0].Meta().Line, me[0].Meta().LineIndent
+	for i := 1; i < len(me); i++ {
+		if tpos := me[i].Meta(); tpos.Line != ln && tpos.LineIndent <= minindent {
+			indented, outdented = me[:i], me[i:]
+			return
 		}
 	}
+	indented = me
 	return
 }
 
+// BreakOnOther returns all `Tokens` preceding and succeeding the next occurence of the specified `TokenOther` in `me`, if any — otherwise, `nil,nil` will be returned.
 func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
-	var insuffix bool
-	for _, tok := range me {
-		if insuffix {
-			suff = append(suff, tok)
-		} else if toth, _ := tok.(*TokenOther); toth != nil && toth.Token == token {
-			insuffix = true
-		} else {
-			pref = append(pref, tok)
+	for i, tok := range me {
+		if toth, _ := tok.(*TokenOther); toth != nil && toth.Token == token {
+			pref, suff = me[:i], me[i+1:]
+			return
 		}
 	}
 	return
 }
 
+// SansComments returns the newly allocated `sans` with a `cap` of `len(me)` and containing all `Tokens` in `me` except `TokenComment`s.
 func (me Tokens) SansComments() (sans Tokens) {
 	sans = make(Tokens, 0, len(me))
 	for _, tok := range me {
@@ -42,8 +38,7 @@ func (me Tokens) SansComments() (sans Tokens) {
 
 func (me Tokens) SubTokens(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int) {
 	sep, _ := me[0].(*TokenSep)
-	tail = me
-	if sep == nil || sep.Token != sepOpen {
+	if tail = me; sep == nil || sep.Token != sepOpen {
 		return
 	}
 

@@ -28,7 +28,10 @@ func Lex(filePath string, src string, standAloneSeps ...string) (tokens Tokens, 
 
 	on := func(token IToken) {
 		if otheraccum != nil {
-			otheraccum, tokens = nil, append(tokens, otheraccum)
+			if len(errs) == 0 {
+				tokens = append(tokens, otheraccum)
+			}
+			otheraccum = nil
 		}
 		if onlyspacesinlinesofar = false; len(errs) == 0 && token != nil {
 			token.init(&lexer.Position, lineindent)
