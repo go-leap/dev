@@ -233,12 +233,24 @@ If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
 ```go
 func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent string) (pref Tokens, suff Tokens, numUnclosed int)
 ```
+BreakOnIdent finds the desired occurrence of `needleIdent` in `me`, then returns
+in `pref` all `Tokens` preceding it and in `suff` all following it. If
+`skipForEachOccurrenceOfIdent` is given, then for every encountered `TokenIdent`
+occurrence of it one `needleIdent` occurrence will be skipped. If `numUnclosed`
+is not `0`, this typically indicates a syntax error depending on the language
+being lexed; strictly speaking it denotes the number of skipped-and-not-closed
+occurrences of `skipForEachOccurrenceOfIdent`. Unless a correct break position
+was found, `pref` and `suff` will both be `nil`.
 
 #### func (Tokens) BreakOnIndent
 
 ```go
 func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens)
 ```
+BreakOnIndent returns in `indented` all `Tokens` on the same line as the first
+in `me`, plus all subsequent `Tokens` with `LineIndent` greater than
+`minIndent`; and in `outdented` the first and all following `Tokens` with a
+`LineIndent` less-or-equal (if any).
 
 #### func (Tokens) BreakOnOther
 
@@ -246,7 +258,7 @@ func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens
 func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens)
 ```
 BreakOnOther returns all `Tokens` preceding and succeeding the next occurence of
-the specified `TokenOther` in `me`, if any — otherwise, `nil,nil` will be
+the specified `TokenOther` in `me`, if any — otherwise, `me,nil` will be
 returned.
 
 #### func (Tokens) IndentBasedChunks
@@ -272,8 +284,15 @@ containing all `Tokens` in `me` except `TokenComment`s.
 func (me Tokens) String() string
 ```
 
-#### func (Tokens) SubTokens
+#### func (Tokens) Sub
 
 ```go
-func (me Tokens) SubTokens(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int)
+func (me Tokens) Sub(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int)
 ```
+Sub assumes (but won't check: up to the caller) that `me` begins with a
+`TokenSep` of `sepOpen` and returns in `sub` the subsequence of `Tokens` up
+until a matching `TokenSep` of `sepClose`. If no correct subsequence is found,
+`sub` is `nil` and `tail` is `me` (and `numUnclosed` might be non-`0` to
+indicate the number of unclosed groupings) — otherwise `sub` is the subsequence
+immediately following the opening `sepOpen` up to and excluding the matching
+`sepClose`, and `tail` is all trailing `Tokens` immediately following it.

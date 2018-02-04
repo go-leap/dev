@@ -2,10 +2,11 @@ package udevlex
 
 type Tokens []IToken
 
+// BreakOnIndent returns in `indented` all `Tokens` on the same line as the first in `me`, plus all subsequent `Tokens` with `LineIndent` greater than `minIndent`; and in `outdented` the first and all following `Tokens` with a `LineIndent` less-or-equal (if any).
 func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens) {
-	ln := me[0].Meta().Line
+	linenum := me[0].Meta().Line
 	for i := 1; i < len(me); i++ {
-		if tpos := me[i].Meta(); tpos.Line != ln && tpos.LineIndent <= minIndent {
+		if tpos := me[i].Meta(); tpos.Line != linenum && tpos.LineIndent <= minIndent {
 			indented, outdented = me[:i], me[i:]
 			return
 		}
@@ -14,12 +15,17 @@ func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens
 	return
 }
 
+// BreakOnIdent finds the desired occurrence of `needleIdent` in `me`, then returns in `pref` all `Tokens` preceding it and in `suff` all following it.
+// If `skipForEachOccurrenceOfIdent` is given, then for every encountered `TokenIdent` occurrence of it one `needleIdent` occurrence will be skipped.
+// If `numUnclosed` is not `0`, this typically indicates a syntax error depending on the language being lexed; strictly speaking it denotes the number of skipped-and-not-closed occurrences of `skipForEachOccurrenceOfIdent`.
+// Unless a correct break position was found, `pref` and `suff` will both be `nil`.
 func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent string) (pref Tokens, suff Tokens, numUnclosed int) {
 	for i, tok := range me {
-		if tid, _ := tok.(*TokenIdent); tid != nil {
-			if tid.Token == skipForEachOccurrenceOfIdent {
+		if tid, isid := tok.(*TokenIdent); isid {
+			switch tid.Token {
+			case skipForEachOccurrenceOfIdent:
 				numUnclosed++
-			} else if tid.Token == needleIdent {
+			case needleIdent:
 				if numUnclosed > 0 {
 					numUnclosed--
 				} else {
@@ -32,11 +38,11 @@ func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent s
 	return
 }
 
-// BreakOnOther returns all `Tokens` preceding and succeeding the next occurence of the specified `TokenOther` in `me`, if any — otherwise, `nil,nil` will be returned.
+// BreakOnOther returns all `Tokens` preceding and succeeding the next occurence of the specified `TokenOther` in `me`, if any — otherwise, `me,nil` will be returned.
 func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
 	pref = me
 	for i, tok := range me {
-		if toth, _ := tok.(*TokenOther); toth != nil && toth.Token == token {
+		if toth, isoth := tok.(*TokenOther); isoth && toth.Token == token {
 			pref, suff = me[:i], me[i+1:]
 			return
 		}
@@ -48,17 +54,23 @@ func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
 func (me Tokens) SansComments() (sans Tokens) {
 	sans = make(Tokens, 0, len(me))
 	for _, tok := range me {
-		if tcmnt, _ := tok.(*TokenComment); tcmnt == nil {
+		if _, iscmnt := tok.(*TokenComment); !iscmnt {
 			sans = append(sans, tok)
 		}
 	}
 	return
 }
 
-func (me Tokens) SubTokens(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int) {
+// Sub assumes (but won't check: up to the caller) that `me` begins with a `TokenSep` of
+// `sepOpen` and returns in `sub` the subsequence of `Tokens` up until a matching `TokenSep` of
+// `sepClose`. If no correct subsequence is found, `sub` is `nil` and `tail` is `me` (and
+// `numUnclosed` might be non-`0` to indicate the number of unclosed groupings) — otherwise `sub`
+// is the  subsequence immediately following the opening `sepOpen` up to and excluding the matching
+// `sepClose`, and `tail` is all trailing `Tokens` immediately following it.
+func (me Tokens) Sub(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int) {
 	tail = me
 	for i := 1; i < len(me); i++ {
-		if sep, _ := me[i].(*TokenSep); sep != nil {
+		if sep, issep := me[i].(*TokenSep); issep {
 			if sep.Token == sepOpen {
 				numUnclosed++
 			} else if sep.Token == sepClose {
@@ -78,16 +90,16 @@ func (me Tokens) SubTokens(sepOpen string, sepClose string) (sub Tokens, tail To
 // 'chunk' and any subsequent 'indented' (`LineIndex` > `minIndent`) lines also belong to it.
 func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens) {
 	var cur int
-	for i, ln, l := 0, 1, len(me); i < l; i++ {
+	for i, linenum, l := 0, 1, len(me); i < l; i++ {
 		if i == l-1 {
 			if tlc := me[cur:]; len(tlc) > 0 {
 				chunks = append(chunks, tlc)
 			}
-		} else if tpos := me[i].Meta(); tpos.LineIndent <= minIndent && tpos.Line != ln {
+		} else if tpos := me[i].Meta(); tpos.LineIndent <= minIndent && tpos.Line != linenum {
 			if tlc := me[cur:i]; len(tlc) > 0 {
 				chunks = append(chunks, tlc)
 			}
-			cur, ln = i, tpos.Line
+			cur, linenum = i, tpos.Line
 		}
 	}
 	return
