@@ -111,7 +111,7 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 					} else if unaccum(); r == '\n' {
 						lineindent, onlyspacesinlinesofar = 0, true
 					} else if restrictedWhitespace && r != ' ' {
-						lexer.Error(nil, "invalid white-space: only newline and space permissible")
+						lexer.Error(nil, "illegal white-space "+strconv.QuoteRune(r)+": only '\\n' and ' ' permissible")
 					} else if onlyspacesinlinesofar {
 						lineindent++
 					}
