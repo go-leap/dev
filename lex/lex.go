@@ -29,16 +29,16 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 	unaccum := func() {
 		if otheraccum != nil {
 			if len(errs) == 0 {
-				tokens = append(tokens, otheraccum)
+				otheraccum.Orig, tokens = otheraccum.Token, append(tokens, otheraccum)
 			}
 			otheraccum = nil
 		}
 	}
 
-	on := func(token IToken) {
+	on := func(origSym string, token IToken) {
 		unaccum()
 		if onlyspacesinlinesofar = false; len(errs) == 0 {
-			token.init(&lexer.Position, lineindent)
+			token.init(&lexer.Position, lineindent, origSym)
 			tokens = append(tokens, token)
 		}
 	}
@@ -47,10 +47,10 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 		sym := lexer.TokenText()
 		switch tok {
 		case scanner.Ident:
-			on(&TokenIdent{Token: sym})
+			on(sym, &TokenIdent{Token: sym})
 		case scanner.Char:
 			if c, _, _, errchr := strconv.UnquoteChar(sym[1:], '\''); errchr == nil {
-				on(&TokenRune{Token: c})
+				on(sym, &TokenRune{Token: c})
 			} else {
 				lexer.Error(nil, errchr.Error())
 			}
@@ -59,13 +59,13 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 				if tok != scanner.RawString && strings.HasPrefix(sym, "`") && strings.HasSuffix(sym, "`") {
 					tok = scanner.RawString
 				}
-				on(&TokenStr{Token: s, Raw: tok == scanner.RawString})
+				on(sym, &TokenStr{Token: s, Raw: tok == scanner.RawString})
 			} else {
 				lexer.Error(nil, errstr.Error())
 			}
 		case scanner.Float:
 			if f, errfloat := strconv.ParseFloat(sym, 64); errfloat == nil {
-				on(&TokenFloat{Token: f})
+				on(sym, &TokenFloat{Token: f})
 			} else {
 				lexer.Error(nil, errfloat.Error())
 			}
@@ -80,15 +80,15 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 				if base == 0 {
 					base = 10
 				}
-				on(&TokenUint{Token: u, Base: base})
+				on(sym, &TokenUint{Token: u, Base: base})
 			} else {
 				lexer.Error(nil, erruint.Error())
 			}
 		case scanner.Comment:
 			if strings.HasPrefix(sym, "//") {
-				on(&TokenComment{SingleLine: true, Token: sym[2:]})
+				on(sym, &TokenComment{SingleLine: true, Token: sym[2:]})
 			} else if strings.HasPrefix(sym, "/*") && strings.HasSuffix(sym, "*/") {
-				on(&TokenComment{SingleLine: false, Token: sym[2 : len(sym)-2]})
+				on(sym, &TokenComment{SingleLine: false, Token: sym[2 : len(sym)-2]})
 			} else {
 				lexer.Error(nil, "unexpected comment format: "+sym)
 			}
@@ -96,7 +96,7 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 			var issep bool
 			for _, sep := range standAloneSeps {
 				if issep = sym == sep; issep {
-					on(&TokenSep{Token: sym})
+					on(sym, &TokenSep{Token: sym})
 					break
 				}
 			}
@@ -105,7 +105,7 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 					if !unicode.IsSpace(r) {
 						if onlyspacesinlinesofar = false; otheraccum == nil {
 							otheraccum = &TokenOther{Token: ""}
-							otheraccum.init(&lexer.Position, lineindent)
+							otheraccum.init(&lexer.Position, lineindent, "")
 						}
 						otheraccum.Token += sym
 					} else if unaccum(); r == '\n' {

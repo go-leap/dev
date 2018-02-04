@@ -50,19 +50,13 @@ type TokenComment struct {
 	Token string
 	TokenMeta
 
-	// SingleLine denotes whether the comment started with `//` (as opposed to `/*`), it does not actually reflect the number of lines in `Token`.
+	// SingleLine denotes whether the comment started with `//` (as opposed to `/*`), it does not actively denote the existence or absence of actual line-breaks in `Token`.
 	SingleLine bool
 }
 ```
 
 TokenComment holds a comment `string` that was scanned from a `// ..` or `/* ..
 */` fragment, sans the separators.
-
-#### func (*TokenComment) String
-
-```go
-func (me *TokenComment) String() string
-```
 
 #### type TokenFloat
 
@@ -74,12 +68,6 @@ type TokenFloat struct {
 ```
 
 TokenFloat holds a `float64` that was scanned from a floating-point literal.
-
-#### func (*TokenFloat) String
-
-```go
-func (me *TokenFloat) String() string
-```
 
 #### type TokenIdent
 
@@ -93,18 +81,13 @@ type TokenIdent struct {
 TokenIdent holds a `string` that was scanned from an unquoted alphanumeric range
 of characters.
 
-#### func (*TokenIdent) String
-
-```go
-func (me *TokenIdent) String() string
-```
-
 #### type TokenMeta
 
 ```go
 type TokenMeta struct {
 	scanner.Position
 	LineIndent int
+	Orig       string
 }
 ```
 
@@ -116,10 +99,10 @@ TokenMeta is embedded by all `Token` implementers.
 func (me *TokenMeta) Meta() *TokenMeta
 ```
 
-#### func (*TokenMeta) Pos
+#### func (*TokenMeta) String
 
 ```go
-func (me *TokenMeta) Pos() *TokenMeta
+func (me *TokenMeta) String() string
 ```
 
 #### type TokenOther
@@ -134,12 +117,6 @@ type TokenOther struct {
 TokenOther holds a `string` that is a consecutive sequence (1 or more
 characters) of anything-not-fitting-other-token-types.
 
-#### func (*TokenOther) String
-
-```go
-func (me *TokenOther) String() string
-```
-
 #### type TokenRune
 
 ```go
@@ -150,12 +127,6 @@ type TokenRune struct {
 ```
 
 TokenRune holds a `rune` that was scanned from a quoted literal.
-
-#### func (*TokenRune) String
-
-```go
-func (me *TokenRune) String() string
-```
 
 #### type TokenSep
 
@@ -169,12 +140,6 @@ type TokenSep struct {
 TokenSep holds a (uni-`rune`) `string` that matched one of `Lex`s specified
 `standAloneSeps`.
 
-#### func (*TokenSep) String
-
-```go
-func (me *TokenSep) String() string
-```
-
 #### type TokenStr
 
 ```go
@@ -187,12 +152,6 @@ type TokenStr struct {
 
 TokenStr holds the unquoted `string` that was scanned from a quoted literal.
 
-#### func (*TokenStr) String
-
-```go
-func (me *TokenStr) String() (s string)
-```
-
 #### type TokenUint
 
 ```go
@@ -204,12 +163,6 @@ type TokenUint struct {
 ```
 
 TokenUint holds an `uint64` that was scanned from an integral literal.
-
-#### func (*TokenUint) String
-
-```go
-func (me *TokenUint) String() string
-```
 
 #### type Tokens
 
