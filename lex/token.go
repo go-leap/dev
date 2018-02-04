@@ -8,7 +8,6 @@ import (
 // IToken is the interface implemented by the various `TokenFoo` structs in this package.
 type IToken interface {
 	fmt.Stringer
-	IPos
 	init(*scanner.Position, int)
 	Meta() *TokenMeta
 }

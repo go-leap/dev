@@ -29,29 +29,11 @@ func (me *Error) Error() string
 ```
 Error implements the `error` interface.
 
-#### type IPos
-
-```go
-type IPos interface {
-	Pos() *TokenMeta
-}
-```
-
-
-#### func  Pos
-
-```go
-func Pos(tokens Tokens, fallback IPos, fallbackFilePath string) IPos
-```
-Pos returns the last in `tokens`, or `fallback`, or a new `TokenMeta` at
-position 1,1 for `fallbackFilePath`.
-
 #### type IToken
 
 ```go
 type IToken interface {
 	fmt.Stringer
-	IPos
 
 	Meta() *TokenMeta
 	// contains filtered or unexported methods

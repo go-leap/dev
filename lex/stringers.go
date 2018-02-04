@@ -1,6 +1,7 @@
 package udevlex
 
 import (
+	"bytes"
 	"strconv"
 )
 
@@ -42,8 +43,17 @@ func (me *TokenRune) String() string {
 }
 
 func (me *TokenStr) String() (s string) {
-	if s = strconv.Quote(me.Token); me.Raw {
-		s = "`" + s[1:len(s)-1] + "`"
+	return strconv.Quote(me.Token)
+}
+
+func (me Tokens) String() string {
+	if len(me) == 0 {
+		return ""
 	}
-	return s
+	var buf bytes.Buffer
+	for _, tok := range me {
+		buf.WriteRune('·')
+		buf.WriteString(tok.String())
+	}
+	return buf.String()[1:]
 }
