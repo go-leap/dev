@@ -56,7 +56,7 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 			}
 		case scanner.RawString, scanner.String:
 			if s, errstr := strconv.Unquote(sym); errstr == nil {
-				if tok != scanner.RawString && strings.HasPrefix(sym, "`") && strings.HasSuffix(sym, "`") {
+				if tok != scanner.RawString && sym[0] == '`' && sym[len(sym)-1] == '`' {
 					tok = scanner.RawString
 				}
 				on(sym, &TokenStr{Token: s, Raw: tok == scanner.RawString})
@@ -85,17 +85,17 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 				lexer.Error(nil, erruint.Error())
 			}
 		case scanner.Comment:
-			if strings.HasPrefix(sym, "//") {
+			if l, sl := len(sym), sym[0] == '/'; l > 1 && sl && sym[1] == '/' {
 				on(sym, &TokenComment{SingleLine: true, Token: sym[2:]})
-			} else if strings.HasPrefix(sym, "/*") && strings.HasSuffix(sym, "*/") {
-				on(sym, &TokenComment{SingleLine: false, Token: sym[2 : len(sym)-2]})
+			} else if l > 3 && sl && sym[1] == '*' && sym[l-2] == '*' && sym[l-1] == '/' {
+				on(sym, &TokenComment{SingleLine: false, Token: sym[2 : l-2]})
 			} else {
 				lexer.Error(nil, "unexpected comment format: "+sym)
 			}
 		default:
 			var issep bool
 			for _, sep := range standAloneSeps {
-				if issep = sym == sep; issep {
+				if issep = (sym == sep); issep {
 					on(sym, &TokenSep{Token: sym})
 					break
 				}
