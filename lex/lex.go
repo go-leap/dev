@@ -29,7 +29,8 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 	unaccum := func() {
 		if otheraccum != nil {
 			if len(errs) == 0 {
-				otheraccum.Meta.Orig, tokens = otheraccum.Str, append(tokens, *otheraccum)
+				otheraccum.Meta.Orig = otheraccum.Str
+				tokens = append(tokens, *otheraccum)
 			}
 			otheraccum = nil
 		}
