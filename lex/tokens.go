@@ -8,9 +8,9 @@ type Tokens []Token
 
 // BreakOnIndent returns in `indented` all `Tokens` on the same line as the first in `me`, plus all subsequent `Tokens` with `LineIndent` greater than `minIndent`; and in `outdented` the first and all following `Tokens` with a `LineIndent` less-or-equal (if any).
 func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens) {
-	linenum := me[0].Meta().Line
+	linenum := me[0].Meta.Line
 	for i := 1; i < len(me); i++ {
-		if tpos := me[i].Meta(); tpos.Line != linenum && tpos.LineIndent <= minIndent {
+		if me[i].Meta.Line != linenum && me[i].Meta.LineIndent <= minIndent {
 			indented, outdented = me[:i], me[i:]
 			return
 		}
@@ -25,7 +25,7 @@ func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens
 // Unless a correct break position was found, `pref` and `suff` will both be `nil`.
 func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent string) (pref Tokens, suff Tokens, numUnclosed int) {
 	for i := 0; i < len(me); i++ {
-		if me[i].Kind() == TOKEN_IDENT {
+		if me[i].flag == TOKEN_IDENT {
 			switch me[i].Str {
 			case skipForEachOccurrenceOfIdent:
 				numUnclosed++
@@ -46,7 +46,7 @@ func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent s
 func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
 	pref = me
 	for i := 0; i < len(me); i++ {
-		if me[i].Kind() == TOKEN_OTHER && me[i].Str == token {
+		if me[i].flag == TOKEN_OTHER && me[i].Str == token {
 			pref, suff = me[:i], me[i+1:]
 			return
 		}
@@ -58,7 +58,7 @@ func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
 func (me Tokens) SansComments() (sans Tokens) {
 	sans = make(Tokens, 0, len(me))
 	for i := 0; i < len(me); i++ {
-		if me[i].Kind() != TOKEN_COMMENT {
+		if me[i].flag != TOKEN_COMMENT && me[i].flag != _TOKEN_COMMENT_LONG {
 			sans = append(sans, me[i])
 		}
 	}
@@ -74,7 +74,7 @@ func (me Tokens) SansComments() (sans Tokens) {
 func (me Tokens) Sub(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int) {
 	tail = me
 	for i := 1; i < len(me); i++ {
-		if me[i].Kind() == TOKEN_SEP {
+		if me[i].flag == TOKEN_SEP {
 			if me[i].Str == sepOpen {
 				numUnclosed++
 			} else if me[i].Str == sepClose {
@@ -99,11 +99,11 @@ func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens) {
 			if tlc := me[cur:]; len(tlc) > 0 {
 				chunks = append(chunks, tlc)
 			}
-		} else if tpos := me[i].Meta(); tpos.LineIndent <= minIndent && tpos.Line != linenum {
+		} else if me[i].Meta.LineIndent <= minIndent && me[i].Meta.Line != linenum {
 			if tlc := me[cur:i]; len(tlc) > 0 {
 				chunks = append(chunks, tlc)
 			}
-			cur, linenum = i, tpos.Line
+			cur, linenum = i, me[i].Meta.Line
 		}
 	}
 	return

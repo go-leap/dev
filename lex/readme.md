@@ -33,7 +33,7 @@ Error implements the `error` interface.
 
 ```go
 type Token struct {
-	TokenMeta
+	Meta TokenMeta
 
 	Str   string
 	Float float64
@@ -64,6 +64,12 @@ func (me *Token) Kind() (kind TokenKind)
 
 ```go
 func (me *Token) Rune() (r rune)
+```
+
+#### func (*Token) String
+
+```go
+func (me *Token) String() string
 ```
 
 #### func (*Token) UintBase
@@ -102,18 +108,6 @@ type TokenMeta struct {
 }
 ```
 
-
-#### func (*TokenMeta) Meta
-
-```go
-func (me *TokenMeta) Meta() *TokenMeta
-```
-
-#### func (*TokenMeta) String
-
-```go
-func (me *TokenMeta) String() string
-```
 
 #### type Tokens
 

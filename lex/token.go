@@ -21,7 +21,7 @@ const ( // note, order of enumerants in being relied-on in Kind()
 )
 
 type Token struct {
-	TokenMeta
+	Meta TokenMeta
 
 	Str   string
 	Float float64
@@ -39,7 +39,6 @@ func (me *Token) Kind() (kind TokenKind) {
 		} else if kind == _TOKEN_STR_RAW {
 			kind = TOKEN_STR
 		}
-
 	}
 	return
 }
@@ -60,6 +59,10 @@ func (me *Token) UintBase() int {
 	return me.flag
 }
 
+func (me *Token) String() string {
+	return me.Meta.Orig
+}
+
 type TokenMeta struct {
 	scanner.Position
 	LineIndent int
@@ -68,12 +71,4 @@ type TokenMeta struct {
 
 func (me *TokenMeta) init(pos *scanner.Position, indent int, orig string) {
 	me.Position, me.LineIndent, me.Orig = *pos, indent, orig
-}
-
-func (me *TokenMeta) Meta() *TokenMeta {
-	return me
-}
-
-func (me *TokenMeta) String() string {
-	return me.Orig
 }

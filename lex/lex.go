@@ -29,7 +29,7 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 	unaccum := func() {
 		if otheraccum != nil {
 			if len(errs) == 0 {
-				otheraccum.Orig, tokens = otheraccum.Str, append(tokens, *otheraccum)
+				otheraccum.Meta.Orig, tokens = otheraccum.Str, append(tokens, *otheraccum)
 			}
 			otheraccum = nil
 		}
@@ -38,7 +38,7 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 	on := func(origSym string, token Token) {
 		unaccum()
 		if onlyspacesinlinesofar = false; len(errs) == 0 {
-			token.init(&lexer.Position, lineindent, origSym)
+			token.Meta.init(&lexer.Position, lineindent, origSym)
 			tokens = append(tokens, token)
 		}
 	}
@@ -109,7 +109,7 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 					if !unicode.IsSpace(r) {
 						if onlyspacesinlinesofar = false; otheraccum == nil {
 							otheraccum = &Token{flag: TOKEN_OTHER}
-							otheraccum.init(&lexer.Position, lineindent, "")
+							otheraccum.Meta.init(&lexer.Position, lineindent, "")
 						}
 						otheraccum.Str += sym
 					} else if unaccum(); r == '\n' {
