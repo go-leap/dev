@@ -16,7 +16,7 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 		onlyspacesinlinesofar = true
 		lineindent            int
 		lexer                 scanner.Scanner
-		otheraccum            *TokenOther
+		otheraccum            *Token
 	)
 	lexer.Init(strings.NewReader(src)).Filename = filePath
 	lexer.Whitespace, lexer.Mode = 1<<'\r', scanner.ScanChars|scanner.ScanComments|scanner.ScanFloats|scanner.ScanIdents|scanner.ScanInts|scanner.ScanRawStrings|scanner.ScanStrings
@@ -29,13 +29,13 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 	unaccum := func() {
 		if otheraccum != nil {
 			if len(errs) == 0 {
-				otheraccum.Orig, tokens = otheraccum.Token, append(tokens, otheraccum)
+				otheraccum.Orig, tokens = otheraccum.Str, append(tokens, *otheraccum)
 			}
 			otheraccum = nil
 		}
 	}
 
-	on := func(origSym string, token IToken) {
+	on := func(origSym string, token Token) {
 		unaccum()
 		if onlyspacesinlinesofar = false; len(errs) == 0 {
 			token.init(&lexer.Position, lineindent, origSym)
@@ -47,10 +47,10 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 		sym := lexer.TokenText()
 		switch tok {
 		case scanner.Ident:
-			on(sym, &TokenIdent{Token: sym})
+			on(sym, Token{flag: TOKEN_IDENT, Str: sym})
 		case scanner.Char:
 			if c, _, _, errchr := strconv.UnquoteChar(sym[1:], '\''); errchr == nil {
-				on(sym, &TokenRune{Token: c})
+				on(sym, Token{flag: TOKEN_RUNE, Uint: uint64(c)})
 			} else {
 				lexer.Error(nil, errchr.Error())
 			}
@@ -59,13 +59,17 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 				if tok != scanner.RawString && sym[0] == '`' && sym[len(sym)-1] == '`' {
 					tok = scanner.RawString
 				}
-				on(sym, &TokenStr{Token: s, Raw: tok == scanner.RawString})
+				flag := TOKEN_STR
+				if tok == scanner.RawString {
+					flag = _TOKEN_STR_RAW
+				}
+				on(sym, Token{flag: flag, Str: s})
 			} else {
 				lexer.Error(nil, errstr.Error())
 			}
 		case scanner.Float:
 			if f, errfloat := strconv.ParseFloat(sym, 64); errfloat == nil {
-				on(sym, &TokenFloat{Token: f})
+				on(sym, Token{flag: TOKEN_FLOAT, Float: f})
 			} else {
 				lexer.Error(nil, errfloat.Error())
 			}
@@ -80,15 +84,15 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 				if base == 0 {
 					base = 10
 				}
-				on(sym, &TokenUint{Token: u, Base: base})
+				on(sym, Token{flag: base, Uint: u})
 			} else {
 				lexer.Error(nil, erruint.Error())
 			}
 		case scanner.Comment:
 			if l, sl := len(sym), sym[0] == '/'; l > 1 && sl && sym[1] == '/' {
-				on(sym, &TokenComment{SingleLine: true, Token: sym[2:]})
+				on(sym, Token{flag: TOKEN_COMMENT, Str: sym[2:]})
 			} else if l > 3 && sl && sym[1] == '*' && sym[l-2] == '*' && sym[l-1] == '/' {
-				on(sym, &TokenComment{SingleLine: false, Token: sym[2 : l-2]})
+				on(sym, Token{flag: _TOKEN_COMMENT_LONG, Str: sym[2 : l-2]})
 			} else {
 				lexer.Error(nil, "unexpected comment format: "+sym)
 			}
@@ -96,7 +100,7 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 			var issep bool
 			for _, sep := range standAloneSeps {
 				if issep = (sym == sep); issep {
-					on(sym, &TokenSep{Token: sym})
+					on(sym, Token{flag: TOKEN_SEP, Str: sym})
 					break
 				}
 			}
@@ -104,10 +108,10 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 				for _, r := range sym { // as of today, at this point len(sym)==1 always. but we need the r anyway and the iteration would logically hold even for a longer sym
 					if !unicode.IsSpace(r) {
 						if onlyspacesinlinesofar = false; otheraccum == nil {
-							otheraccum = &TokenOther{Token: ""}
+							otheraccum = &Token{flag: TOKEN_OTHER}
 							otheraccum.init(&lexer.Position, lineindent, "")
 						}
-						otheraccum.Token += sym
+						otheraccum.Str += sym
 					} else if unaccum(); r == '\n' {
 						lineindent, onlyspacesinlinesofar = 0, true
 					} else if restrictedWhitespace && r != ' ' {

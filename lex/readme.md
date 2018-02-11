@@ -29,57 +29,68 @@ func (me *Error) Error() string
 ```
 Error implements the `error` interface.
 
-#### type IToken
+#### type Token
 
 ```go
-type IToken interface {
-	fmt.Stringer
-
-	Meta() *TokenMeta
-	// contains filtered or unexported methods
-}
-```
-
-IToken is the interface implemented by the various `TokenFoo` structs in this
-package.
-
-#### type TokenComment
-
-```go
-type TokenComment struct {
-	Token string
+type Token struct {
 	TokenMeta
 
-	// SingleLine denotes whether the comment started with `//` (as opposed to `/*`), it does not actively denote the existence or absence of actual line-breaks in `Token`.
-	SingleLine bool
+	Str   string
+	Float float64
+	Uint  uint64
 }
 ```
 
-TokenComment holds a comment `string` that was scanned from a `// ..` or `/* ..
-*/` fragment, sans the separators.
 
-#### type TokenFloat
+#### func (*Token) IsCommentLong
 
 ```go
-type TokenFloat struct {
-	TokenMeta
-	Token float64
-}
+func (me *Token) IsCommentLong() bool
 ```
 
-TokenFloat holds a `float64` that was scanned from a floating-point literal.
-
-#### type TokenIdent
+#### func (*Token) IsStrRaw
 
 ```go
-type TokenIdent struct {
-	Token string
-	TokenMeta
-}
+func (me *Token) IsStrRaw() bool
 ```
 
-TokenIdent holds a `string` that was scanned from an unquoted alphanumeric range
-of characters.
+#### func (*Token) Kind
+
+```go
+func (me *Token) Kind() (kind TokenKind)
+```
+
+#### func (*Token) Rune
+
+```go
+func (me *Token) Rune() (r rune)
+```
+
+#### func (*Token) UintBase
+
+```go
+func (me *Token) UintBase() int
+```
+
+#### type TokenKind
+
+```go
+type TokenKind = int
+```
+
+
+```go
+const (
+	TOKEN_STR TokenKind
+	TOKEN_COMMENT
+	TOKEN_FLOAT
+	TOKEN_IDENT
+	TOKEN_OTHER
+	TOKEN_SEP
+	TOKEN_RUNE
+	TOKEN_UINT
+)
+```
 
 #### type TokenMeta
 
@@ -91,7 +102,6 @@ type TokenMeta struct {
 }
 ```
 
-TokenMeta is embedded by all `Token` implementers.
 
 #### func (*TokenMeta) Meta
 
@@ -105,69 +115,10 @@ func (me *TokenMeta) Meta() *TokenMeta
 func (me *TokenMeta) String() string
 ```
 
-#### type TokenOther
-
-```go
-type TokenOther struct {
-	Token string
-	TokenMeta
-}
-```
-
-TokenOther holds a `string` that is a consecutive sequence (1 or more
-characters) of anything-not-fitting-other-token-types.
-
-#### type TokenRune
-
-```go
-type TokenRune struct {
-	TokenMeta
-	Token rune
-}
-```
-
-TokenRune holds a `rune` that was scanned from a quoted literal.
-
-#### type TokenSep
-
-```go
-type TokenSep struct {
-	Token string
-	TokenMeta
-}
-```
-
-TokenSep holds a (uni-`rune`) `string` that matched one of `Lex`s specified
-`standAloneSeps`.
-
-#### type TokenStr
-
-```go
-type TokenStr struct {
-	Token string
-	TokenMeta
-	Raw bool
-}
-```
-
-TokenStr holds the unquoted `string` that was scanned from a quoted literal.
-
-#### type TokenUint
-
-```go
-type TokenUint struct {
-	TokenMeta
-	Base  int
-	Token uint64
-}
-```
-
-TokenUint holds an `uint64` that was scanned from an integral literal.
-
 #### type Tokens
 
 ```go
-type Tokens []IToken
+type Tokens []Token
 ```
 
 

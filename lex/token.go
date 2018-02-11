@@ -1,71 +1,65 @@
 package udevlex
 
 import (
-	"fmt"
 	"text/scanner"
 )
 
-// IToken is the interface implemented by the various `TokenFoo` structs in this package.
-type IToken interface {
-	fmt.Stringer
-	init(*scanner.Position, int, string)
-	Meta() *TokenMeta
-}
+type TokenKind = int
 
-// TokenRune holds a `rune` that was scanned from a quoted literal.
-type TokenRune struct {
+const ( // note, order of enumerants in being relied-on in Kind()
+	_ TokenKind = 16 + iota
+	_TOKEN_STR_RAW
+	_TOKEN_COMMENT_LONG
+	TOKEN_STR
+	TOKEN_COMMENT
+	TOKEN_FLOAT
+	TOKEN_IDENT
+	TOKEN_OTHER
+	TOKEN_SEP
+	TOKEN_RUNE
+	TOKEN_UINT
+)
+
+type Token struct {
 	TokenMeta
-	Token rune
+
+	Str   string
+	Float float64
+	Uint  uint64
+
+	flag int
 }
 
-// TokenComment holds a comment `string` that was scanned from a `// ..` or `/* .. */` fragment, sans the separators.
-type TokenComment struct {
-	Token string
-	TokenMeta
+func (me *Token) Kind() (kind TokenKind) {
+	if kind = me.flag; kind < TOKEN_STR {
+		if kind < _TOKEN_STR_RAW {
+			kind = TOKEN_UINT
+		} else if kind == _TOKEN_COMMENT_LONG {
+			kind = TOKEN_COMMENT
+		} else if kind == _TOKEN_STR_RAW {
+			kind = TOKEN_STR
+		}
 
-	// SingleLine denotes whether the comment started with `//` (as opposed to `/*`), it does not actively denote the existence or absence of actual line-breaks in `Token`.
-	SingleLine bool
+	}
+	return
 }
 
-// TokenFloat holds a `float64` that was scanned from a floating-point literal.
-type TokenFloat struct {
-	TokenMeta
-	Token float64
+func (me *Token) IsCommentLong() bool {
+	return me.flag == _TOKEN_COMMENT_LONG
 }
 
-// TokenIdent holds a `string` that was scanned from an unquoted alphanumeric range of characters.
-type TokenIdent struct {
-	Token string
-	TokenMeta
+func (me *Token) IsStrRaw() bool {
+	return me.flag == _TOKEN_STR_RAW
 }
 
-// TokenOther holds a `string` that is a consecutive sequence (1 or more characters) of anything-not-fitting-other-token-types.
-type TokenOther struct {
-	Token string
-	TokenMeta
+func (me *Token) Rune() (r rune) {
+	return rune(me.Uint)
 }
 
-// TokenSep holds a (uni-`rune`) `string` that matched one of `Lex`s specified `standAloneSeps`.
-type TokenSep struct {
-	Token string
-	TokenMeta
+func (me *Token) UintBase() int {
+	return me.flag
 }
 
-// TokenStr holds the unquoted `string` that was scanned from a quoted literal.
-type TokenStr struct {
-	Token string
-	TokenMeta
-	Raw bool
-}
-
-// TokenUint holds an `uint64` that was scanned from an integral literal.
-type TokenUint struct {
-	TokenMeta
-	Base  int
-	Token uint64
-}
-
-// TokenMeta is embedded by all `Token` implementers.
 type TokenMeta struct {
 	scanner.Position
 	LineIndent int
@@ -78,4 +72,8 @@ func (me *TokenMeta) init(pos *scanner.Position, indent int, orig string) {
 
 func (me *TokenMeta) Meta() *TokenMeta {
 	return me
+}
+
+func (me *TokenMeta) String() string {
+	return me.Orig
 }

@@ -1,6 +1,10 @@
 package udevlex
 
-type Tokens []IToken
+import (
+	"bytes"
+)
+
+type Tokens []Token
 
 // BreakOnIndent returns in `indented` all `Tokens` on the same line as the first in `me`, plus all subsequent `Tokens` with `LineIndent` greater than `minIndent`; and in `outdented` the first and all following `Tokens` with a `LineIndent` less-or-equal (if any).
 func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens) {
@@ -20,9 +24,9 @@ func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens
 // If `numUnclosed` is not `0`, this typically indicates a syntax error depending on the language being lexed; strictly speaking it denotes the number of skipped-and-not-closed occurrences of `skipForEachOccurrenceOfIdent`.
 // Unless a correct break position was found, `pref` and `suff` will both be `nil`.
 func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent string) (pref Tokens, suff Tokens, numUnclosed int) {
-	for i, tok := range me {
-		if tid, isid := tok.(*TokenIdent); isid {
-			switch tid.Token {
+	for i := 0; i < len(me); i++ {
+		if me[i].Kind() == TOKEN_IDENT {
+			switch me[i].Str {
 			case skipForEachOccurrenceOfIdent:
 				numUnclosed++
 			case needleIdent:
@@ -41,8 +45,8 @@ func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent s
 // BreakOnOther returns all `Tokens` preceding and succeeding the next occurence of the specified `TokenOther` in `me`, if any — otherwise, `me,nil` will be returned.
 func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
 	pref = me
-	for i, tok := range me {
-		if toth, isoth := tok.(*TokenOther); isoth && toth.Token == token {
+	for i := 0; i < len(me); i++ {
+		if me[i].Kind() == TOKEN_OTHER && me[i].Str == token {
 			pref, suff = me[:i], me[i+1:]
 			return
 		}
@@ -53,9 +57,9 @@ func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
 // SansComments returns the newly allocated `sans` with a `cap` of `len(me)` and containing all `Tokens` in `me` except `TokenComment`s.
 func (me Tokens) SansComments() (sans Tokens) {
 	sans = make(Tokens, 0, len(me))
-	for _, tok := range me {
-		if _, iscmnt := tok.(*TokenComment); !iscmnt {
-			sans = append(sans, tok)
+	for i := 0; i < len(me); i++ {
+		if me[i].Kind() != TOKEN_COMMENT {
+			sans = append(sans, me[i])
 		}
 	}
 	return
@@ -70,10 +74,10 @@ func (me Tokens) SansComments() (sans Tokens) {
 func (me Tokens) Sub(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int) {
 	tail = me
 	for i := 1; i < len(me); i++ {
-		if sep, issep := me[i].(*TokenSep); issep {
-			if sep.Token == sepOpen {
+		if me[i].Kind() == TOKEN_SEP {
+			if me[i].Str == sepOpen {
 				numUnclosed++
-			} else if sep.Token == sepClose {
+			} else if me[i].Str == sepClose {
 				if numUnclosed == 0 {
 					sub, tail = me[1:i], me[i+1:]
 					return
@@ -103,4 +107,16 @@ func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens) {
 		}
 	}
 	return
+}
+
+func (me Tokens) String() string {
+	if len(me) == 0 {
+		return ""
+	}
+	var buf bytes.Buffer
+	for i := 0; i < len(me); i++ {
+		buf.WriteRune('·')
+		buf.WriteString(me[i].String())
+	}
+	return buf.String()[1:]
 }
