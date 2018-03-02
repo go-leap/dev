@@ -274,7 +274,7 @@ func QueryDefLoc_Godef(fullsrcfilepath string, srcin string, bytepos string) *ud
 
 func QueryDefDecl_GoDef(fullsrcfilepath string, srcin string, bytepos string) (defdecl string) {
 	foreachln := func(ln string) string {
-		if l, _ := ustr.BreakOnFirst(ln, ":"); l == "godef" || ufs.IsFile(l) || len(l) == 1 || ln == "-" {
+		if l, _ := ustr.BreakOnFirstOrSuff(ln, ":"); l == "godef" || ufs.IsFile(l) || len(l) == 1 || ln == "-" {
 			return ""
 		}
 		return ln
@@ -351,7 +351,7 @@ func Query_Gogetdoc(fullsrcfilepath string, srcin string, bytepos string, onlyDo
 				}
 				if err == nil {
 					if ggd.Type != "" {
-						_, ggd.Type = ustr.BreakOnFirst(ggd.Type, " ")
+						_, ggd.Type = ustr.BreakOnFirstOrSuff(ggd.Type, " ")
 						_, ggd.Type = ustr.BreakOnLast(ggd.Type, ".")
 					}
 					if ggd.Type = ustr.TrimL(ggd.Type, "*[]"); len(ggd.Type) > 0 {
