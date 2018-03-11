@@ -400,9 +400,9 @@ func pkgAfterRefreshUpdateGuruScopeExcls() {
 
 func PkgImpPathsToNamesInLn(ln string, curPkgDir string) string {
 	if PkgsByImP != nil {
-		if isla := ustr.Idx(ln, '/'); isla >= 0 {
+		if isla := ustr.IdxB(ln, '/'); isla >= 0 {
 			isla1 := isla + 1
-			if idot := ustr.Idx(ln[isla1:], '.'); idot > 0 {
+			if idot := ustr.IdxB(ln[isla1:], '.'); idot > 0 {
 				ipos, imppath := 0, ln[:isla1+idot]
 				for ir, r := range imppath {
 					if r == '/' {

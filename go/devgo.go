@@ -124,8 +124,8 @@ func HasGoDevEnv() bool {
 		}
 	}
 
-	i, l := ustr.Idx(GoVersion, '.'), ustr.Last(GoVersion, ".")
-	for GoVersionShort = GoVersion; l > i; l = ustr.Last(GoVersionShort, ".") {
+	i, l := ustr.IdxB(GoVersion, '.'), ustr.LastB(GoVersion, '.')
+	for GoVersionShort = GoVersion; l > i; l = ustr.LastB(GoVersionShort, '.') {
 		GoVersionShort = GoVersionShort[:l]
 	}
 
