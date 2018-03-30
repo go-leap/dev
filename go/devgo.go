@@ -88,9 +88,9 @@ func HasGoDevEnv() bool {
 	}
 
 	//  GoVersion
-	if cmdout, cmderr, err = urun.CmdExec("go", "tool", "dist", "version"); err == nil && cmderr == "" && cmdout != "" {
-		GoVersion = ustr.Trim(cmdout)
-	}
+	// if cmdout, cmderr, err = urun.CmdExec("go", "tool", "dist", "version"); err == nil && cmderr == "" && cmdout != "" {
+	// 	GoVersion = ustr.Trim(cmdout)
+	// }
 	if GoVersion == "" {
 		if cmdout, cmderr, err = urun.CmdExec("go", "version"); err == nil && cmderr == "" && cmdout != "" {
 			if GoVersion = ustr.TrimPref(ustr.Trim(cmdout), "go version "); GoVersion != "" {
