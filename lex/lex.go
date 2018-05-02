@@ -7,7 +7,7 @@ import (
 	"unicode"
 )
 
-// Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while lexing.
+// Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while lexing.
 //
 // If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
 func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps ...string) (tokens Tokens, errs []*Error) {

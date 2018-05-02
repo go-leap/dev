@@ -54,13 +54,20 @@ func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
 	return
 }
 
-// SansComments returns the newly allocated `sans` with a `cap` of `len(me)` and containing all `Tokens` in `me` except `TokenComment`s.
+// SansComments returns the newly allocated `sans` with a `cap` of `len(me)` and containing all `Tokens` in `me` except those with a `Kind` of `TOKEN_COMMENT`.
 func (me Tokens) SansComments() (sans Tokens) {
+	var nextcopypos int
 	sans = make(Tokens, 0, len(me))
 	for i := 0; i < len(me); i++ {
-		if me[i].flag != TOKEN_COMMENT && me[i].flag != _TOKEN_COMMENT_LONG {
-			sans = append(sans, me[i])
+		if nucount, iscomment := (nextcopypos < 0), me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_LONG; (!iscomment) && nucount {
+			nextcopypos = i
+		} else if iscomment && (!nucount) {
+			sans = append(sans, me[nextcopypos:i]...)
+			nextcopypos = -1
 		}
+	}
+	if nextcopypos >= 0 {
+		sans = append(sans, me[nextcopypos:]...)
 	}
 	return
 }

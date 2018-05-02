@@ -8,11 +8,11 @@ func Err(pos *scanner.Position, msg string) *Error {
 	return &Error{Pos: *pos, msg: msg}
 }
 
-// Error holds a message returned by `Error` and `String`, plus additional positional details.
+// Error holds a message returned by `Error`, plus additional positional details.
 type Error struct {
 	msg string
 	Pos scanner.Position
 }
 
-// Error implements the `error` interface.
+// Error implements Go's standard `error` interface.
 func (me *Error) Error() string { return me.msg }

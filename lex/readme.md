@@ -13,8 +13,7 @@ type Error struct {
 }
 ```
 
-Error holds a message returned by `Error` and `String`, plus additional
-positional details.
+Error holds a message returned by `Error`, plus additional positional details.
 
 #### func  Err
 
@@ -27,7 +26,7 @@ func Err(pos *scanner.Position, msg string) *Error
 ```go
 func (me *Error) Error() string
 ```
-Error implements the `error` interface.
+Error implements Go's standard `error` interface.
 
 #### type Token
 
@@ -121,7 +120,7 @@ type Tokens []Token
 ```go
 func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps ...string) (tokens Tokens, errs []*Error)
 ```
-Lex returns the `Token`s lexed from `src`, or all `LexError`s encountered while
+Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while
 lexing.
 
 If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
@@ -174,7 +173,7 @@ subsequent 'indented' (`LineIndex` > `minIndent`) lines also belong to it.
 func (me Tokens) SansComments() (sans Tokens)
 ```
 SansComments returns the newly allocated `sans` with a `cap` of `len(me)` and
-containing all `Tokens` in `me` except `TokenComment`s.
+containing all `Tokens` in `me` except those with a `Kind` of `TOKEN_COMMENT`.
 
 #### func (Tokens) String
 
