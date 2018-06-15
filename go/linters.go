@@ -8,7 +8,7 @@ import (
 var (
 	GolintIgnoreSubstrings = []string{
 		" should have comment ",
-		// "if block ends with a return statement, so drop this else and outdent its block",
+		"if block ends with a return statement, so drop this else and outdent its block",
 		"ALL_CAPS",
 		"underscore",
 		"CamelCase",
@@ -16,8 +16,8 @@ var (
 		"it will be inferred from the right-hand side",
 		"should be of the form \"",
 		"error strings should",
-		// "should omit 2nd value from range; this loop is equivalent to ",
-		// "don't use generic names",
+		"should omit 2nd value from range; this loop is equivalent to ",
+		"don't use generic names",
 	}
 )
 

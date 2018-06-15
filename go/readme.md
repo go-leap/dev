@@ -64,7 +64,7 @@ var (
 var (
 	GolintIgnoreSubstrings = []string{
 		" should have comment ",
-
+		"if block ends with a return statement, so drop this else and outdent its block",
 		"ALL_CAPS",
 		"underscore",
 		"CamelCase",
@@ -72,6 +72,8 @@ var (
 		"it will be inferred from the right-hand side",
 		"should be of the form \"",
 		"error strings should",
+		"should omit 2nd value from range; this loop is equivalent to ",
+		"don't use generic names",
 	}
 )
 ```
@@ -191,12 +193,6 @@ func PkgImpPathsToNamesInLn(ln string, curPkgDir string) string
 
 ```go
 func PkgsByName(name string) (pkgImpPaths []string)
-```
-
-#### func  PkgsForFiles
-
-```go
-func PkgsForFiles(filePaths ...string) (pkgs []*Pkg, shouldRefresh bool)
 ```
 
 #### func  QueryCallees_Guru
@@ -396,6 +392,12 @@ type Pkg struct {
 }
 ```
 
+
+#### func  PkgsForFiles
+
+```go
+func PkgsForFiles(filePaths ...string) (pkgs []*Pkg, shouldRefresh bool)
+```
 
 #### func (*Pkg) CountLoC
 
