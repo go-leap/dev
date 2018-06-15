@@ -1,23 +1,29 @@
 package udevgosyn
 
-type NamedTyped struct {
+type Named struct {
 	Name string
+}
+
+type NamedTyped struct {
+	Named
 	Type TypeRef
 }
 
+type NamedsTypeds []*NamedTyped
+
 type TypeFunc struct {
-	Args []*NamedTyped
-	Rets []*NamedTyped
+	Args NamedsTypeds
+	Rets NamedsTypeds
 }
 
 type TypeInterface struct {
 	Embeds  []*TypeRef
-	Methods map[string]*TypeFunc
+	Methods NamedsTypeds
 }
 
 type TypeStruct struct {
 	Embeds []*TypeRef
-	Fields []*NamedTyped
+	Fields NamedsTypeds
 }
 
 type TypeDef struct {
@@ -59,4 +65,84 @@ type TypeRef struct {
 	ToFunc      *TypeFunc
 	ToInterface *TypeInterface
 	ToStruct    *TypeStruct
+}
+
+type Func struct {
+	NamedTyped
+	Recv *NamedTyped
+	Body []IEmit
+}
+
+type stmtSimple struct {
+	Expr IEmit
+}
+
+type StmtRet struct {
+	stmtSimple
+}
+
+type StmtDefer struct {
+	stmtSimple
+}
+
+type StmtGo struct {
+	stmtSimple
+}
+
+type StmtConst struct {
+	NamedTyped
+	Expr ExprLit
+}
+
+type StmtVar struct {
+	NamedTyped
+	Expr IEmit
+}
+
+type Op2 struct {
+	Left  IEmit
+	Right IEmit
+}
+
+type Op2Set struct{ Op2 }
+type Op2Decl struct{ Op2 }
+type Op2Tup struct{ Op2 }
+type Op2Dot struct{ Op2 }
+type Op2And struct{ Op2 }
+type Op2Or struct{ Op2 }
+type Op2Eq struct{ Op2 }
+type Op2Neq struct{ Op2 }
+type Op2Geq struct{ Op2 }
+type Op2Leq struct{ Op2 }
+type Op2Gt struct{ Op2 }
+type Op2Lt struct{ Op2 }
+type Op2Plus struct{ Op2 }
+type Op2Minus struct{ Op2 }
+type Op2Mult struct{ Op2 }
+type Op2Div struct{ Op2 }
+type Op2Idx struct{ Op2 }
+
+type Op1 struct {
+	Right IEmit
+}
+
+type Op1Addr struct{ Op1 }
+type Op1Deref struct{ Op1 }
+type Op1Not struct{ Op1 }
+type Op1Minus struct{ Op1 }
+
+type ExprLit struct {
+	Val interface{}
+}
+
+type ExprName struct {
+	Named
+}
+
+type ExprNil struct {
+}
+
+type ExprCall struct {
+	Callee IEmit
+	Args   []IEmit
 }
