@@ -201,6 +201,10 @@ func Defer(call *ExprCall) *StmtDefer {
 	return &StmtDefer{StmtUnary: StmtUnary{Expr: call}}
 }
 
+func File(pkgName string, decls ...IEmit) *SynFile {
+	return &SynFile{PkgName: pkgName, SynBlock: SynBlock{Body: decls}}
+}
+
 func ForLoop(maybeInit IEmit, maybeCond IEmit, maybeEach IEmit, body ...IEmit) *StmtFor {
 	this := &StmtFor{}
 	this.Body, this.Loop.Init, this.Loop.Cond, this.Loop.Each = body, maybeInit, maybeCond, maybeEach

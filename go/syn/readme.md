@@ -815,6 +815,12 @@ type SynFile struct {
 ```
 
 
+#### func  File
+
+```go
+func File(pkgName string, decls ...IEmit) *SynFile
+```
+
 #### func (*SynFile) Emit
 
 ```go
