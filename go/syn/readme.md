@@ -18,7 +18,7 @@ type ExprCall struct {
 #### func (*ExprCall) Emit
 
 ```go
-func (this *ExprCall) Emit(w IEmitter)
+func (this *ExprCall) Emit(w IWriter)
 ```
 
 #### type ExprLit
@@ -33,7 +33,7 @@ type ExprLit struct {
 #### func (*ExprLit) Emit
 
 ```go
-func (this *ExprLit) Emit(w IEmitter)
+func (this *ExprLit) Emit(w IWriter)
 ```
 
 #### type ExprNil
@@ -47,39 +47,22 @@ type ExprNil struct {
 #### func (*ExprNil) Emit
 
 ```go
-func (this *ExprNil) Emit(w IEmitter)
-```
-
-#### type Func
-
-```go
-type Func struct {
-	NamedTyped
-	Recv *NamedTyped
-	Body []IEmit
-}
-```
-
-
-#### func (*Func) Emit
-
-```go
-func (this *Func) Emit(w IEmitter)
+func (this *ExprNil) Emit(w IWriter)
 ```
 
 #### type IEmit
 
 ```go
 type IEmit interface {
-	Emit(IEmitter)
+	Emit(IWriter)
 }
 ```
 
 
-#### type IEmitter
+#### type IWriter
 
 ```go
-type IEmitter interface {
+type IWriter interface {
 	io.ByteWriter
 	io.Writer
 	WriteRune(rune) (int, error)
@@ -100,7 +83,7 @@ type Named struct {
 #### func (*Named) Emit
 
 ```go
-func (this *Named) Emit(w IEmitter)
+func (this *Named) Emit(w IWriter)
 ```
 
 #### type NamedTyped
@@ -108,7 +91,7 @@ func (this *Named) Emit(w IEmitter)
 ```go
 type NamedTyped struct {
 	Named
-	Type TypeRef
+	Type *TypeRef
 }
 ```
 
@@ -116,7 +99,7 @@ type NamedTyped struct {
 #### type NamedsTypeds
 
 ```go
-type NamedsTypeds []*NamedTyped
+type NamedsTypeds []NamedTyped
 ```
 
 
@@ -139,7 +122,7 @@ type OpAddr struct{ Op }
 #### func (*OpAddr) Emit
 
 ```go
-func (this *OpAddr) Emit(w IEmitter)
+func (this *OpAddr) Emit(w IWriter)
 ```
 
 #### type OpAnd
@@ -152,7 +135,7 @@ type OpAnd struct{ Op }
 #### func (*OpAnd) Emit
 
 ```go
-func (this *OpAnd) Emit(w IEmitter)
+func (this *OpAnd) Emit(w IWriter)
 ```
 
 #### type OpComma
@@ -165,7 +148,7 @@ type OpComma struct{ Op }
 #### func (*OpComma) Emit
 
 ```go
-func (this *OpComma) Emit(w IEmitter)
+func (this *OpComma) Emit(w IWriter)
 ```
 
 #### type OpDecl
@@ -178,7 +161,7 @@ type OpDecl struct{ Op }
 #### func (*OpDecl) Emit
 
 ```go
-func (this *OpDecl) Emit(w IEmitter)
+func (this *OpDecl) Emit(w IWriter)
 ```
 
 #### type OpDeref
@@ -191,7 +174,7 @@ type OpDeref struct{ Op }
 #### func (*OpDeref) Emit
 
 ```go
-func (this *OpDeref) Emit(w IEmitter)
+func (this *OpDeref) Emit(w IWriter)
 ```
 
 #### type OpDiv
@@ -204,7 +187,7 @@ type OpDiv struct{ Op }
 #### func (*OpDiv) Emit
 
 ```go
-func (this *OpDiv) Emit(w IEmitter)
+func (this *OpDiv) Emit(w IWriter)
 ```
 
 #### type OpDot
@@ -217,7 +200,7 @@ type OpDot struct{ Op }
 #### func (*OpDot) Emit
 
 ```go
-func (this *OpDot) Emit(w IEmitter)
+func (this *OpDot) Emit(w IWriter)
 ```
 
 #### type OpEq
@@ -230,7 +213,7 @@ type OpEq struct{ Op }
 #### func (*OpEq) Emit
 
 ```go
-func (this *OpEq) Emit(w IEmitter)
+func (this *OpEq) Emit(w IWriter)
 ```
 
 #### type OpGeq
@@ -243,7 +226,7 @@ type OpGeq struct{ Op }
 #### func (*OpGeq) Emit
 
 ```go
-func (this *OpGeq) Emit(w IEmitter)
+func (this *OpGeq) Emit(w IWriter)
 ```
 
 #### type OpGt
@@ -256,7 +239,7 @@ type OpGt struct{ Op }
 #### func (*OpGt) Emit
 
 ```go
-func (this *OpGt) Emit(w IEmitter)
+func (this *OpGt) Emit(w IWriter)
 ```
 
 #### type OpIdx
@@ -269,7 +252,7 @@ type OpIdx struct{ Op }
 #### func (*OpIdx) Emit
 
 ```go
-func (this *OpIdx) Emit(w IEmitter)
+func (this *OpIdx) Emit(w IWriter)
 ```
 
 #### type OpLeq
@@ -282,7 +265,7 @@ type OpLeq struct{ Op }
 #### func (*OpLeq) Emit
 
 ```go
-func (this *OpLeq) Emit(w IEmitter)
+func (this *OpLeq) Emit(w IWriter)
 ```
 
 #### type OpLt
@@ -295,7 +278,7 @@ type OpLt struct{ Op }
 #### func (*OpLt) Emit
 
 ```go
-func (this *OpLt) Emit(w IEmitter)
+func (this *OpLt) Emit(w IWriter)
 ```
 
 #### type OpMinus
@@ -308,7 +291,7 @@ type OpMinus struct{ Op }
 #### func (*OpMinus) Emit
 
 ```go
-func (this *OpMinus) Emit(w IEmitter)
+func (this *OpMinus) Emit(w IWriter)
 ```
 
 #### type OpMult
@@ -321,7 +304,7 @@ type OpMult struct{ Op }
 #### func (*OpMult) Emit
 
 ```go
-func (this *OpMult) Emit(w IEmitter)
+func (this *OpMult) Emit(w IWriter)
 ```
 
 #### type OpNeq
@@ -334,7 +317,7 @@ type OpNeq struct{ Op }
 #### func (*OpNeq) Emit
 
 ```go
-func (this *OpNeq) Emit(w IEmitter)
+func (this *OpNeq) Emit(w IWriter)
 ```
 
 #### type OpNot
@@ -347,7 +330,7 @@ type OpNot struct{ Op }
 #### func (*OpNot) Emit
 
 ```go
-func (this *OpNot) Emit(w IEmitter)
+func (this *OpNot) Emit(w IWriter)
 ```
 
 #### type OpOr
@@ -360,7 +343,7 @@ type OpOr struct{ Op }
 #### func (*OpOr) Emit
 
 ```go
-func (this *OpOr) Emit(w IEmitter)
+func (this *OpOr) Emit(w IWriter)
 ```
 
 #### type OpPlus
@@ -373,7 +356,7 @@ type OpPlus struct{ Op }
 #### func (*OpPlus) Emit
 
 ```go
-func (this *OpPlus) Emit(w IEmitter)
+func (this *OpPlus) Emit(w IWriter)
 ```
 
 #### type OpSet
@@ -386,7 +369,7 @@ type OpSet struct{ Op }
 #### func (*OpSet) Emit
 
 ```go
-func (this *OpSet) Emit(w IEmitter)
+func (this *OpSet) Emit(w IWriter)
 ```
 
 #### type StmtConst
@@ -402,7 +385,7 @@ type StmtConst struct {
 #### func (*StmtConst) Emit
 
 ```go
-func (this *StmtConst) Emit(w IEmitter)
+func (this *StmtConst) Emit(w IWriter)
 ```
 
 #### type StmtDefer
@@ -417,7 +400,32 @@ type StmtDefer struct {
 #### func (*StmtDefer) Emit
 
 ```go
-func (this *StmtDefer) Emit(w IEmitter)
+func (this *StmtDefer) Emit(w IWriter)
+```
+
+#### type StmtFor
+
+```go
+type StmtFor struct {
+	SynBlock
+	Range struct {
+		Idx    *Named
+		Val    *Named
+		Iteree IEmit
+	}
+	Loop struct {
+		Init IEmit
+		Cond IEmit
+		Each IEmit
+	}
+}
+```
+
+
+#### func (*StmtFor) Emit
+
+```go
+func (this *StmtFor) Emit(w IWriter)
 ```
 
 #### type StmtGo
@@ -432,7 +440,23 @@ type StmtGo struct {
 #### func (*StmtGo) Emit
 
 ```go
-func (this *StmtGo) Emit(w IEmitter)
+func (this *StmtGo) Emit(w IWriter)
+```
+
+#### type StmtIf
+
+```go
+type StmtIf struct {
+	IfThens []SynCond
+	Else    SynBlock
+}
+```
+
+
+#### func (*StmtIf) Emit
+
+```go
+func (this *StmtIf) Emit(w IWriter)
 ```
 
 #### type StmtRet
@@ -447,7 +471,24 @@ type StmtRet struct {
 #### func (*StmtRet) Emit
 
 ```go
-func (this *StmtRet) Emit(w IEmitter)
+func (this *StmtRet) Emit(w IWriter)
+```
+
+#### type StmtSwitch
+
+```go
+type StmtSwitch struct {
+	Cond    IEmit
+	Cases   []SynCond
+	Default SynBlock
+}
+```
+
+
+#### func (*StmtSwitch) Emit
+
+```go
+func (this *StmtSwitch) Emit(w IWriter)
 ```
 
 #### type StmtUnary
@@ -472,7 +513,59 @@ type StmtVar struct {
 #### func (*StmtVar) Emit
 
 ```go
-func (this *StmtVar) Emit(w IEmitter)
+func (this *StmtVar) Emit(w IWriter)
+```
+
+#### type SynBlock
+
+```go
+type SynBlock struct {
+	Body []IEmit
+}
+```
+
+
+#### type SynCond
+
+```go
+type SynCond struct {
+	Cond IEmit
+	SynBlock
+}
+```
+
+
+#### type SynFunc
+
+```go
+type SynFunc struct {
+	SynBlock
+	NamedTyped
+	Recv *NamedTyped
+}
+```
+
+
+#### func (*SynFunc) Emit
+
+```go
+func (this *SynFunc) Emit(w IWriter)
+```
+
+#### type SynStructField
+
+```go
+type SynStructField struct {
+	NamedTyped
+	Tags map[string]string
+}
+```
+
+
+#### func (*SynStructField) Emit
+
+```go
+func (this *SynStructField) Emit(w IWriter)
 ```
 
 #### type TypeDef
@@ -488,7 +581,7 @@ type TypeDef struct {
 #### func (*TypeDef) Emit
 
 ```go
-func (this *TypeDef) Emit(w IEmitter)
+func (this *TypeDef) Emit(w IWriter)
 ```
 
 #### type TypeFunc
@@ -504,14 +597,14 @@ type TypeFunc struct {
 #### func (*TypeFunc) Emit
 
 ```go
-func (this *TypeFunc) Emit(w IEmitter)
+func (this *TypeFunc) Emit(w IWriter)
 ```
 
 #### type TypeInterface
 
 ```go
 type TypeInterface struct {
-	Embeds  []*TypeRef
+	Embeds  []TypeRef
 	Methods NamedsTypeds
 }
 ```
@@ -520,7 +613,7 @@ type TypeInterface struct {
 #### func (*TypeInterface) Emit
 
 ```go
-func (this *TypeInterface) Emit(w IEmitter)
+func (this *TypeInterface) Emit(w IWriter)
 ```
 
 #### type TypeRef
@@ -547,10 +640,6 @@ type TypeRef struct {
 		Rune       bool
 		String     bool
 	}
-	ToOther struct {
-		PkgName  string
-		TypeName string
-	}
 	ToSliceOf *TypeRef
 	ToPtrOf   *TypeRef
 	ToMapOf   struct {
@@ -560,6 +649,10 @@ type TypeRef struct {
 	ToFunc      *TypeFunc
 	ToInterface *TypeInterface
 	ToStruct    *TypeStruct
+	ToNamed     struct {
+		PkgName  string
+		TypeName string
+	}
 }
 ```
 
@@ -567,15 +660,15 @@ type TypeRef struct {
 #### func (*TypeRef) Emit
 
 ```go
-func (this *TypeRef) Emit(w IEmitter)
+func (this *TypeRef) Emit(w IWriter)
 ```
 
 #### type TypeStruct
 
 ```go
 type TypeStruct struct {
-	Embeds []*TypeRef
-	Fields NamedsTypeds
+	Embeds []TypeRef
+	Fields []SynStructField
 }
 ```
 
@@ -583,5 +676,5 @@ type TypeStruct struct {
 #### func (*TypeStruct) Emit
 
 ```go
-func (this *TypeStruct) Emit(w IEmitter)
+func (this *TypeStruct) Emit(w IWriter)
 ```

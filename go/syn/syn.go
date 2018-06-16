@@ -6,10 +6,10 @@ type Named struct {
 
 type NamedTyped struct {
 	Named
-	Type TypeRef
+	Type *TypeRef
 }
 
-type NamedsTypeds []*NamedTyped
+type NamedsTypeds []NamedTyped
 
 type TypeFunc struct {
 	Args NamedsTypeds
@@ -17,13 +17,18 @@ type TypeFunc struct {
 }
 
 type TypeInterface struct {
-	Embeds  []*TypeRef
+	Embeds  []TypeRef
 	Methods NamedsTypeds
 }
 
 type TypeStruct struct {
-	Embeds []*TypeRef
-	Fields NamedsTypeds
+	Embeds []TypeRef
+	Fields []SynStructField
+}
+
+type SynStructField struct {
+	NamedTyped
+	Tags map[string]string
 }
 
 type TypeDef struct {
@@ -52,10 +57,6 @@ type TypeRef struct {
 		Rune       bool
 		String     bool
 	}
-	ToOther struct {
-		PkgName  string
-		TypeName string
-	}
 	ToSliceOf *TypeRef
 	ToPtrOf   *TypeRef
 	ToMapOf   struct {
@@ -65,12 +66,20 @@ type TypeRef struct {
 	ToFunc      *TypeFunc
 	ToInterface *TypeInterface
 	ToStruct    *TypeStruct
+	ToNamed     struct {
+		PkgName  string
+		TypeName string
+	}
 }
 
-type Func struct {
+type SynBlock struct {
+	Body []IEmit
+}
+
+type SynFunc struct {
+	SynBlock
 	NamedTyped
 	Recv *NamedTyped
-	Body []IEmit
 }
 
 type StmtUnary struct {
@@ -97,6 +106,36 @@ type StmtConst struct {
 type StmtVar struct {
 	NamedTyped
 	Expr IEmit
+}
+
+type StmtIf struct {
+	IfThens []SynCond
+	Else    SynBlock
+}
+
+type SynCond struct {
+	Cond IEmit
+	SynBlock
+}
+
+type StmtSwitch struct {
+	Cond    IEmit
+	Cases   []SynCond
+	Default SynBlock
+}
+
+type StmtFor struct {
+	SynBlock
+	Range struct {
+		Idx    *Named
+		Val    *Named
+		Iteree IEmit
+	}
+	Loop struct {
+		Init IEmit
+		Cond IEmit
+		Each IEmit
+	}
 }
 
 type Op struct {

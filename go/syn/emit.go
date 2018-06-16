@@ -3,24 +3,26 @@ package udevgosyn
 import (
 	"fmt"
 	"io"
+	"sort"
+	"strconv"
 )
 
 type IEmit interface {
-	Emit(IEmitter)
+	Emit(IWriter)
 }
 
-type IEmitter interface {
+type IWriter interface {
 	io.ByteWriter
 	io.Writer
 	WriteRune(rune) (int, error)
 	WriteString(string) (int, error)
 }
 
-func (this *Named) Emit(w IEmitter) {
+func (this *Named) Emit(w IWriter) {
 	w.WriteString(this.Name)
 }
 
-func (this *NamedTyped) emit(w IEmitter, noFuncKeywordBecauseInterfaceMethod bool) {
+func (this *NamedTyped) emit(w IWriter, noFuncKeywordBecauseInterfaceMethod bool) {
 	if this.Name != "" {
 		w.WriteString(this.Name)
 		w.WriteByte(' ')
@@ -28,7 +30,7 @@ func (this *NamedTyped) emit(w IEmitter, noFuncKeywordBecauseInterfaceMethod boo
 	this.Type.emit(w, noFuncKeywordBecauseInterfaceMethod)
 }
 
-func (this NamedsTypeds) emit(w IEmitter, sep rune, noFuncKeywordBecauseInterfaceMethods bool) {
+func (this NamedsTypeds) emit(w IWriter, sep rune, noFuncKeywordBecauseInterfaceMethods bool) {
 	for i := range this {
 		if i > 0 {
 			w.WriteRune(sep)
@@ -37,11 +39,11 @@ func (this NamedsTypeds) emit(w IEmitter, sep rune, noFuncKeywordBecauseInterfac
 	}
 }
 
-func (this *TypeFunc) Emit(w IEmitter) {
+func (this *TypeFunc) Emit(w IWriter) {
 	this.emit(w, false)
 }
 
-func (this *TypeFunc) emit(w IEmitter, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
+func (this *TypeFunc) emit(w IWriter, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
 	if !noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod {
 		w.WriteString("func")
 	}
@@ -58,7 +60,7 @@ func (this *TypeFunc) emit(w IEmitter, noFuncKeywordBecauseSigPartOfFullBodyOrOf
 	}
 }
 
-func (this *TypeInterface) Emit(w IEmitter) {
+func (this *TypeInterface) Emit(w IWriter) {
 	w.WriteString("interface{")
 	for i := range this.Embeds {
 		if i > 0 {
@@ -73,7 +75,7 @@ func (this *TypeInterface) Emit(w IEmitter) {
 	w.WriteByte('}')
 }
 
-func (this *TypeStruct) Emit(w IEmitter) {
+func (this *TypeStruct) Emit(w IWriter) {
 	w.WriteString("struct{")
 	for i := range this.Embeds {
 		if i > 0 {
@@ -84,15 +86,37 @@ func (this *TypeStruct) Emit(w IEmitter) {
 	if len(this.Embeds) > 0 && len(this.Fields) > 0 {
 		w.WriteByte(';')
 	}
-	this.Fields.emit(w, ';', false)
+	for i := range this.Fields {
+		this.Fields[i].Emit(w)
+	}
 	w.WriteByte('}')
 }
 
-func (this *TypeRef) Emit(w IEmitter) {
+func (this *SynStructField) Emit(w IWriter) {
+	this.NamedTyped.emit(w, false)
+	if len(this.Tags) > 0 {
+		w.WriteByte('`')
+		idx, sortednames := 0, make(sort.StringSlice, len(this.Tags))
+		for tagname := range this.Tags {
+			sortednames[idx], idx = tagname, idx+1
+		}
+		sortednames.Sort()
+		for _, tagname := range sortednames {
+			w.WriteString(tagname)
+			w.WriteByte(':')
+			w.WriteString(strconv.Quote(this.Tags[tagname]))
+			w.WriteByte(' ')
+		}
+		w.WriteByte('`')
+	}
+	w.WriteByte(';')
+}
+
+func (this *TypeRef) Emit(w IWriter) {
 	this.emit(w, false)
 }
 
-func (this *TypeRef) emit(w IEmitter, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
+func (this *TypeRef) emit(w IWriter, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
 	switch {
 	case this.ToPtrOf != nil:
 		w.WriteByte('*')
@@ -105,12 +129,12 @@ func (this *TypeRef) emit(w IEmitter, noFuncKeywordBecauseSigPartOfFullBodyOrOfI
 		this.ToMapOf.Key.Emit(w)
 		w.WriteByte(']')
 		this.ToMapOf.Val.Emit(w)
-	case this.ToOther.TypeName != "":
-		if this.ToOther.PkgName != "" {
-			w.WriteString(this.ToOther.PkgName)
+	case this.ToNamed.TypeName != "":
+		if this.ToNamed.PkgName != "" {
+			w.WriteString(this.ToNamed.PkgName)
 			w.WriteByte('.')
 		}
-		w.WriteString(this.ToOther.TypeName)
+		w.WriteString(this.ToNamed.TypeName)
 	case this.ToFunc != nil:
 		this.ToFunc.emit(w, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod)
 	case this.ToInterface != nil:
@@ -156,7 +180,7 @@ func (this *TypeRef) emit(w IEmitter, noFuncKeywordBecauseSigPartOfFullBodyOrOfI
 	}
 }
 
-func (this *TypeDef) Emit(w IEmitter) {
+func (this *TypeDef) Emit(w IWriter) {
 	w.WriteString("type ")
 	if w.WriteString(this.Name); this.IsAlias {
 		w.WriteByte('=')
@@ -165,7 +189,22 @@ func (this *TypeDef) Emit(w IEmitter) {
 	this.Type.Emit(w)
 }
 
-func (this *Func) Emit(w IEmitter) {
+func (this *SynBlock) emit(w IWriter, wrapInCurlyBraces bool) {
+	if wrapInCurlyBraces {
+		w.WriteByte('{')
+	}
+	for i := range this.Body {
+		if i > 0 {
+			w.WriteByte(';')
+		}
+		this.Body[i].Emit(w)
+	}
+	if wrapInCurlyBraces {
+		w.WriteByte('}')
+	}
+}
+
+func (this *SynFunc) Emit(w IWriter) {
 	if w.WriteString("func "); this.Recv != nil {
 		w.WriteByte('(')
 		w.WriteString(this.Recv.Name)
@@ -175,35 +214,28 @@ func (this *Func) Emit(w IEmitter) {
 	}
 	w.WriteString(this.Name)
 	this.Type.emit(w, true)
-	w.WriteByte('{')
-	for i := range this.Body {
-		if i > 0 {
-			w.WriteByte(';')
-		}
-		this.Body[i].Emit(w)
-	}
-	w.WriteByte('}')
+	this.SynBlock.emit(w, true)
 }
 
-func (this *StmtUnary) emit(w IEmitter, keywordPlusSpace string) {
+func (this *StmtUnary) emit(w IWriter, keywordPlusSpace string) {
 	if w.WriteString(keywordPlusSpace); this.Expr != nil {
 		this.Expr.Emit(w)
 	}
 }
 
-func (this *StmtRet) Emit(w IEmitter) {
+func (this *StmtRet) Emit(w IWriter) {
 	this.StmtUnary.emit(w, "return ")
 }
 
-func (this *StmtDefer) Emit(w IEmitter) {
+func (this *StmtDefer) Emit(w IWriter) {
 	this.StmtUnary.emit(w, "defer ")
 }
 
-func (this *StmtGo) Emit(w IEmitter) {
+func (this *StmtGo) Emit(w IWriter) {
 	this.StmtUnary.emit(w, "go ")
 }
 
-func (this *StmtConst) Emit(w IEmitter) {
+func (this *StmtConst) Emit(w IWriter) {
 	w.WriteString("const ")
 	w.WriteString(this.Name)
 	this.Type.Emit(w)
@@ -211,7 +243,7 @@ func (this *StmtConst) Emit(w IEmitter) {
 	this.Expr.Emit(w)
 }
 
-func (this *StmtVar) Emit(w IEmitter) {
+func (this *StmtVar) Emit(w IWriter) {
 	w.WriteString("var ")
 	w.WriteString(this.Name)
 	if this.Type.Emit(w); this.Expr != nil {
@@ -220,40 +252,117 @@ func (this *StmtVar) Emit(w IEmitter) {
 	}
 }
 
-func (this *Op) emit(w IEmitter, op string) {
-	if len(this.Operands) == 1 {
-		w.WriteString(op)
-		this.Operands[0].Emit(w)
+func (this *StmtIf) Emit(w IWriter) {
+	for i := range this.IfThens {
+		w.WriteString("if ")
+		this.IfThens[i].Cond.Emit(w)
+		this.IfThens[i].emit(w, true)
+		w.WriteString(" else ")
+	}
+	this.Else.emit(w, true)
+}
+
+func (this *StmtSwitch) Emit(w IWriter) {
+	w.WriteString("switch ")
+	if this.Cond != nil {
+		this.Cond.Emit(w)
+	}
+	w.WriteByte('{')
+	for i := range this.Cases {
+		w.WriteString("case ")
+		this.Cases[i].Cond.Emit(w)
+		w.WriteByte(':')
+		this.Cases[i].emit(w, false)
+	}
+	if len(this.Default.Body) > 0 {
+		w.WriteString("default: ")
+		this.Default.emit(w, false)
+	}
+	w.WriteByte('}')
+}
+
+func (this *StmtFor) Emit(w IWriter) {
+	if this.Range.Iteree != nil {
+		this.emitRange(w)
 	} else {
-		for i := range this.Operands {
-			if i > 0 {
-				w.WriteString(op)
-			}
-			this.Operands[i].Emit(w)
+		this.emitLoop(w)
+	}
+}
+
+func (this *StmtFor) emitRange(w IWriter) {
+	w.WriteString("for ")
+	if this.Range.Idx != nil || this.Range.Val != nil {
+		if this.Range.Idx == nil {
+			w.WriteByte('_')
+		} else {
+			this.Range.Idx.Emit(w)
+		}
+		if this.Range.Val != nil {
+			w.WriteByte(',')
+			this.Range.Val.Emit(w)
+		}
+		w.WriteString(" := ")
+	}
+	w.WriteString("range")
+	this.Range.Iteree.Emit(w)
+	this.emit(w, true)
+}
+
+func (this *StmtFor) emitLoop(w IWriter) {
+	w.WriteString("for ")
+	if this.Loop.Init != nil {
+		this.Loop.Init.Emit(w)
+	}
+	w.WriteByte(';')
+	if this.Loop.Cond != nil {
+		this.Loop.Cond.Emit(w)
+	}
+	w.WriteByte(';')
+	if this.Loop.Each != nil {
+		this.Loop.Each.Emit(w)
+	}
+	this.emit(w, true)
+}
+
+func (this *Op) emit(w IWriter, operator string) {
+	unary := len(this.Operands) == 1
+	for i := range this.Operands {
+		if i > 0 || unary {
+			w.WriteString(operator)
+		}
+		_, isanotheroperator := this.Operands[i].(interface{ isOp() })
+		if isanotheroperator {
+			w.WriteByte('(')
+		}
+		this.Operands[i].Emit(w)
+		if isanotheroperator {
+			w.WriteByte(')')
 		}
 	}
 }
 
-func (this *OpSet) Emit(w IEmitter)   { this.Op.emit(w, " = ") }
-func (this *OpDecl) Emit(w IEmitter)  { this.Op.emit(w, " := ") }
-func (this *OpComma) Emit(w IEmitter) { this.Op.emit(w, ",") }
-func (this *OpDot) Emit(w IEmitter)   { this.Op.emit(w, ".") }
-func (this *OpAnd) Emit(w IEmitter)   { this.Op.emit(w, " && ") }
-func (this *OpOr) Emit(w IEmitter)    { this.Op.emit(w, " || ") }
-func (this *OpEq) Emit(w IEmitter)    { this.Op.emit(w, " == ") }
-func (this *OpNeq) Emit(w IEmitter)   { this.Op.emit(w, " != ") }
-func (this *OpGeq) Emit(w IEmitter)   { this.Op.emit(w, " >= ") }
-func (this *OpLeq) Emit(w IEmitter)   { this.Op.emit(w, " <= ") }
-func (this *OpGt) Emit(w IEmitter)    { this.Op.emit(w, " > ") }
-func (this *OpLt) Emit(w IEmitter)    { this.Op.emit(w, " < ") }
-func (this *OpPlus) Emit(w IEmitter)  { this.Op.emit(w, "+") }
-func (this *OpMinus) Emit(w IEmitter) { this.Op.emit(w, "-") }
-func (this *OpMult) Emit(w IEmitter)  { this.Op.emit(w, "*") }
-func (this *OpDiv) Emit(w IEmitter)   { this.Op.emit(w, "/") }
-func (this *OpAddr) Emit(w IEmitter)  { this.Op.emit(w, "&") }
-func (this *OpDeref) Emit(w IEmitter) { this.Op.emit(w, "*") }
-func (this *OpNot) Emit(w IEmitter)   { this.Op.emit(w, "!") }
-func (this *OpIdx) Emit(w IEmitter) {
+func (this *Op) isOp() {}
+
+func (this *OpSet) Emit(w IWriter)   { this.Op.emit(w, " = ") }
+func (this *OpDecl) Emit(w IWriter)  { this.Op.emit(w, " := ") }
+func (this *OpComma) Emit(w IWriter) { this.Op.emit(w, ",") }
+func (this *OpDot) Emit(w IWriter)   { this.Op.emit(w, ".") }
+func (this *OpAnd) Emit(w IWriter)   { this.Op.emit(w, " && ") }
+func (this *OpOr) Emit(w IWriter)    { this.Op.emit(w, " || ") }
+func (this *OpEq) Emit(w IWriter)    { this.Op.emit(w, " == ") }
+func (this *OpNeq) Emit(w IWriter)   { this.Op.emit(w, " != ") }
+func (this *OpGeq) Emit(w IWriter)   { this.Op.emit(w, " >= ") }
+func (this *OpLeq) Emit(w IWriter)   { this.Op.emit(w, " <= ") }
+func (this *OpGt) Emit(w IWriter)    { this.Op.emit(w, " > ") }
+func (this *OpLt) Emit(w IWriter)    { this.Op.emit(w, " < ") }
+func (this *OpPlus) Emit(w IWriter)  { this.Op.emit(w, "+") }
+func (this *OpMinus) Emit(w IWriter) { this.Op.emit(w, "-") }
+func (this *OpMult) Emit(w IWriter)  { this.Op.emit(w, "*") }
+func (this *OpDiv) Emit(w IWriter)   { this.Op.emit(w, "/") }
+func (this *OpAddr) Emit(w IWriter)  { this.Op.emit(w, "&") }
+func (this *OpDeref) Emit(w IWriter) { this.Op.emit(w, "*") }
+func (this *OpNot) Emit(w IWriter)   { this.Op.emit(w, "!") }
+func (this *OpIdx) Emit(w IWriter) {
 	for i := range this.Operands {
 		if i > 0 {
 			w.WriteByte('[')
@@ -265,15 +374,15 @@ func (this *OpIdx) Emit(w IEmitter) {
 	}
 }
 
-func (this *ExprLit) Emit(w IEmitter) {
+func (this *ExprLit) Emit(w IWriter) {
 	w.WriteString(fmt.Sprintf("%#v", this.Val))
 }
 
-func (this *ExprNil) Emit(w IEmitter) {
+func (this *ExprNil) Emit(w IWriter) {
 	w.WriteString("nil")
 }
 
-func (this *ExprCall) Emit(w IEmitter) {
+func (this *ExprCall) Emit(w IWriter) {
 	this.Callee.Emit(w)
 	w.WriteByte('(')
 	for i := range this.Args {
