@@ -218,8 +218,8 @@ func ForRange(maybeIdx *Named, maybeVal *Named, iteree IEmit, body ...IEmit) *St
 }
 
 func Func(maybeRecv *NamedTyped, name string, sig *TypeRef, body ...IEmit) *SynFunc {
-	this := &SynFunc{}
-	this.Recv, this.Body, this.Name, this.Type = maybeRecv, body, name, sig
+	this := &SynFunc{Recv: maybeRecv}
+	this.Body, this.Name, this.Type = body, name, sig
 	return this
 }
 
