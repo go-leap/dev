@@ -73,20 +73,20 @@ type Func struct {
 	Body []IEmit
 }
 
-type stmtSimple struct {
+type StmtUnary struct {
 	Expr IEmit
 }
 
 type StmtRet struct {
-	stmtSimple
+	StmtUnary
 }
 
 type StmtDefer struct {
-	stmtSimple
+	StmtUnary
 }
 
 type StmtGo struct {
-	stmtSimple
+	StmtUnary
 }
 
 type StmtConst struct {
@@ -105,7 +105,7 @@ type Op struct {
 
 type OpSet struct{ Op }
 type OpDecl struct{ Op }
-type OpTup struct{ Op }
+type OpComma struct{ Op }
 type OpDot struct{ Op }
 type OpAnd struct{ Op }
 type OpOr struct{ Op }
@@ -126,10 +126,6 @@ type OpNot struct{ Op }
 
 type ExprLit struct {
 	Val interface{}
-}
-
-type ExprName struct {
-	Named
 }
 
 type ExprNil struct {
