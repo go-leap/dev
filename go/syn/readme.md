@@ -853,7 +853,7 @@ type SynFunc struct {
 #### func  Func
 
 ```go
-func Func(recv *NamedTyped, name string, sig *TypeRef, body ...IEmit) *SynFunc
+func Func(maybeRecv *NamedTyped, name string, sig *TypeRef, body ...IEmit) *SynFunc
 ```
 
 #### func (*SynFunc) Emit
