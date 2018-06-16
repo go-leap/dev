@@ -33,7 +33,7 @@ type SynStructField struct {
 	Tags map[string]string
 }
 
-type TypeDef struct {
+type TypeDecl struct {
 	NamedTyped
 	IsAlias bool
 }

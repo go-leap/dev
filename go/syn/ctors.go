@@ -58,10 +58,10 @@ func Or(operands ...IEmit) *OpOr       { return &OpOr{Op: Op{Operands: operands}
 func Set(operands ...IEmit) *OpSet     { return &OpSet{Op: Op{Operands: operands}} }
 func Sub(operands ...IEmit) *OpSub     { return &OpSub{Op: Op{Operands: operands}} }
 
-func TDef(name string, typeRef *TypeRef, isAlias bool) *TypeDef {
-	tdef := &TypeDef{IsAlias: isAlias}
-	tdef.Name, tdef.Type = name, typeRef
-	return tdef
+func TDecl(name string, typeRef *TypeRef, isAlias bool) (this *TypeDecl) {
+	this = &TypeDecl{IsAlias: isAlias}
+	this.Name, this.Type = name, typeRef
+	return
 }
 func TFunc(args NamedsTypeds, rets ...NamedTyped) *TypeFunc {
 	return &TypeFunc{Args: args, Rets: rets}
@@ -82,105 +82,105 @@ func TrIface(typeIface *TypeInterface) *TypeRef { return &TypeRef{ToInterface: t
 func TrStruct(typeStruct *TypeStruct) *TypeRef  { return &TypeRef{ToStruct: typeStruct} }
 func TrPtr(typeRef *TypeRef) *TypeRef           { return &TypeRef{ToPtrOf: typeRef} }
 func TrSl(typeRef *TypeRef) *TypeRef            { return &TypeRef{ToSliceOf: typeRef} }
-func TrN(pkgName string, typeName string) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToNamed.PkgName, tref.ToNamed.TypeName = pkgName, typeName
-	return tref
+func TrN(pkgName string, typeName string) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToNamed.PkgName, this.ToNamed.TypeName = pkgName, typeName
+	return
 }
-func TrMap(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToMapOf.Key, tref.ToMapOf.Val = keyType, valType
-	return tref
+func TrMap(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToMapOf.Key, this.ToMapOf.Val = keyType, valType
+	return
 }
-func TrpBool(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Bool = true
-	return tref
+func TrpBool(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Bool = true
+	return
 }
-func TrpByte(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Byte = true
-	return tref
+func TrpByte(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Byte = true
+	return
 }
-func TrpC128(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Complex128 = true
-	return tref
+func TrpC128(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Complex128 = true
+	return
 }
-func TrpC64(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Complex64 = true
-	return tref
+func TrpC64(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Complex64 = true
+	return
 }
-func TrpF32(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Float32 = true
-	return tref
+func TrpF32(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Float32 = true
+	return
 }
-func TrpF64(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Float64 = true
-	return tref
+func TrpF64(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Float64 = true
+	return
 }
-func TrpInt(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Int = true
-	return tref
+func TrpInt(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Int = true
+	return
 }
-func TrpI16(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Int16 = true
-	return tref
+func TrpI16(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Int16 = true
+	return
 }
-func TrpI32(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Int32 = true
-	return tref
+func TrpI32(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Int32 = true
+	return
 }
-func TrpI64(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Int64 = true
-	return tref
+func TrpI64(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Int64 = true
+	return
 }
-func TrpI8(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Int8 = true
-	return tref
+func TrpI8(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Int8 = true
+	return
 }
-func TrpRune(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Rune = true
-	return tref
+func TrpRune(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Rune = true
+	return
 }
-func TrpStr(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.String = true
-	return tref
+func TrpStr(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.String = true
+	return
 }
-func TrpUint(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Uint = true
-	return tref
+func TrpUint(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Uint = true
+	return
 }
-func TrpUi16(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Uint16 = true
-	return tref
+func TrpUi16(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Uint16 = true
+	return
 }
-func TrpUi32(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Uint32 = true
-	return tref
+func TrpUi32(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Uint32 = true
+	return
 }
-func TrpUi64(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Uint64 = true
-	return tref
+func TrpUi64(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Uint64 = true
+	return
 }
-func TrpUi8(keyType *TypeRef, valType *TypeRef) *TypeRef {
-	tref := &TypeRef{}
-	tref.ToPrim.Uint8 = true
-	return tref
+func TrpUi8(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+	this = &TypeRef{}
+	this.ToPrim.Uint8 = true
+	return
 }
 
 func Block(body ...IEmit) *SynBlock {
@@ -191,10 +191,10 @@ func Call(callee IEmit, args ...IEmit) *ExprCall {
 	return &ExprCall{Callee: callee, Args: args}
 }
 
-func Const(name string, maybeType *TypeRef, exprLit ExprLit) *StmtConst {
-	this := &StmtConst{Expr: exprLit}
+func Const(name string, maybeType *TypeRef, exprLit ExprLit) (this *StmtConst) {
+	this = &StmtConst{Expr: exprLit}
 	this.Name, this.Type = name, maybeType
-	return this
+	return
 }
 
 func Defer(call *ExprCall) *StmtDefer {
@@ -205,22 +205,22 @@ func File(pkgName string, decls ...IEmit) *SynFile {
 	return &SynFile{PkgName: pkgName, SynBlock: SynBlock{Body: decls}}
 }
 
-func ForLoop(maybeInit IEmit, maybeCond IEmit, maybeEach IEmit, body ...IEmit) *StmtFor {
-	this := &StmtFor{}
+func ForLoop(maybeInit IEmit, maybeCond IEmit, maybeEach IEmit, body ...IEmit) (this *StmtFor) {
+	this = &StmtFor{}
 	this.Body, this.Loop.Init, this.Loop.Cond, this.Loop.Each = body, maybeInit, maybeCond, maybeEach
-	return this
+	return
 }
 
-func ForRange(maybeIdx *Named, maybeVal *Named, iteree IEmit, body ...IEmit) *StmtFor {
-	this := &StmtFor{}
+func ForRange(maybeIdx *Named, maybeVal *Named, iteree IEmit, body ...IEmit) (this *StmtFor) {
+	this = &StmtFor{}
 	this.Body, this.Range.Idx, this.Range.Val, this.Range.Iteree = body, maybeIdx, maybeVal, iteree
-	return this
+	return
 }
 
-func Func(maybeRecv *NamedTyped, name string, sig *TypeRef, body ...IEmit) *SynFunc {
-	this := &SynFunc{Recv: maybeRecv}
+func Func(maybeRecv *NamedTyped, name string, sig *TypeRef, body ...IEmit) (this *SynFunc) {
+	this = &SynFunc{Recv: maybeRecv}
 	this.Body, this.Name, this.Type = body, name, sig
-	return this
+	return
 }
 
 func Go(call *ExprCall) *StmtGo {
@@ -231,8 +231,8 @@ func If(cond IEmit, thens ...IEmit) *StmtIf {
 	return &StmtIf{IfThens: []SynCond{{Cond: cond, SynBlock: SynBlock{Body: thens}}}}
 }
 
-func Ifs(ifThensAndMaybeAnElse ...IEmit) *StmtIf {
-	this := &StmtIf{}
+func Ifs(ifThensAndMaybeAnElse ...IEmit) (this *StmtIf) {
+	this = &StmtIf{}
 	if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
 		if block, _ := ifThensAndMaybeAnElse[l-1].(*SynBlock); block != nil {
 			this.Else.Body = block.Body
@@ -246,15 +246,15 @@ func Ifs(ifThensAndMaybeAnElse ...IEmit) *StmtIf {
 		}
 		this.IfThens = append(this.IfThens, SynCond{Cond: ifThensAndMaybeAnElse[i-1], SynBlock: SynBlock{Body: body}})
 	}
-	return this
+	return
 }
 
 func Ret(retExpr IEmit) *StmtRet {
 	return &StmtRet{StmtUnary: StmtUnary{Expr: retExpr}}
 }
 
-func Switch(maybeCond IEmit, caseCondsAndBlocksPlusMaybeDefaultBlock ...IEmit) *StmtSwitch {
-	this := &StmtSwitch{Cond: maybeCond}
+func Switch(maybeCond IEmit, caseCondsAndBlocksPlusMaybeDefaultBlock ...IEmit) (this *StmtSwitch) {
+	this = &StmtSwitch{Cond: maybeCond}
 	if l := len(caseCondsAndBlocksPlusMaybeDefaultBlock); l%2 != 0 {
 		if block, _ := caseCondsAndBlocksPlusMaybeDefaultBlock[l-1].(*SynBlock); block != nil {
 			this.Default.Body = block.Body
@@ -268,11 +268,11 @@ func Switch(maybeCond IEmit, caseCondsAndBlocksPlusMaybeDefaultBlock ...IEmit) *
 		}
 		this.Cases = append(this.Cases, SynCond{Cond: caseCondsAndBlocksPlusMaybeDefaultBlock[i-1], SynBlock: SynBlock{Body: body}})
 	}
-	return this
+	return
 }
 
-func Var(name string, maybeType *TypeRef, maybeExpr IEmit) *StmtVar {
-	this := &StmtVar{Expr: maybeExpr}
+func Var(name string, maybeType *TypeRef, maybeExpr IEmit) (this *StmtVar) {
+	this = &StmtVar{Expr: maybeExpr}
 	this.Name, this.Type = name, maybeType
-	return this
+	return
 }

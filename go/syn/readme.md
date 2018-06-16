@@ -570,7 +570,7 @@ type StmtConst struct {
 #### func  Const
 
 ```go
-func Const(name string, maybeType *TypeRef, exprLit ExprLit) *StmtConst
+func Const(name string, maybeType *TypeRef, exprLit ExprLit) (this *StmtConst)
 ```
 
 #### func (*StmtConst) Emit
@@ -635,13 +635,13 @@ type StmtFor struct {
 #### func  ForLoop
 
 ```go
-func ForLoop(maybeInit IEmit, maybeCond IEmit, maybeEach IEmit, body ...IEmit) *StmtFor
+func ForLoop(maybeInit IEmit, maybeCond IEmit, maybeEach IEmit, body ...IEmit) (this *StmtFor)
 ```
 
 #### func  ForRange
 
 ```go
-func ForRange(maybeIdx *Named, maybeVal *Named, iteree IEmit, body ...IEmit) *StmtFor
+func ForRange(maybeIdx *Named, maybeVal *Named, iteree IEmit, body ...IEmit) (this *StmtFor)
 ```
 
 #### func (*StmtFor) Emit
@@ -690,7 +690,7 @@ func If(cond IEmit, thens ...IEmit) *StmtIf
 #### func  Ifs
 
 ```go
-func Ifs(ifThensAndMaybeAnElse ...IEmit) *StmtIf
+func Ifs(ifThensAndMaybeAnElse ...IEmit) (this *StmtIf)
 ```
 
 #### func (*StmtIf) Emit
@@ -734,7 +734,7 @@ type StmtSwitch struct {
 #### func  Switch
 
 ```go
-func Switch(maybeCond IEmit, caseCondsAndBlocksPlusMaybeDefaultBlock ...IEmit) *StmtSwitch
+func Switch(maybeCond IEmit, caseCondsAndBlocksPlusMaybeDefaultBlock ...IEmit) (this *StmtSwitch)
 ```
 
 #### func (*StmtSwitch) Emit
@@ -765,7 +765,7 @@ type StmtVar struct {
 #### func  Var
 
 ```go
-func Var(name string, maybeType *TypeRef, maybeExpr IEmit) *StmtVar
+func Var(name string, maybeType *TypeRef, maybeExpr IEmit) (this *StmtVar)
 ```
 
 #### func (*StmtVar) Emit
@@ -853,7 +853,7 @@ type SynFunc struct {
 #### func  Func
 
 ```go
-func Func(maybeRecv *NamedTyped, name string, sig *TypeRef, body ...IEmit) *SynFunc
+func Func(maybeRecv *NamedTyped, name string, sig *TypeRef, body ...IEmit) (this *SynFunc)
 ```
 
 #### func (*SynFunc) Emit
@@ -884,26 +884,26 @@ func TStructFld(name string, typeRef *TypeRef, tags map[string]string) (fld SynS
 func (this *SynStructField) Emit(w IWriter)
 ```
 
-#### type TypeDef
+#### type TypeDecl
 
 ```go
-type TypeDef struct {
+type TypeDecl struct {
 	NamedTyped
 	IsAlias bool
 }
 ```
 
 
-#### func  TDef
+#### func  TDecl
 
 ```go
-func TDef(name string, typeRef *TypeRef, isAlias bool) *TypeDef
+func TDecl(name string, typeRef *TypeRef, isAlias bool) (this *TypeDecl)
 ```
 
-#### func (*TypeDef) Emit
+#### func (*TypeDecl) Emit
 
 ```go
-func (this *TypeDef) Emit(w IWriter)
+func (this *TypeDecl) Emit(w IWriter)
 ```
 
 #### type TypeFunc
@@ -1006,13 +1006,13 @@ func TrIface(typeIface *TypeInterface) *TypeRef
 #### func  TrMap
 
 ```go
-func TrMap(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrMap(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrN
 
 ```go
-func TrN(pkgName string, typeName string) *TypeRef
+func TrN(pkgName string, typeName string) (this *TypeRef)
 ```
 
 #### func  TrPtr
@@ -1036,109 +1036,109 @@ func TrStruct(typeStruct *TypeStruct) *TypeRef
 #### func  TrpBool
 
 ```go
-func TrpBool(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpBool(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpByte
 
 ```go
-func TrpByte(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpByte(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpC128
 
 ```go
-func TrpC128(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpC128(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpC64
 
 ```go
-func TrpC64(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpC64(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpF32
 
 ```go
-func TrpF32(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpF32(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpF64
 
 ```go
-func TrpF64(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpF64(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpI16
 
 ```go
-func TrpI16(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpI16(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpI32
 
 ```go
-func TrpI32(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpI32(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpI64
 
 ```go
-func TrpI64(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpI64(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpI8
 
 ```go
-func TrpI8(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpI8(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpInt
 
 ```go
-func TrpInt(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpInt(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpRune
 
 ```go
-func TrpRune(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpRune(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpStr
 
 ```go
-func TrpStr(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpStr(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpUi16
 
 ```go
-func TrpUi16(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpUi16(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpUi32
 
 ```go
-func TrpUi32(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpUi32(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpUi64
 
 ```go
-func TrpUi64(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpUi64(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpUi8
 
 ```go
-func TrpUi8(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpUi8(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func  TrpUint
 
 ```go
-func TrpUint(keyType *TypeRef, valType *TypeRef) *TypeRef
+func TrpUint(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
 ```
 
 #### func (*TypeRef) Emit
