@@ -1,7 +1,9 @@
 package udevgosyn
 
 import (
+	"bytes"
 	"fmt"
+	"go/format"
 	"io"
 	"sort"
 	"strconv"
@@ -189,6 +191,11 @@ func (this *TypeDef) Emit(w IWriter) {
 	this.Type.Emit(w)
 }
 
+func (this *SynBlock) Emit(w IWriter) {
+	this.emit(w, true)
+	w.WriteByte(';')
+}
+
 func (this *SynBlock) emit(w IWriter, wrapInCurlyBraces bool) {
 	if wrapInCurlyBraces {
 		w.WriteByte('{')
@@ -215,6 +222,14 @@ func (this *SynFunc) Emit(w IWriter) {
 	w.WriteString(this.Name)
 	this.Type.emit(w, true)
 	this.SynBlock.emit(w, true)
+}
+
+func (this *StmtBreak) Emit(w IWriter) {
+	w.WriteString("break;")
+}
+
+func (this *StmtContinue) Emit(w IWriter) {
+	w.WriteString("continue;")
 }
 
 func (this *StmtUnary) emit(w IWriter, keywordPlusSpace string) {
@@ -355,9 +370,9 @@ func (this *OpGeq) Emit(w IWriter)   { this.Op.emit(w, " >= ") }
 func (this *OpLeq) Emit(w IWriter)   { this.Op.emit(w, " <= ") }
 func (this *OpGt) Emit(w IWriter)    { this.Op.emit(w, " > ") }
 func (this *OpLt) Emit(w IWriter)    { this.Op.emit(w, " < ") }
-func (this *OpPlus) Emit(w IWriter)  { this.Op.emit(w, "+") }
-func (this *OpMinus) Emit(w IWriter) { this.Op.emit(w, "-") }
-func (this *OpMult) Emit(w IWriter)  { this.Op.emit(w, "*") }
+func (this *OpAdd) Emit(w IWriter)   { this.Op.emit(w, "+") }
+func (this *OpSub) Emit(w IWriter)   { this.Op.emit(w, "-") }
+func (this *OpMul) Emit(w IWriter)   { this.Op.emit(w, "*") }
 func (this *OpDiv) Emit(w IWriter)   { this.Op.emit(w, "/") }
 func (this *OpAddr) Emit(w IWriter)  { this.Op.emit(w, "&") }
 func (this *OpDeref) Emit(w IWriter) { this.Op.emit(w, "*") }
@@ -392,4 +407,28 @@ func (this *ExprCall) Emit(w IWriter) {
 		this.Args[i].Emit(w)
 	}
 	w.WriteByte(')')
+}
+
+func (this *SynFile) Emit(w IWriter) {
+	w.WriteString("package ")
+	w.WriteString(this.PkgName)
+	w.WriteString("; import (")
+	for pkgpath, pkgname := range this.pkgImportPathsToNames {
+		w.WriteString(pkgname)
+		w.WriteString(" \"")
+		w.WriteString(pkgpath)
+		w.WriteString("\";")
+	}
+	w.WriteString(");")
+	this.emit(w, false)
+}
+
+func (this *SynFile) Src() (src []byte, err error) {
+	var buf bytes.Buffer
+	this.Emit(&buf)
+	orig := buf.Bytes()
+	if src, err = format.Source(orig); err != nil {
+		src = orig
+	}
+	return
 }

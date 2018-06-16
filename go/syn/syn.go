@@ -1,8 +1,10 @@
 package udevgosyn
 
-type Named struct {
-	Name string
-}
+import (
+	"strings"
+)
+
+type Named struct{ Name string }
 
 type NamedTyped struct {
 	Named
@@ -86,6 +88,10 @@ type StmtUnary struct {
 	Expr IEmit
 }
 
+type StmtBreak struct{}
+
+type StmtContinue struct{}
+
 type StmtRet struct {
 	StmtUnary
 }
@@ -154,9 +160,9 @@ type OpGeq struct{ Op }
 type OpLeq struct{ Op }
 type OpGt struct{ Op }
 type OpLt struct{ Op }
-type OpPlus struct{ Op }
-type OpMinus struct{ Op }
-type OpMult struct{ Op }
+type OpAdd struct{ Op }
+type OpSub struct{ Op }
+type OpMul struct{ Op }
 type OpDiv struct{ Op }
 type OpIdx struct{ Op }
 type OpAddr struct{ Op }
@@ -173,4 +179,24 @@ type ExprNil struct {
 type ExprCall struct {
 	Callee IEmit
 	Args   []IEmit
+}
+
+type SynFile struct {
+	PkgName string
+	SynBlock
+
+	pkgImportPathsToNames map[string]string
+}
+
+var strSlashesToUnderscores = strings.NewReplacer("/", "_")
+
+func (this *SynFile) I(pkgImportPath string) (pkgName string) {
+	if this.pkgImportPathsToNames == nil {
+		this.pkgImportPathsToNames = map[string]string{}
+	}
+	if pkgName = this.pkgImportPathsToNames[pkgImportPath]; pkgName == "" {
+		pkgName = strSlashesToUnderscores.Replace(pkgImportPath)
+		this.pkgImportPathsToNames[pkgImportPath] = pkgName
+	}
+	return
 }
