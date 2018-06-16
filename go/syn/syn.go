@@ -99,37 +99,30 @@ type StmtVar struct {
 	Expr IEmit
 }
 
-type Op2 struct {
-	Left  IEmit
-	Right IEmit
+type Op struct {
+	Operands []IEmit
 }
 
-type Op2Set struct{ Op2 }
-type Op2Decl struct{ Op2 }
-type Op2Tup struct{ Op2 }
-type Op2Dot struct{ Op2 }
-type Op2And struct{ Op2 }
-type Op2Or struct{ Op2 }
-type Op2Eq struct{ Op2 }
-type Op2Neq struct{ Op2 }
-type Op2Geq struct{ Op2 }
-type Op2Leq struct{ Op2 }
-type Op2Gt struct{ Op2 }
-type Op2Lt struct{ Op2 }
-type Op2Plus struct{ Op2 }
-type Op2Minus struct{ Op2 }
-type Op2Mult struct{ Op2 }
-type Op2Div struct{ Op2 }
-type Op2Idx struct{ Op2 }
-
-type Op1 struct {
-	Right IEmit
-}
-
-type Op1Addr struct{ Op1 }
-type Op1Deref struct{ Op1 }
-type Op1Not struct{ Op1 }
-type Op1Minus struct{ Op1 }
+type OpSet struct{ Op }
+type OpDecl struct{ Op }
+type OpTup struct{ Op }
+type OpDot struct{ Op }
+type OpAnd struct{ Op }
+type OpOr struct{ Op }
+type OpEq struct{ Op }
+type OpNeq struct{ Op }
+type OpGeq struct{ Op }
+type OpLeq struct{ Op }
+type OpGt struct{ Op }
+type OpLt struct{ Op }
+type OpPlus struct{ Op }
+type OpMinus struct{ Op }
+type OpMult struct{ Op }
+type OpDiv struct{ Op }
+type OpIdx struct{ Op }
+type OpAddr struct{ Op }
+type OpDeref struct{ Op }
+type OpNot struct{ Op }
 
 type ExprLit struct {
 	Val interface{}

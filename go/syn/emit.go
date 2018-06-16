@@ -17,16 +17,15 @@ type Writer interface {
 }
 
 func (this NamedsTypeds) Emit(w Writer, sep rune, noFuncKeyword bool) {
-	for i, namedtyped := range this {
+	for i := range this {
 		if i > 0 {
 			w.WriteRune(sep)
 		}
-		if namedtyped.Name != "" {
-			w.WriteString(namedtyped.Name)
+		if this[i].Name != "" {
+			w.WriteString(this[i].Name)
 			w.WriteByte(' ')
 		}
-
-		namedtyped.Type.emit(w, noFuncKeyword)
+		this[i].Type.emit(w, noFuncKeyword)
 	}
 }
 
@@ -53,11 +52,11 @@ func (this *TypeFunc) emit(w Writer, noKeyword bool) {
 
 func (this *TypeInterface) Emit(w Writer) {
 	w.WriteString("interface{")
-	for i, embed := range this.Embeds {
+	for i := range this.Embeds {
 		if i > 0 {
 			w.WriteByte(';')
 		}
-		embed.Emit(w)
+		this.Embeds[i].Emit(w)
 	}
 	if len(this.Embeds) > 0 && len(this.Methods) > 0 {
 		w.WriteByte(';')
@@ -68,11 +67,11 @@ func (this *TypeInterface) Emit(w Writer) {
 
 func (this *TypeStruct) Emit(w Writer) {
 	w.WriteString("struct{")
-	for i, embed := range this.Embeds {
+	for i := range this.Embeds {
 		if i > 0 {
 			w.WriteByte(';')
 		}
-		embed.Emit(w)
+		this.Embeds[i].Emit(w)
 	}
 	if len(this.Embeds) > 0 && len(this.Fields) > 0 {
 		w.WriteByte(';')
@@ -169,11 +168,11 @@ func (this *Func) Emit(w Writer) {
 	w.WriteString(this.Name)
 	this.Type.emit(w, true)
 	w.WriteByte('{')
-	for i, stmt := range this.Body {
+	for i := range this.Body {
 		if i > 0 {
 			w.WriteByte(';')
 		}
-		stmt.Emit(w)
+		this.Body[i].Emit(w)
 	}
 	w.WriteByte('}')
 }
@@ -213,44 +212,50 @@ func (this *StmtVar) Emit(w Writer) {
 	}
 }
 
-func (this *Op2) Emit(w Writer, op string) {
-	this.Left.Emit(w)
-	w.WriteString(op)
-	this.Right.Emit(w)
+func (this *Op) Emit(w Writer, op string) {
+	if len(this.Operands) == 1 {
+		w.WriteString(op)
+		this.Operands[0].Emit(w)
+	} else {
+		for i := range this.Operands {
+			if i > 0 {
+				w.WriteString(op)
+			}
+			this.Operands[i].Emit(w)
+		}
+	}
 }
 
-func (this *Op2Set) Emit(w Writer)   { this.Op2.Emit(w, " = ") }
-func (this *Op2Decl) Emit(w Writer)  { this.Op2.Emit(w, " := ") }
-func (this *Op2Tup) Emit(w Writer)   { this.Op2.Emit(w, ",") }
-func (this *Op2Dot) Emit(w Writer)   { this.Op2.Emit(w, ".") }
-func (this *Op2And) Emit(w Writer)   { this.Op2.Emit(w, " && ") }
-func (this *Op2Or) Emit(w Writer)    { this.Op2.Emit(w, " || ") }
-func (this *Op2Eq) Emit(w Writer)    { this.Op2.Emit(w, " == ") }
-func (this *Op2Neq) Emit(w Writer)   { this.Op2.Emit(w, " != ") }
-func (this *Op2Geq) Emit(w Writer)   { this.Op2.Emit(w, " >= ") }
-func (this *Op2Leq) Emit(w Writer)   { this.Op2.Emit(w, " <= ") }
-func (this *Op2Gt) Emit(w Writer)    { this.Op2.Emit(w, " > ") }
-func (this *Op2Lt) Emit(w Writer)    { this.Op2.Emit(w, " < ") }
-func (this *Op2Plus) Emit(w Writer)  { this.Op2.Emit(w, " + ") }
-func (this *Op2Minus) Emit(w Writer) { this.Op2.Emit(w, " - ") }
-func (this *Op2Mult) Emit(w Writer)  { this.Op2.Emit(w, " * ") }
-func (this *Op2Div) Emit(w Writer)   { this.Op2.Emit(w, " / ") }
-func (this *Op2Idx) Emit(w Writer) {
-	this.Left.Emit(w)
-	w.WriteByte('[')
-	this.Right.Emit(w)
-	w.WriteByte(']')
+func (this *OpSet) Emit(w Writer)   { this.Op.Emit(w, " = ") }
+func (this *OpDecl) Emit(w Writer)  { this.Op.Emit(w, " := ") }
+func (this *OpTup) Emit(w Writer)   { this.Op.Emit(w, ",") }
+func (this *OpDot) Emit(w Writer)   { this.Op.Emit(w, ".") }
+func (this *OpAnd) Emit(w Writer)   { this.Op.Emit(w, " && ") }
+func (this *OpOr) Emit(w Writer)    { this.Op.Emit(w, " || ") }
+func (this *OpEq) Emit(w Writer)    { this.Op.Emit(w, " == ") }
+func (this *OpNeq) Emit(w Writer)   { this.Op.Emit(w, " != ") }
+func (this *OpGeq) Emit(w Writer)   { this.Op.Emit(w, " >= ") }
+func (this *OpLeq) Emit(w Writer)   { this.Op.Emit(w, " <= ") }
+func (this *OpGt) Emit(w Writer)    { this.Op.Emit(w, " > ") }
+func (this *OpLt) Emit(w Writer)    { this.Op.Emit(w, " < ") }
+func (this *OpPlus) Emit(w Writer)  { this.Op.Emit(w, "+") }
+func (this *OpMinus) Emit(w Writer) { this.Op.Emit(w, "-") }
+func (this *OpMult) Emit(w Writer)  { this.Op.Emit(w, "*") }
+func (this *OpDiv) Emit(w Writer)   { this.Op.Emit(w, "/") }
+func (this *OpAddr) Emit(w Writer)  { this.Op.Emit(w, "&") }
+func (this *OpDeref) Emit(w Writer) { this.Op.Emit(w, "*") }
+func (this *OpNot) Emit(w Writer)   { this.Op.Emit(w, "!") }
+func (this *OpIdx) Emit(w Writer) {
+	for i := range this.Operands {
+		if i > 0 {
+			w.WriteByte('[')
+		}
+		this.Operands[i].Emit(w)
+		if i > 0 {
+			w.WriteByte(']')
+		}
+	}
 }
-
-func (this *Op1) Emit(w Writer, op byte) {
-	w.WriteByte(op)
-	this.Right.Emit(w)
-}
-
-func (this *Op1Addr) Emit(w Writer)  { this.Op1.Emit(w, '&') }
-func (this *Op1Deref) Emit(w Writer) { this.Op1.Emit(w, '*') }
-func (this *Op1Minus) Emit(w Writer) { this.Op1.Emit(w, '-') }
-func (this *Op1Not) Emit(w Writer)   { this.Op1.Emit(w, '!') }
 
 func (this *ExprName) Emit(w Writer) {
 	w.WriteString(this.Name)
@@ -267,11 +272,11 @@ func (this *ExprNil) Emit(w Writer) {
 func (this *ExprCall) Emit(w Writer) {
 	this.Callee.Emit(w)
 	w.WriteByte('(')
-	for i, arg := range this.Args {
+	for i := range this.Args {
 		if i > 0 {
 			w.WriteByte(',')
 		}
-		arg.Emit(w)
+		this.Args[i].Emit(w)
 	}
 	w.WriteByte(')')
 }
