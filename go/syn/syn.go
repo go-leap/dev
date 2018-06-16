@@ -81,7 +81,7 @@ type SynBlock struct {
 type SynFunc struct {
 	SynBlock
 	NamedTyped
-	Recv *NamedTyped
+	Recv NamedTyped
 }
 
 type StmtUnary struct {
@@ -133,8 +133,8 @@ type StmtSwitch struct {
 type StmtFor struct {
 	SynBlock
 	Range struct {
-		Idx    *Named
-		Val    *Named
+		Idx    Named
+		Val    Named
 		Iteree IEmit
 	}
 	Loop struct {

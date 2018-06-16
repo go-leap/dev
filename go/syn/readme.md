@@ -72,10 +72,10 @@ type ExprLit struct {
 func L(lit interface{}) ExprLit
 ```
 
-#### func (*ExprLit) Emit
+#### func (ExprLit) Emit
 
 ```go
-func (this *ExprLit) Emit(w IWriter)
+func (this ExprLit) Emit(w IWriter)
 ```
 
 #### type ExprNil
@@ -86,10 +86,10 @@ type ExprNil struct {
 ```
 
 
-#### func (*ExprNil) Emit
+#### func (ExprNil) Emit
 
 ```go
-func (this *ExprNil) Emit(w IWriter)
+func (ExprNil) Emit(w IWriter)
 ```
 
 #### type IEmit
@@ -123,13 +123,13 @@ type Named struct{ Name string }
 #### func  N
 
 ```go
-func N(name string) *Named
+func N(name string) Named
 ```
 
-#### func (*Named) Emit
+#### func (Named) Emit
 
 ```go
-func (this *Named) Emit(w IWriter)
+func (this Named) Emit(w IWriter)
 ```
 
 #### type NamedTyped
@@ -168,13 +168,13 @@ type OpAdd struct{ Op }
 #### func  Add
 
 ```go
-func Add(operands ...IEmit) *OpAdd
+func Add(operands ...IEmit) OpAdd
 ```
 
-#### func (*OpAdd) Emit
+#### func (OpAdd) Emit
 
 ```go
-func (this *OpAdd) Emit(w IWriter)
+func (this OpAdd) Emit(w IWriter)
 ```
 
 #### type OpAddr
@@ -187,13 +187,13 @@ type OpAddr struct{ Op }
 #### func  Addr
 
 ```go
-func Addr(operands ...IEmit) *OpAddr
+func Addr(operands ...IEmit) OpAddr
 ```
 
-#### func (*OpAddr) Emit
+#### func (OpAddr) Emit
 
 ```go
-func (this *OpAddr) Emit(w IWriter)
+func (this OpAddr) Emit(w IWriter)
 ```
 
 #### type OpAnd
@@ -206,13 +206,13 @@ type OpAnd struct{ Op }
 #### func  And
 
 ```go
-func And(operands ...IEmit) *OpAnd
+func And(operands ...IEmit) OpAnd
 ```
 
-#### func (*OpAnd) Emit
+#### func (OpAnd) Emit
 
 ```go
-func (this *OpAnd) Emit(w IWriter)
+func (this OpAnd) Emit(w IWriter)
 ```
 
 #### type OpComma
@@ -225,13 +225,13 @@ type OpComma struct{ Op }
 #### func  C
 
 ```go
-func C(operands ...IEmit) *OpComma
+func C(operands ...IEmit) OpComma
 ```
 
-#### func (*OpComma) Emit
+#### func (OpComma) Emit
 
 ```go
-func (this *OpComma) Emit(w IWriter)
+func (this OpComma) Emit(w IWriter)
 ```
 
 #### type OpDecl
@@ -244,13 +244,13 @@ type OpDecl struct{ Op }
 #### func  Decl
 
 ```go
-func Decl(operands ...IEmit) *OpDecl
+func Decl(operands ...IEmit) OpDecl
 ```
 
-#### func (*OpDecl) Emit
+#### func (OpDecl) Emit
 
 ```go
-func (this *OpDecl) Emit(w IWriter)
+func (this OpDecl) Emit(w IWriter)
 ```
 
 #### type OpDeref
@@ -263,13 +263,13 @@ type OpDeref struct{ Op }
 #### func  Deref
 
 ```go
-func Deref(operands ...IEmit) *OpDeref
+func Deref(operands ...IEmit) OpDeref
 ```
 
-#### func (*OpDeref) Emit
+#### func (OpDeref) Emit
 
 ```go
-func (this *OpDeref) Emit(w IWriter)
+func (this OpDeref) Emit(w IWriter)
 ```
 
 #### type OpDiv
@@ -282,13 +282,13 @@ type OpDiv struct{ Op }
 #### func  Div
 
 ```go
-func Div(operands ...IEmit) *OpDiv
+func Div(operands ...IEmit) OpDiv
 ```
 
-#### func (*OpDiv) Emit
+#### func (OpDiv) Emit
 
 ```go
-func (this *OpDiv) Emit(w IWriter)
+func (this OpDiv) Emit(w IWriter)
 ```
 
 #### type OpDot
@@ -301,13 +301,13 @@ type OpDot struct{ Op }
 #### func  D
 
 ```go
-func D(operands ...IEmit) *OpDot
+func D(operands ...IEmit) OpDot
 ```
 
-#### func (*OpDot) Emit
+#### func (OpDot) Emit
 
 ```go
-func (this *OpDot) Emit(w IWriter)
+func (this OpDot) Emit(w IWriter)
 ```
 
 #### type OpEq
@@ -320,13 +320,13 @@ type OpEq struct{ Op }
 #### func  Eq
 
 ```go
-func Eq(operands ...IEmit) *OpEq
+func Eq(operands ...IEmit) OpEq
 ```
 
-#### func (*OpEq) Emit
+#### func (OpEq) Emit
 
 ```go
-func (this *OpEq) Emit(w IWriter)
+func (this OpEq) Emit(w IWriter)
 ```
 
 #### type OpGeq
@@ -339,13 +339,13 @@ type OpGeq struct{ Op }
 #### func  Geq
 
 ```go
-func Geq(operands ...IEmit) *OpGeq
+func Geq(operands ...IEmit) OpGeq
 ```
 
-#### func (*OpGeq) Emit
+#### func (OpGeq) Emit
 
 ```go
-func (this *OpGeq) Emit(w IWriter)
+func (this OpGeq) Emit(w IWriter)
 ```
 
 #### type OpGt
@@ -358,13 +358,13 @@ type OpGt struct{ Op }
 #### func  Gt
 
 ```go
-func Gt(operands ...IEmit) *OpGt
+func Gt(operands ...IEmit) OpGt
 ```
 
-#### func (*OpGt) Emit
+#### func (OpGt) Emit
 
 ```go
-func (this *OpGt) Emit(w IWriter)
+func (this OpGt) Emit(w IWriter)
 ```
 
 #### type OpIdx
@@ -377,13 +377,13 @@ type OpIdx struct{ Op }
 #### func  I
 
 ```go
-func I(operands ...IEmit) *OpIdx
+func I(operands ...IEmit) OpIdx
 ```
 
-#### func (*OpIdx) Emit
+#### func (OpIdx) Emit
 
 ```go
-func (this *OpIdx) Emit(w IWriter)
+func (this OpIdx) Emit(w IWriter)
 ```
 
 #### type OpLeq
@@ -396,13 +396,13 @@ type OpLeq struct{ Op }
 #### func  Leq
 
 ```go
-func Leq(operands ...IEmit) *OpLeq
+func Leq(operands ...IEmit) OpLeq
 ```
 
-#### func (*OpLeq) Emit
+#### func (OpLeq) Emit
 
 ```go
-func (this *OpLeq) Emit(w IWriter)
+func (this OpLeq) Emit(w IWriter)
 ```
 
 #### type OpLt
@@ -415,13 +415,13 @@ type OpLt struct{ Op }
 #### func  Lt
 
 ```go
-func Lt(operands ...IEmit) *OpLt
+func Lt(operands ...IEmit) OpLt
 ```
 
-#### func (*OpLt) Emit
+#### func (OpLt) Emit
 
 ```go
-func (this *OpLt) Emit(w IWriter)
+func (this OpLt) Emit(w IWriter)
 ```
 
 #### type OpMul
@@ -434,13 +434,13 @@ type OpMul struct{ Op }
 #### func  Mul
 
 ```go
-func Mul(operands ...IEmit) *OpMul
+func Mul(operands ...IEmit) OpMul
 ```
 
-#### func (*OpMul) Emit
+#### func (OpMul) Emit
 
 ```go
-func (this *OpMul) Emit(w IWriter)
+func (this OpMul) Emit(w IWriter)
 ```
 
 #### type OpNeq
@@ -453,13 +453,13 @@ type OpNeq struct{ Op }
 #### func  Neq
 
 ```go
-func Neq(operands ...IEmit) *OpNeq
+func Neq(operands ...IEmit) OpNeq
 ```
 
-#### func (*OpNeq) Emit
+#### func (OpNeq) Emit
 
 ```go
-func (this *OpNeq) Emit(w IWriter)
+func (this OpNeq) Emit(w IWriter)
 ```
 
 #### type OpNot
@@ -472,13 +472,13 @@ type OpNot struct{ Op }
 #### func  Not
 
 ```go
-func Not(operands ...IEmit) *OpNot
+func Not(operands ...IEmit) OpNot
 ```
 
-#### func (*OpNot) Emit
+#### func (OpNot) Emit
 
 ```go
-func (this *OpNot) Emit(w IWriter)
+func (this OpNot) Emit(w IWriter)
 ```
 
 #### type OpOr
@@ -491,13 +491,13 @@ type OpOr struct{ Op }
 #### func  Or
 
 ```go
-func Or(operands ...IEmit) *OpOr
+func Or(operands ...IEmit) OpOr
 ```
 
-#### func (*OpOr) Emit
+#### func (OpOr) Emit
 
 ```go
-func (this *OpOr) Emit(w IWriter)
+func (this OpOr) Emit(w IWriter)
 ```
 
 #### type OpSet
@@ -510,13 +510,13 @@ type OpSet struct{ Op }
 #### func  Set
 
 ```go
-func Set(operands ...IEmit) *OpSet
+func Set(operands ...IEmit) OpSet
 ```
 
-#### func (*OpSet) Emit
+#### func (OpSet) Emit
 
 ```go
-func (this *OpSet) Emit(w IWriter)
+func (this OpSet) Emit(w IWriter)
 ```
 
 #### type OpSub
@@ -529,19 +529,19 @@ type OpSub struct{ Op }
 #### func  Neg
 
 ```go
-func Neg(operand IEmit) *OpSub
+func Neg(operand IEmit) OpSub
 ```
 
 #### func  Sub
 
 ```go
-func Sub(operands ...IEmit) *OpSub
+func Sub(operands ...IEmit) OpSub
 ```
 
-#### func (*OpSub) Emit
+#### func (OpSub) Emit
 
 ```go
-func (this *OpSub) Emit(w IWriter)
+func (this OpSub) Emit(w IWriter)
 ```
 
 #### type StmtBreak
@@ -551,10 +551,10 @@ type StmtBreak struct{}
 ```
 
 
-#### func (*StmtBreak) Emit
+#### func (StmtBreak) Emit
 
 ```go
-func (this *StmtBreak) Emit(w IWriter)
+func (StmtBreak) Emit(w IWriter)
 ```
 
 #### type StmtConst
@@ -586,10 +586,10 @@ type StmtContinue struct{}
 ```
 
 
-#### func (*StmtContinue) Emit
+#### func (StmtContinue) Emit
 
 ```go
-func (this *StmtContinue) Emit(w IWriter)
+func (StmtContinue) Emit(w IWriter)
 ```
 
 #### type StmtDefer
@@ -604,13 +604,13 @@ type StmtDefer struct {
 #### func  Defer
 
 ```go
-func Defer(call *ExprCall) *StmtDefer
+func Defer(call *ExprCall) (this StmtDefer)
 ```
 
-#### func (*StmtDefer) Emit
+#### func (StmtDefer) Emit
 
 ```go
-func (this *StmtDefer) Emit(w IWriter)
+func (this StmtDefer) Emit(w IWriter)
 ```
 
 #### type StmtFor
@@ -619,8 +619,8 @@ func (this *StmtDefer) Emit(w IWriter)
 type StmtFor struct {
 	SynBlock
 	Range struct {
-		Idx    *Named
-		Val    *Named
+		Idx    Named
+		Val    Named
 		Iteree IEmit
 	}
 	Loop struct {
@@ -641,7 +641,7 @@ func ForLoop(maybeInit IEmit, maybeCond IEmit, maybeEach IEmit, body ...IEmit) (
 #### func  ForRange
 
 ```go
-func ForRange(maybeIdx *Named, maybeVal *Named, iteree IEmit, body ...IEmit) (this *StmtFor)
+func ForRange(maybeIdx Named, maybeVal Named, iteree IEmit, body ...IEmit) (this *StmtFor)
 ```
 
 #### func (*StmtFor) Emit
@@ -662,13 +662,13 @@ type StmtGo struct {
 #### func  Go
 
 ```go
-func Go(call *ExprCall) *StmtGo
+func Go(call *ExprCall) (this StmtGo)
 ```
 
-#### func (*StmtGo) Emit
+#### func (StmtGo) Emit
 
 ```go
-func (this *StmtGo) Emit(w IWriter)
+func (this StmtGo) Emit(w IWriter)
 ```
 
 #### type StmtIf
@@ -711,13 +711,13 @@ type StmtRet struct {
 #### func  Ret
 
 ```go
-func Ret(retExpr IEmit) *StmtRet
+func Ret(retExpr IEmit) (this StmtRet)
 ```
 
-#### func (*StmtRet) Emit
+#### func (StmtRet) Emit
 
 ```go
-func (this *StmtRet) Emit(w IWriter)
+func (this StmtRet) Emit(w IWriter)
 ```
 
 #### type StmtSwitch
@@ -786,13 +786,13 @@ type SynBlock struct {
 #### func  Block
 
 ```go
-func Block(body ...IEmit) *SynBlock
+func Block(body ...IEmit) (this SynBlock)
 ```
 
-#### func (*SynBlock) Emit
+#### func (SynBlock) Emit
 
 ```go
-func (this *SynBlock) Emit(w IWriter)
+func (this SynBlock) Emit(w IWriter)
 ```
 
 #### type SynCond
@@ -818,7 +818,7 @@ type SynFile struct {
 #### func  File
 
 ```go
-func File(pkgName string, decls ...IEmit) *SynFile
+func File(pkgName string, topLevelDecls ...IEmit) *SynFile
 ```
 
 #### func (*SynFile) Emit
@@ -845,7 +845,7 @@ func (this *SynFile) Src() (src []byte, err error)
 type SynFunc struct {
 	SynBlock
 	NamedTyped
-	Recv *NamedTyped
+	Recv NamedTyped
 }
 ```
 
@@ -853,7 +853,7 @@ type SynFunc struct {
 #### func  Func
 
 ```go
-func Func(maybeRecv *NamedTyped, name string, sig *TypeRef, body ...IEmit) (this *SynFunc)
+func Func(maybeRecv NamedTyped, name string, sig *TypeRef, body ...IEmit) (this *SynFunc)
 ```
 
 #### func (*SynFunc) Emit
@@ -897,13 +897,13 @@ type TypeDecl struct {
 #### func  TDecl
 
 ```go
-func TDecl(name string, typeRef *TypeRef, isAlias bool) (this *TypeDecl)
+func TDecl(name string, typeRef *TypeRef, isAlias bool) (this TypeDecl)
 ```
 
-#### func (*TypeDecl) Emit
+#### func (TypeDecl) Emit
 
 ```go
-func (this *TypeDecl) Emit(w IWriter)
+func (this TypeDecl) Emit(w IWriter)
 ```
 
 #### type TypeFunc
