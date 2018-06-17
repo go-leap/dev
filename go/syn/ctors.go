@@ -34,169 +34,176 @@ var (
 		Ret  Named
 		This Named
 	}
+
+	// common type-refs
+	T struct {
+		Bool *TypeRef
+	}
 )
 
 func init() {
 	V.Err.Name, V.Ret.Name, V.This.Name = "err", "ret", "this"
 	B.Append.Name, B.Cap.Name, B.Close.Name, B.Complex.Name, B.Copy.Name, B.Delete.Name, B.Imag.Name, B.Len.Name, B.Make.Name, B.New.Name, B.Panic.Name, B.Print.Name, B.Println.Name, B.Real.Name, B.Recover.Name = "append", "cap", "close", "complex", "copy", "delete", "imag", "len", "make", "new", "panic", "print", "println", "real", "recover"
+	T.Bool = TrpBool()
 }
 
-func N(name string) Named                   { return Named{Name: name} }
-func Nt(name string, t *TypeRef) NamedTyped { return NamedTyped{Type: t, Named: Named{Name: name}} }
-func L(lit interface{}) ExprLit             { return ExprLit{Val: lit} }
+func A(argsOrOperandsOrStmts ...ISyn) []ISyn { return argsOrOperandsOrStmts }
+func N(name string) Named                    { return Named{Name: name} }
+func Nt(name string, t *TypeRef) NamedTyped  { return NamedTyped{Type: t, Named: Named{Name: name}} }
+func L(lit interface{}) ExprLit              { return ExprLit{Val: lit} }
 
-func Add(operands ...IEmit) OpAdd     { return OpAdd{Op: Op{Operands: operands}} }
-func Addr(operands ...IEmit) OpAddr   { return OpAddr{Op: Op{Operands: operands}} }
-func And(operands ...IEmit) OpAnd     { return OpAnd{Op: Op{Operands: operands}} }
-func C(operands ...IEmit) OpComma     { return OpComma{Op: Op{Operands: operands}} }
-func D(operands ...IEmit) OpDot       { return OpDot{Op: Op{Operands: operands}} }
-func Decl(operands ...IEmit) OpDecl   { return OpDecl{Op: Op{Operands: operands}} }
-func Deref(operands ...IEmit) OpDeref { return OpDeref{Op: Op{Operands: operands}} }
-func Div(operands ...IEmit) OpDiv     { return OpDiv{Op: Op{Operands: operands}} }
-func Eq(operands ...IEmit) OpEq       { return OpEq{Op: Op{Operands: operands}} }
-func Geq(operands ...IEmit) OpGeq     { return OpGeq{Op: Op{Operands: operands}} }
-func Gt(operands ...IEmit) OpGt       { return OpGt{Op: Op{Operands: operands}} }
-func I(operands ...IEmit) OpIdx       { return OpIdx{Op: Op{Operands: operands}} }
-func Leq(operands ...IEmit) OpLeq     { return OpLeq{Op: Op{Operands: operands}} }
-func Lt(operands ...IEmit) OpLt       { return OpLt{Op: Op{Operands: operands}} }
-func Mul(operands ...IEmit) OpMul     { return OpMul{Op: Op{Operands: operands}} }
-func Neg(operand IEmit) OpSub         { return OpSub{Op: Op{Operands: []IEmit{operand}}} }
-func Neq(operands ...IEmit) OpNeq     { return OpNeq{Op: Op{Operands: operands}} }
-func Not(operands ...IEmit) OpNot     { return OpNot{Op: Op{Operands: operands}} }
-func Or(operands ...IEmit) OpOr       { return OpOr{Op: Op{Operands: operands}} }
-func Set(operands ...IEmit) OpSet     { return OpSet{Op: Op{Operands: operands}} }
-func Sub(operands ...IEmit) OpSub     { return OpSub{Op: Op{Operands: operands}} }
+func Add(operands ...ISyn) OpAdd     { return OpAdd{Op: Op{Operands: operands}} }
+func Addr(operands ...ISyn) OpAddr   { return OpAddr{Op: Op{Operands: operands}} }
+func And(operands ...ISyn) OpAnd     { return OpAnd{Op: Op{Operands: operands}} }
+func C(operands ...ISyn) OpComma     { return OpComma{Op: Op{Operands: operands}} }
+func D(operands ...ISyn) OpDot       { return OpDot{Op: Op{Operands: operands}} }
+func Decl(operands ...ISyn) OpDecl   { return OpDecl{Op: Op{Operands: operands}} }
+func Deref(operands ...ISyn) OpDeref { return OpDeref{Op: Op{Operands: operands}} }
+func Div(operands ...ISyn) OpDiv     { return OpDiv{Op: Op{Operands: operands}} }
+func Eq(operands ...ISyn) OpEq       { return OpEq{Op: Op{Operands: operands}} }
+func Geq(operands ...ISyn) OpGeq     { return OpGeq{Op: Op{Operands: operands}} }
+func Gt(operands ...ISyn) OpGt       { return OpGt{Op: Op{Operands: operands}} }
+func I(operands ...ISyn) OpIdx       { return OpIdx{Op: Op{Operands: operands}} }
+func Leq(operands ...ISyn) OpLeq     { return OpLeq{Op: Op{Operands: operands}} }
+func Lt(operands ...ISyn) OpLt       { return OpLt{Op: Op{Operands: operands}} }
+func Mul(operands ...ISyn) OpMul     { return OpMul{Op: Op{Operands: operands}} }
+func Neg(operand ISyn) OpSub         { return OpSub{Op: Op{Operands: []ISyn{operand}}} }
+func Neq(operands ...ISyn) OpNeq     { return OpNeq{Op: Op{Operands: operands}} }
+func Not(operands ...ISyn) OpNot     { return OpNot{Op: Op{Operands: operands}} }
+func Or(operands ...ISyn) OpOr       { return OpOr{Op: Op{Operands: operands}} }
+func Set(operands ...ISyn) OpSet     { return OpSet{Op: Op{Operands: operands}} }
+func Sub(operands ...ISyn) OpSub     { return OpSub{Op: Op{Operands: operands}} }
 
 func TDecl(name string, typeRef *TypeRef, isAlias bool) (this TypeDecl) {
 	this.IsAlias, this.Name, this.Type = isAlias, name, typeRef
 	return
 }
-func TFunc(args NamedsTypeds, rets ...NamedTyped) *TypeFunc {
+func TdFunc(args NamedsTypeds, rets ...NamedTyped) *TypeFunc {
 	return &TypeFunc{Args: args, Rets: rets}
 }
-func TInterface(embeds []TypeRef, methods ...NamedTyped) *TypeInterface {
+func TdInterface(embeds []TypeRef, methods ...NamedTyped) *TypeInterface {
 	return &TypeInterface{Embeds: embeds, Methods: methods}
 }
-func TStruct(embeds []TypeRef, fields ...SynStructField) *TypeStruct {
+func TdStruct(embeds []TypeRef, fields ...SynStructField) *TypeStruct {
 	return &TypeStruct{Embeds: embeds, Fields: fields}
 }
-func TStructFld(name string, typeRef *TypeRef, tags map[string]string) (fld SynStructField) {
+func TdStructFld(name string, typeRef *TypeRef, tags map[string]string) (fld SynStructField) {
 	fld.Tags, fld.Name, fld.Type = tags, name, typeRef
 	return
 }
 
-func TrFunc(typeFunc *TypeFunc) *TypeRef        { return &TypeRef{ToFunc: typeFunc} }
-func TrIface(typeIface *TypeInterface) *TypeRef { return &TypeRef{ToInterface: typeIface} }
-func TrStruct(typeStruct *TypeStruct) *TypeRef  { return &TypeRef{ToStruct: typeStruct} }
-func TrPtr(typeRef *TypeRef) *TypeRef           { return &TypeRef{ToPtrOf: typeRef} }
-func TrSl(typeRef *TypeRef) *TypeRef            { return &TypeRef{ToSliceOf: typeRef} }
-func TrN(pkgName string, typeName string) (this *TypeRef) {
+func TrFunc(typeFunc *TypeFunc) *TypeRef            { return &TypeRef{Func: typeFunc} }
+func TrInterface(typeIface *TypeInterface) *TypeRef { return &TypeRef{Interface: typeIface} }
+func TrStruct(typeStruct *TypeStruct) *TypeRef      { return &TypeRef{Struct: typeStruct} }
+func TrPtr(typeRef *TypeRef) *TypeRef               { return &TypeRef{Ptr: typeRef} }
+func TrSlice(typeRef *TypeRef) *TypeRef             { return &TypeRef{Slice: typeRef} }
+func TrNamed(pkgName string, typeName string) (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToNamed.PkgName, this.ToNamed.TypeName = pkgName, typeName
+	this.Named.PkgName, this.Named.TypeName = pkgName, typeName
 	return
 }
 func TrMap(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToMapOf.Key, this.ToMapOf.Val = keyType, valType
+	this.Map.Key, this.Map.Val = keyType, valType
 	return
 }
 func TrpBool() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Bool = true
+	this.Prim.Bool = true
 	return
 }
 func TrpByte() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Byte = true
+	this.Prim.Byte = true
 	return
 }
 func TrpC128() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Complex128 = true
+	this.Prim.Complex128 = true
 	return
 }
 func TrpC64() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Complex64 = true
+	this.Prim.Complex64 = true
 	return
 }
 func TrpF32() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Float32 = true
+	this.Prim.Float32 = true
 	return
 }
 func TrpF64() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Float64 = true
+	this.Prim.Float64 = true
 	return
 }
 func TrpInt() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Int = true
+	this.Prim.Int = true
 	return
 }
 func TrpI16() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Int16 = true
+	this.Prim.Int16 = true
 	return
 }
 func TrpI32() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Int32 = true
+	this.Prim.Int32 = true
 	return
 }
 func TrpI64() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Int64 = true
+	this.Prim.Int64 = true
 	return
 }
 func TrpI8() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Int8 = true
+	this.Prim.Int8 = true
 	return
 }
 func TrpRune() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Rune = true
+	this.Prim.Rune = true
 	return
 }
 func TrpStr() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.String = true
+	this.Prim.String = true
 	return
 }
 func TrpUint() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Uint = true
+	this.Prim.Uint = true
 	return
 }
 func TrpUi16() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Uint16 = true
+	this.Prim.Uint16 = true
 	return
 }
 func TrpUi32() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Uint32 = true
+	this.Prim.Uint32 = true
 	return
 }
 func TrpUi64() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Uint64 = true
+	this.Prim.Uint64 = true
 	return
 }
 func TrpUi8() (this *TypeRef) {
 	this = &TypeRef{}
-	this.ToPrim.Uint8 = true
+	this.Prim.Uint8 = true
 	return
 }
 
-func Block(body ...IEmit) (this SynBlock) {
+func Block(body ...ISyn) (this SynBlock) {
 	this.Body = body
 	return
 }
 
-func Call(callee IEmit, args ...IEmit) *ExprCall {
+func Call(callee ISyn, args ...ISyn) *ExprCall {
 	return &ExprCall{Callee: callee, Args: args}
 }
 
@@ -211,25 +218,25 @@ func Defer(call *ExprCall) (this StmtDefer) {
 	return
 }
 
-func File(pkgName string, topLevelDecls ...IEmit) *SynFile {
+func File(pkgName string, topLevelDecls ...ISyn) *SynFile {
 	return &SynFile{PkgName: pkgName, SynBlock: SynBlock{Body: topLevelDecls}}
 }
 
-func ForLoop(maybeInit IEmit, maybeCond IEmit, maybeEach IEmit, body ...IEmit) (this *StmtFor) {
+func ForLoop(maybeInit ISyn, maybeCond ISyn, maybeEach ISyn, body ...ISyn) (this *StmtFor) {
 	this = &StmtFor{}
 	this.Body, this.Loop.Init, this.Loop.Cond, this.Loop.Each = body, maybeInit, maybeCond, maybeEach
 	return
 }
 
-func ForRange(maybeIdx Named, maybeVal Named, iteree IEmit, body ...IEmit) (this *StmtFor) {
+func ForRange(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (this *StmtFor) {
 	this = &StmtFor{}
 	this.Body, this.Range.Idx, this.Range.Val, this.Range.Iteree = body, maybeIdx, maybeVal, iteree
 	return
 }
 
-func Func(maybeRecv NamedTyped, name string, sig *TypeRef, body ...IEmit) (this *SynFunc) {
+func Func(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *SynFunc) {
 	this = &SynFunc{Recv: maybeRecv}
-	this.Body, this.Name, this.Type = body, name, sig
+	this.Body, this.Name, this.Type = body, name, TrFunc(sig)
 	return
 }
 
@@ -238,11 +245,11 @@ func Go(call *ExprCall) (this StmtGo) {
 	return
 }
 
-func If(cond IEmit, thens ...IEmit) *StmtIf {
+func If(cond ISyn, thens ...ISyn) *StmtIf {
 	return &StmtIf{IfThens: []SynCond{{Cond: cond, SynBlock: SynBlock{Body: thens}}}}
 }
 
-func Ifs(ifThensAndMaybeAnElse ...IEmit) (this *StmtIf) {
+func Ifs(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
 	this = &StmtIf{}
 	if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
 		if block, ok := ifThensAndMaybeAnElse[l-1].(SynBlock); ok {
@@ -251,7 +258,7 @@ func Ifs(ifThensAndMaybeAnElse ...IEmit) (this *StmtIf) {
 		ifThensAndMaybeAnElse = ifThensAndMaybeAnElse[:l-1]
 	}
 	for i := 1; i < len(ifThensAndMaybeAnElse); i += 2 {
-		var body []IEmit
+		var body []ISyn
 		if block, ok := ifThensAndMaybeAnElse[i].(SynBlock); ok {
 			body = block.Body
 		}
@@ -260,12 +267,12 @@ func Ifs(ifThensAndMaybeAnElse ...IEmit) (this *StmtIf) {
 	return
 }
 
-func Ret(retExpr IEmit) (this StmtRet) {
+func Ret(retExpr ISyn) (this StmtRet) {
 	this.Expr = retExpr
 	return
 }
 
-func Switch(maybeCond IEmit, caseCondsAndBlocksPlusMaybeDefaultBlock ...IEmit) (this *StmtSwitch) {
+func Switch(maybeCond ISyn, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch) {
 	this = &StmtSwitch{Cond: maybeCond}
 	if l := len(caseCondsAndBlocksPlusMaybeDefaultBlock); l%2 != 0 {
 		if block, ok := caseCondsAndBlocksPlusMaybeDefaultBlock[l-1].(SynBlock); ok {
@@ -274,7 +281,7 @@ func Switch(maybeCond IEmit, caseCondsAndBlocksPlusMaybeDefaultBlock ...IEmit) (
 		caseCondsAndBlocksPlusMaybeDefaultBlock = caseCondsAndBlocksPlusMaybeDefaultBlock[:l-1]
 	}
 	for i := 1; i < len(caseCondsAndBlocksPlusMaybeDefaultBlock); i += 2 {
-		var body []IEmit
+		var body []ISyn
 		if block, ok := caseCondsAndBlocksPlusMaybeDefaultBlock[i].(SynBlock); ok {
 			body = block.Body
 		}
@@ -283,7 +290,7 @@ func Switch(maybeCond IEmit, caseCondsAndBlocksPlusMaybeDefaultBlock ...IEmit) (
 	return
 }
 
-func Var(name string, maybeType *TypeRef, maybeExpr IEmit) (this *StmtVar) {
+func Var(name string, maybeType *TypeRef, maybeExpr ISyn) (this *StmtVar) {
 	this = &StmtVar{Expr: maybeExpr}
 	this.Name, this.Type = name, maybeType
 	return

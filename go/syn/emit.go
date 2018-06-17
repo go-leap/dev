@@ -9,7 +9,9 @@ import (
 	"strconv"
 )
 
-type IEmit interface {
+// ISyn can be any legal element in the Abstract Syntax Tree:
+// literals, vars, consts, type-defs, type-refs, funcs, keywords, operators etc..
+type ISyn interface {
 	Emit(IWriter)
 }
 
@@ -24,7 +26,7 @@ type IWriter interface {
 	ShouldEmitNoOpFuncBodies() bool
 	io.ByteWriter
 	io.Writer
-	WriteRune(rune) (int, error)
+	// WriteRune(rune) (int, error)
 	WriteString(string) (int, error)
 }
 
@@ -40,10 +42,10 @@ func (this NamedTyped) emit(w IWriter, noFuncKeywordBecauseInterfaceMethod bool)
 	this.Type.emit(w, noFuncKeywordBecauseInterfaceMethod)
 }
 
-func (this NamedsTypeds) emit(w IWriter, sep rune, noFuncKeywordBecauseInterfaceMethods bool) {
+func (this NamedsTypeds) emit(w IWriter, sep byte, noFuncKeywordBecauseInterfaceMethods bool) {
 	for i := range this {
 		if i > 0 {
-			w.WriteRune(sep)
+			w.WriteByte(sep)
 		}
 		this[i].emit(w, noFuncKeywordBecauseInterfaceMethods)
 	}
@@ -118,64 +120,64 @@ func (this *TypeRef) Emit(w IWriter) {
 
 func (this *TypeRef) emit(w IWriter, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
 	switch {
-	case this.ToPtrOf != nil:
+	case this.Ptr != nil:
 		w.WriteByte('*')
-		this.ToPtrOf.Emit(w)
-	case this.ToSliceOf != nil:
+		this.Ptr.Emit(w)
+	case this.Slice != nil:
 		w.WriteString("[]")
-		this.ToSliceOf.Emit(w)
-	case this.ToMapOf.Key != nil:
+		this.Slice.Emit(w)
+	case this.Map.Key != nil:
 		w.WriteString("map[")
-		this.ToMapOf.Key.Emit(w)
+		this.Map.Key.Emit(w)
 		w.WriteByte(']')
-		this.ToMapOf.Val.Emit(w)
-	case this.ToNamed.TypeName != "":
-		if this.ToNamed.PkgName != "" {
-			w.WriteString(this.ToNamed.PkgName)
+		this.Map.Val.Emit(w)
+	case this.Named.TypeName != "":
+		if this.Named.PkgName != "" {
+			w.WriteString(this.Named.PkgName)
 			w.WriteByte('.')
 		}
-		w.WriteString(this.ToNamed.TypeName)
-	case this.ToFunc != nil:
-		this.ToFunc.emit(w, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod)
-	case this.ToInterface != nil:
-		this.ToInterface.Emit(w)
-	case this.ToStruct != nil:
-		this.ToStruct.Emit(w)
-	case this.ToPrim.Bool:
+		w.WriteString(this.Named.TypeName)
+	case this.Func != nil:
+		this.Func.emit(w, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod)
+	case this.Interface != nil:
+		this.Interface.Emit(w)
+	case this.Struct != nil:
+		this.Struct.Emit(w)
+	case this.Prim.Bool:
 		w.WriteString("bool")
-	case this.ToPrim.Byte:
+	case this.Prim.Byte:
 		w.WriteString("byte")
-	case this.ToPrim.Complex128:
+	case this.Prim.Complex128:
 		w.WriteString("complex128")
-	case this.ToPrim.Complex64:
+	case this.Prim.Complex64:
 		w.WriteString("complex64")
-	case this.ToPrim.Float32:
+	case this.Prim.Float32:
 		w.WriteString("float32")
-	case this.ToPrim.Float64:
+	case this.Prim.Float64:
 		w.WriteString("float64")
-	case this.ToPrim.Int:
+	case this.Prim.Int:
 		w.WriteString("int")
-	case this.ToPrim.Int16:
+	case this.Prim.Int16:
 		w.WriteString("int16")
-	case this.ToPrim.Int32:
+	case this.Prim.Int32:
 		w.WriteString("int32")
-	case this.ToPrim.Int64:
+	case this.Prim.Int64:
 		w.WriteString("int64")
-	case this.ToPrim.Int8:
+	case this.Prim.Int8:
 		w.WriteString("int8")
-	case this.ToPrim.Rune:
+	case this.Prim.Rune:
 		w.WriteString("rune")
-	case this.ToPrim.String:
+	case this.Prim.String:
 		w.WriteString("string")
-	case this.ToPrim.Uint:
+	case this.Prim.Uint:
 		w.WriteString("uint")
-	case this.ToPrim.Uint16:
+	case this.Prim.Uint16:
 		w.WriteString("uint16")
-	case this.ToPrim.Uint32:
+	case this.Prim.Uint32:
 		w.WriteString("uint32")
-	case this.ToPrim.Uint64:
+	case this.Prim.Uint64:
 		w.WriteString("uint64")
-	case this.ToPrim.Uint8:
+	case this.Prim.Uint8:
 		w.WriteString("uint8")
 	}
 }
@@ -194,7 +196,7 @@ func (this SynBlock) Emit(w IWriter) {
 	w.WriteByte(';')
 }
 
-func (this SynBlock) emit(w IWriter, wrapInCurlyBraces bool, sep string, appendToBody ...IEmit) {
+func (this SynBlock) emit(w IWriter, wrapInCurlyBraces bool, sep string, appendToBody ...ISyn) {
 	if sep == "" {
 		sep = "   ;   "
 	}

@@ -6,7 +6,7 @@ import (
 
 type Named struct{ Name string }
 
-func (this Named) T(typeRef *TypeRef) (nt NamedTyped) {
+func (this Named) Typed(typeRef *TypeRef) (nt NamedTyped) {
 	nt.Named, nt.Type = this, typeRef
 	return
 }
@@ -44,7 +44,20 @@ type TypeDecl struct {
 }
 
 type TypeRef struct {
-	ToPrim struct {
+	Slice *TypeRef
+	Ptr   *TypeRef
+	Map   struct {
+		Key *TypeRef
+		Val *TypeRef
+	}
+	Func      *TypeFunc
+	Interface *TypeInterface
+	Struct    *TypeStruct
+	Named     struct {
+		PkgName  string
+		TypeName string
+	}
+	Prim struct {
 		Bool       bool
 		Byte       bool
 		Complex64  bool
@@ -64,26 +77,13 @@ type TypeRef struct {
 		Rune       bool
 		String     bool
 	}
-	ToSliceOf *TypeRef
-	ToPtrOf   *TypeRef
-	ToMapOf   struct {
-		Key *TypeRef
-		Val *TypeRef
-	}
-	ToFunc      *TypeFunc
-	ToInterface *TypeInterface
-	ToStruct    *TypeStruct
-	ToNamed     struct {
-		PkgName  string
-		TypeName string
-	}
 }
 
 type SynBlock struct {
-	Body []IEmit
+	Body []ISyn
 }
 
-func (this *SynBlock) Add(stmts ...IEmit) { this.Body = append(this.Body, stmts...) }
+func (this *SynBlock) Add(stmts ...ISyn) { this.Body = append(this.Body, stmts...) }
 
 type SynFunc struct {
 	SynBlock
@@ -93,7 +93,7 @@ type SynFunc struct {
 }
 
 type StmtUnary struct {
-	Expr IEmit
+	Expr ISyn
 }
 
 type StmtBreak struct{}
@@ -119,7 +119,7 @@ type StmtConst struct {
 
 type StmtVar struct {
 	NamedTyped
-	Expr IEmit
+	Expr ISyn
 }
 
 type StmtIf struct {
@@ -128,12 +128,12 @@ type StmtIf struct {
 }
 
 type SynCond struct {
-	Cond IEmit
+	Cond ISyn
 	SynBlock
 }
 
 type StmtSwitch struct {
-	Cond    IEmit
+	Cond    ISyn
 	Cases   []SynCond
 	Default SynBlock
 }
@@ -143,17 +143,17 @@ type StmtFor struct {
 	Range struct {
 		Idx    Named
 		Val    Named
-		Iteree IEmit
+		Iteree ISyn
 	}
 	Loop struct {
-		Init IEmit
-		Cond IEmit
-		Each IEmit
+		Init ISyn
+		Cond ISyn
+		Each ISyn
 	}
 }
 
 type Op struct {
-	Operands []IEmit
+	Operands []ISyn
 }
 
 type OpSet struct{ Op }
@@ -185,8 +185,8 @@ type ExprNil struct {
 }
 
 type ExprCall struct {
-	Callee IEmit
-	Args   []IEmit
+	Callee ISyn
+	Args   []ISyn
 }
 
 type SynFile struct {
