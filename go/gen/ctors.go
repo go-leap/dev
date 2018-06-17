@@ -234,7 +234,7 @@ func ForRange(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (this *
 	return
 }
 
-func Func(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *SynFunc) {
+func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *SynFunc) {
 	this = &SynFunc{Recv: maybeRecv}
 	this.Body, this.Name, this.Type = body, name, TrFunc(sig)
 	return

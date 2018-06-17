@@ -904,10 +904,10 @@ type SynFunc struct {
 ```
 
 
-#### func  Func
+#### func  Fn
 
 ```go
-func Func(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *SynFunc)
+func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *SynFunc)
 ```
 
 #### func (*SynFunc) Emit
