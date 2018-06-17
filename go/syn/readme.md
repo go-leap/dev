@@ -7,10 +7,16 @@
 
 ```go
 var (
-	Break    = new(StmtBreak)
-	Continue = new(StmtContinue)
-	Nil      = new(ExprNil)
-	B        struct {
+	// keyword singletons
+	K struct {
+		Break    StmtBreak
+		Continue StmtContinue
+		Ret      StmtRet
+	}
+
+	// built-ins
+	B struct {
+		Nil     ExprNil
 		Append  Named
 		Cap     Named
 		Close   Named
@@ -27,6 +33,8 @@ var (
 		Real    Named
 		Recover Named
 	}
+
+	// common vars
 	V struct {
 		Err  Named
 		Ret  Named
@@ -132,6 +140,12 @@ func N(name string) Named
 func (this Named) Emit(w IWriter)
 ```
 
+#### func (Named) T
+
+```go
+func (this Named) T(typeRef *TypeRef) (nt NamedTyped)
+```
+
 #### type NamedTyped
 
 ```go
@@ -141,6 +155,12 @@ type NamedTyped struct {
 }
 ```
 
+
+#### func  Nt
+
+```go
+func Nt(name string, t *TypeRef) NamedTyped
+```
 
 #### type NamedsTypeds
 
@@ -824,7 +844,7 @@ func File(pkgName string, topLevelDecls ...IEmit) *SynFile
 #### func (*SynFile) Emit
 
 ```go
-func (this *SynFile) Emit(w IWriter)
+func (this *SynFile) Emit(w IWriter, codeGenCommentNotice string)
 ```
 
 #### func (*SynFile) I
@@ -836,7 +856,7 @@ func (this *SynFile) I(pkgImportPath string) (pkgName string)
 #### func (*SynFile) Src
 
 ```go
-func (this *SynFile) Src() (src []byte, err error)
+func (this *SynFile) Src(codeGenCommentNotice string) (src []byte, err error)
 ```
 
 #### type SynFunc
@@ -1036,109 +1056,109 @@ func TrStruct(typeStruct *TypeStruct) *TypeRef
 #### func  TrpBool
 
 ```go
-func TrpBool(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpBool() (this *TypeRef)
 ```
 
 #### func  TrpByte
 
 ```go
-func TrpByte(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpByte() (this *TypeRef)
 ```
 
 #### func  TrpC128
 
 ```go
-func TrpC128(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpC128() (this *TypeRef)
 ```
 
 #### func  TrpC64
 
 ```go
-func TrpC64(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpC64() (this *TypeRef)
 ```
 
 #### func  TrpF32
 
 ```go
-func TrpF32(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpF32() (this *TypeRef)
 ```
 
 #### func  TrpF64
 
 ```go
-func TrpF64(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpF64() (this *TypeRef)
 ```
 
 #### func  TrpI16
 
 ```go
-func TrpI16(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpI16() (this *TypeRef)
 ```
 
 #### func  TrpI32
 
 ```go
-func TrpI32(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpI32() (this *TypeRef)
 ```
 
 #### func  TrpI64
 
 ```go
-func TrpI64(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpI64() (this *TypeRef)
 ```
 
 #### func  TrpI8
 
 ```go
-func TrpI8(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpI8() (this *TypeRef)
 ```
 
 #### func  TrpInt
 
 ```go
-func TrpInt(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpInt() (this *TypeRef)
 ```
 
 #### func  TrpRune
 
 ```go
-func TrpRune(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpRune() (this *TypeRef)
 ```
 
 #### func  TrpStr
 
 ```go
-func TrpStr(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpStr() (this *TypeRef)
 ```
 
 #### func  TrpUi16
 
 ```go
-func TrpUi16(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpUi16() (this *TypeRef)
 ```
 
 #### func  TrpUi32
 
 ```go
-func TrpUi32(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpUi32() (this *TypeRef)
 ```
 
 #### func  TrpUi64
 
 ```go
-func TrpUi64(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpUi64() (this *TypeRef)
 ```
 
 #### func  TrpUi8
 
 ```go
-func TrpUi8(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpUi8() (this *TypeRef)
 ```
 
 #### func  TrpUint
 
 ```go
-func TrpUint(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrpUint() (this *TypeRef)
 ```
 
 #### func (*TypeRef) Emit

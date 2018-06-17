@@ -6,6 +6,11 @@ import (
 
 type Named struct{ Name string }
 
+func (this Named) T(typeRef *TypeRef) (nt NamedTyped) {
+	nt.Named, nt.Type = this, typeRef
+	return
+}
+
 type NamedTyped struct {
 	Named
 	Type *TypeRef

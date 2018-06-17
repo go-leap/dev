@@ -65,12 +65,7 @@ func (this *TypeFunc) emit(w IWriter, noFuncKeywordBecauseSigPartOfFullBodyOrOfI
 func (this *TypeInterface) Emit(w IWriter) {
 	w.WriteString("interface{")
 	for i := range this.Embeds {
-		if i > 0 {
-			w.WriteByte(';')
-		}
 		this.Embeds[i].Emit(w)
-	}
-	if len(this.Embeds) > 0 && len(this.Methods) > 0 {
 		w.WriteByte(';')
 	}
 	this.Methods.emit(w, ';', true)
@@ -80,16 +75,12 @@ func (this *TypeInterface) Emit(w IWriter) {
 func (this *TypeStruct) Emit(w IWriter) {
 	w.WriteString("struct{")
 	for i := range this.Embeds {
-		if i > 0 {
-			w.WriteByte(';')
-		}
 		this.Embeds[i].Emit(w)
-	}
-	if len(this.Embeds) > 0 && len(this.Fields) > 0 {
 		w.WriteByte(';')
 	}
 	for i := range this.Fields {
 		this.Fields[i].Emit(w)
+		w.WriteByte(';')
 	}
 	w.WriteByte('}')
 }
@@ -111,7 +102,6 @@ func (this *SynStructField) Emit(w IWriter) {
 		}
 		w.WriteByte('`')
 	}
-	w.WriteByte(';')
 }
 
 func (this *TypeRef) Emit(w IWriter) {
@@ -196,15 +186,17 @@ func (this SynBlock) Emit(w IWriter) {
 	w.WriteByte(';')
 }
 
-func (this SynBlock) emit(w IWriter, wrapInCurlyBraces bool) {
+func (this SynBlock) emit(w IWriter, wrapInCurlyBraces bool, appendToBody ...IEmit) {
 	if wrapInCurlyBraces {
 		w.WriteByte('{')
 	}
 	for i := range this.Body {
-		if i > 0 {
-			w.WriteByte(';')
-		}
 		this.Body[i].Emit(w)
+		w.WriteByte(';')
+	}
+	for i := range appendToBody {
+		appendToBody[i].Emit(w)
+		w.WriteByte(';')
 	}
 	if wrapInCurlyBraces {
 		w.WriteByte('}')
@@ -221,7 +213,7 @@ func (this *SynFunc) Emit(w IWriter) {
 	}
 	w.WriteString(this.Name)
 	this.Type.emit(w, true)
-	this.SynBlock.emit(w, true)
+	this.SynBlock.emit(w, true, K.Ret)
 }
 
 func (StmtBreak) Emit(w IWriter) {
@@ -401,31 +393,38 @@ func (this *ExprCall) Emit(w IWriter) {
 	this.Callee.Emit(w)
 	w.WriteByte('(')
 	for i := range this.Args {
-		if i > 0 {
-			w.WriteByte(',')
-		}
 		this.Args[i].Emit(w)
+		w.WriteByte(',')
 	}
 	w.WriteByte(')')
 }
 
-func (this *SynFile) Emit(w IWriter) {
+func (this *SynFile) Emit(w IWriter, codeGenCommentNotice string) {
 	w.WriteString("package ")
 	w.WriteString(this.PkgName)
-	w.WriteString("; import (")
-	for pkgpath, pkgname := range this.pkgImportPathsToNames {
-		w.WriteString(pkgname)
-		w.WriteString(" \"")
-		w.WriteString(pkgpath)
-		w.WriteString("\";")
+	if len(codeGenCommentNotice) > 0 {
+		w.WriteString("\n\n// ")
+		w.WriteString(codeGenCommentNotice)
 	}
-	w.WriteString(");")
+	w.WriteString("\n\n")
+
+	if len(this.pkgImportPathsToNames) > 0 {
+		w.WriteString("import (")
+		for pkgpath, pkgname := range this.pkgImportPathsToNames {
+			w.WriteString(pkgname)
+			w.WriteString(" \"")
+			w.WriteString(pkgpath)
+			w.WriteString("\";")
+		}
+		w.WriteString(")\n\n")
+	}
+
 	this.emit(w, false)
 }
 
-func (this *SynFile) Src() (src []byte, err error) {
+func (this *SynFile) Src(codeGenCommentNotice string) (src []byte, err error) {
 	var buf bytes.Buffer
-	this.Emit(&buf)
+	this.Emit(&buf, codeGenCommentNotice)
 	orig := buf.Bytes()
 	if src, err = format.Source(orig); err != nil {
 		src = orig

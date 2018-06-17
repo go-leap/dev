@@ -1,10 +1,16 @@
 package udevgosyn
 
 var (
-	Break    = new(StmtBreak)
-	Continue = new(StmtContinue)
-	Nil      = new(ExprNil)
-	B        struct {
+	// keyword singletons
+	K struct {
+		Break    StmtBreak
+		Continue StmtContinue
+		Ret      StmtRet
+	}
+
+	// built-ins
+	B struct {
+		Nil     ExprNil
 		Append  Named
 		Cap     Named
 		Close   Named
@@ -21,6 +27,8 @@ var (
 		Real    Named
 		Recover Named
 	}
+
+	// common vars
 	V struct {
 		Err  Named
 		Ret  Named
@@ -33,8 +41,9 @@ func init() {
 	B.Append.Name, B.Cap.Name, B.Close.Name, B.Complex.Name, B.Copy.Name, B.Delete.Name, B.Imag.Name, B.Len.Name, B.Make.Name, B.New.Name, B.Panic.Name, B.Print.Name, B.Println.Name, B.Real.Name, B.Recover.Name = "append", "cap", "close", "complex", "copy", "delete", "imag", "len", "make", "new", "panic", "print", "println", "real", "recover"
 }
 
-func N(name string) Named       { return Named{Name: name} }
-func L(lit interface{}) ExprLit { return ExprLit{Val: lit} }
+func N(name string) Named                   { return Named{Name: name} }
+func Nt(name string, t *TypeRef) NamedTyped { return NamedTyped{Type: t, Named: Named{Name: name}} }
+func L(lit interface{}) ExprLit             { return ExprLit{Val: lit} }
 
 func Add(operands ...IEmit) OpAdd     { return OpAdd{Op: Op{Operands: operands}} }
 func Addr(operands ...IEmit) OpAddr   { return OpAddr{Op: Op{Operands: operands}} }
@@ -91,92 +100,92 @@ func TrMap(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
 	this.ToMapOf.Key, this.ToMapOf.Val = keyType, valType
 	return
 }
-func TrpBool(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpBool() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Bool = true
 	return
 }
-func TrpByte(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpByte() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Byte = true
 	return
 }
-func TrpC128(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpC128() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Complex128 = true
 	return
 }
-func TrpC64(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpC64() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Complex64 = true
 	return
 }
-func TrpF32(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpF32() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Float32 = true
 	return
 }
-func TrpF64(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpF64() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Float64 = true
 	return
 }
-func TrpInt(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpInt() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Int = true
 	return
 }
-func TrpI16(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpI16() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Int16 = true
 	return
 }
-func TrpI32(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpI32() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Int32 = true
 	return
 }
-func TrpI64(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpI64() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Int64 = true
 	return
 }
-func TrpI8(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpI8() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Int8 = true
 	return
 }
-func TrpRune(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpRune() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Rune = true
 	return
 }
-func TrpStr(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpStr() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.String = true
 	return
 }
-func TrpUint(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpUint() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Uint = true
 	return
 }
-func TrpUi16(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpUi16() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Uint16 = true
 	return
 }
-func TrpUi32(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpUi32() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Uint32 = true
 	return
 }
-func TrpUi64(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpUi64() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Uint64 = true
 	return
 }
-func TrpUi8(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrpUi8() (this *TypeRef) {
 	this = &TypeRef{}
 	this.ToPrim.Uint8 = true
 	return
