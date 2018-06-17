@@ -598,6 +598,19 @@ func Sub(operands ...ISyn) OpSub
 func (this OpSub) Emit(w IWriter)
 ```
 
+#### type PkgImports
+
+```go
+type PkgImports map[string]string
+```
+
+
+#### func (*PkgImports) I
+
+```go
+func (this *PkgImports) I(pkgImportPath string) (pkgImportName string)
+```
+
 #### type StmtBreak
 
 ```go
@@ -865,6 +878,12 @@ type SynCond struct {
 ```
 
 
+#### func  Cond
+
+```go
+func Cond(cond ISyn, thens ...ISyn) (this SynCond)
+```
+
 #### type SynFile
 
 ```go
@@ -884,19 +903,13 @@ func File(pkgName string, topLevelDecls ...ISyn) *SynFile
 #### func (*SynFile) Emit
 
 ```go
-func (this *SynFile) Emit(w IWriter, codeGenCommentNotice string)
-```
-
-#### func (*SynFile) I
-
-```go
-func (this *SynFile) I(pkgImportPath string) (pkgName string)
+func (this *SynFile) Emit(w IWriter, codeGenCommentNotice string, pkgImportPathsToNames PkgImports)
 ```
 
 #### func (*SynFile) Src
 
 ```go
-func (this *SynFile) Src(codeGenCommentNotice string, emitNoOpFuncBodies bool) (src []byte, err error)
+func (this *SynFile) Src(codeGenCommentNotice string, emitNoOpFuncBodies bool, pkgImportPathsToNames PkgImports) (src []byte, err error)
 ```
 
 #### type SynFunc

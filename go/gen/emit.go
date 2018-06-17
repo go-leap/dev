@@ -431,7 +431,7 @@ func (this *ExprCall) Emit(w IWriter) {
 	w.WriteByte(')')
 }
 
-func (this *SynFile) Emit(w IWriter, codeGenCommentNotice string) {
+func (this *SynFile) Emit(w IWriter, codeGenCommentNotice string, pkgImportPathsToNames PkgImports) {
 	w.WriteString("package ")
 	w.WriteString(this.PkgName)
 	if len(codeGenCommentNotice) > 0 {
@@ -440,9 +440,9 @@ func (this *SynFile) Emit(w IWriter, codeGenCommentNotice string) {
 	}
 	w.WriteString("\n\n")
 
-	if len(this.pkgImportPathsToNames) > 0 {
+	if len(pkgImportPathsToNames) > 0 {
 		w.WriteString("import (")
-		for pkgpath, pkgname := range this.pkgImportPathsToNames {
+		for pkgpath, pkgname := range pkgImportPathsToNames {
 			w.WriteString(pkgname)
 			w.WriteString(" \"")
 			w.WriteString(pkgpath)
@@ -454,9 +454,9 @@ func (this *SynFile) Emit(w IWriter, codeGenCommentNotice string) {
 	this.emit(w, false, "\n\n")
 }
 
-func (this *SynFile) Src(codeGenCommentNotice string, emitNoOpFuncBodies bool) (src []byte, err error) {
+func (this *SynFile) Src(codeGenCommentNotice string, emitNoOpFuncBodies bool, pkgImportPathsToNames PkgImports) (src []byte, err error) {
 	buf := writer{emitNoOpFuncBodies: emitNoOpFuncBodies}
-	this.Emit(&buf, codeGenCommentNotice)
+	this.Emit(&buf, codeGenCommentNotice, pkgImportPathsToNames)
 
 	const gofmt = true
 	if orig := buf.Bytes(); !gofmt {

@@ -303,3 +303,8 @@ func Var(name string, maybeType *TypeRef, maybeExpr ISyn) (this *StmtVar) {
 	this.Name, this.Type = name, maybeType
 	return
 }
+
+func Cond(cond ISyn, thens ...ISyn) (this SynCond) {
+	this.Cond, this.Body = cond, thens
+	return
+}

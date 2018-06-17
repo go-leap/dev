@@ -195,22 +195,24 @@ type ExprCall struct {
 	Args   []ISyn
 }
 
-type SynFile struct {
-	PkgName string
-	SynBlock
+type PkgImports map[string]string
 
-	pkgImportPathsToNames map[string]string
+func (this *PkgImports) I(pkgImportPath string) (pkgImportName string) {
+	self := *this
+	if self == nil {
+		self = map[string]string{}
+	}
+	if pkgImportName = self[pkgImportPath]; pkgImportName == "" {
+		pkgImportName = strSlashesToUnderscores.Replace(pkgImportPath)
+		self[pkgImportPath] = pkgImportName
+	}
+	*this = self
+	return
 }
 
 var strSlashesToUnderscores = strings.NewReplacer("/", "_")
 
-func (this *SynFile) I(pkgImportPath string) (pkgName string) {
-	if this.pkgImportPathsToNames == nil {
-		this.pkgImportPathsToNames = map[string]string{}
-	}
-	if pkgName = this.pkgImportPathsToNames[pkgImportPath]; pkgName == "" {
-		pkgName = strSlashesToUnderscores.Replace(pkgImportPath)
-		this.pkgImportPathsToNames[pkgImportPath] = pkgName
-	}
-	return
+type SynFile struct {
+	PkgName string
+	SynBlock
 }
