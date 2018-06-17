@@ -1,4 +1,4 @@
-package udevgosyn
+package udevgogen
 
 import (
 	"bytes"
@@ -217,11 +217,18 @@ func (this SynBlock) emit(w IWriter, wrapInCurlyBraces bool, sep string, appendT
 }
 
 func (this *SynFunc) Emit(w IWriter) {
-	if len(this.DocCommentLines) > 0 {
+	doc, noop := this.Doc, w.ShouldEmitNoOpFuncBodies()
+	if noop {
+		doc = append(doc, "As per your current (and presumably temporary) go-gent code-gen settings, this method is effectively a no-op (so each of its return values will always equal its type's zero-value).")
+	}
+	if len(doc) > 0 {
 		w.WriteString("\n\n")
-		for _, doccommentln := range this.DocCommentLines {
+		for i, doccommentpara := range doc {
+			if i > 0 {
+				w.WriteString("// \n")
+			}
 			w.WriteString("// ")
-			w.WriteString(doccommentln)
+			w.WriteString(doccommentpara)
 			w.WriteByte('\n')
 		}
 	}
@@ -234,7 +241,7 @@ func (this *SynFunc) Emit(w IWriter) {
 		w.WriteByte(')')
 	}
 	w.WriteString(this.Name)
-	if this.Type.emit(w, true); w.ShouldEmitNoOpFuncBodies() {
+	if this.Type.emit(w, true); noop {
 		SynBlock{}.emit(w, true, "", K.Ret)
 	} else {
 		this.SynBlock.emit(w, true, "", K.Ret)

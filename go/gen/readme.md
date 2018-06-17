@@ -1,6 +1,6 @@
-# udevgosyn
+# udevgogen
 --
-    import "github.com/go-leap/dev/go/syn"
+    import "github.com/go-leap/dev/go/gen"
 
 
 ## Usage
@@ -46,6 +46,19 @@ var (
 		Bool *TypeRef
 	}
 )
+```
+
+#### type DocCommentSingleLineParagraphs
+
+```go
+type DocCommentSingleLineParagraphs []string
+```
+
+
+#### func (*DocCommentSingleLineParagraphs) Add
+
+```go
+func (this *DocCommentSingleLineParagraphs) Add(docCommentLines ...string)
 ```
 
 #### type ExprCall
@@ -885,8 +898,8 @@ func (this *SynFile) Src(codeGenCommentNotice string, emitNoOpFuncBodies bool) (
 type SynFunc struct {
 	SynBlock
 	NamedTyped
-	Recv            NamedTyped
-	DocCommentLines []string
+	Recv NamedTyped
+	Doc  DocCommentSingleLineParagraphs
 }
 ```
 

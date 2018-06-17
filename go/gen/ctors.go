@@ -1,4 +1,4 @@
-package udevgosyn
+package udevgogen
 
 var (
 	// keyword singletons

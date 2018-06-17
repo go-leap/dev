@@ -1,8 +1,14 @@
-package udevgosyn
+package udevgogen
 
 import (
 	"strings"
 )
+
+type DocCommentSingleLineParagraphs []string
+
+func (this *DocCommentSingleLineParagraphs) Add(docCommentLines ...string) {
+	*this = append(*this, docCommentLines...)
+}
 
 type Named struct{ Name string }
 
@@ -88,8 +94,8 @@ func (this *SynBlock) Add(stmts ...ISyn) { this.Body = append(this.Body, stmts..
 type SynFunc struct {
 	SynBlock
 	NamedTyped
-	Recv            NamedTyped
-	DocCommentLines []string
+	Recv NamedTyped
+	Doc  DocCommentSingleLineParagraphs
 }
 
 type StmtUnary struct {
