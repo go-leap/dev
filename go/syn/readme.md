@@ -43,6 +43,12 @@ var (
 )
 ```
 
+```go
+var (
+	EmitNoOpFuncBodies = false
+)
+```
+
 #### type ExprCall
 
 ```go
@@ -807,6 +813,12 @@ type SynBlock struct {
 
 ```go
 func Block(body ...IEmit) (this SynBlock)
+```
+
+#### func (*SynBlock) Add
+
+```go
+func (this *SynBlock) Add(stmts ...IEmit)
 ```
 
 #### func (SynBlock) Emit

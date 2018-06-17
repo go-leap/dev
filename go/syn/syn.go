@@ -83,6 +83,8 @@ type SynBlock struct {
 	Body []IEmit
 }
 
+func (this *SynBlock) Add(stmts ...IEmit) { this.Body = append(this.Body, stmts...) }
+
 type SynFunc struct {
 	SynBlock
 	NamedTyped

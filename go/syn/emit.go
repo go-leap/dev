@@ -9,6 +9,10 @@ import (
 	"strconv"
 )
 
+var (
+	EmitNoOpFuncBodies = false
+)
+
 type IEmit interface {
 	Emit(IWriter)
 }
@@ -182,21 +186,24 @@ func (this TypeDecl) Emit(w IWriter) {
 }
 
 func (this SynBlock) Emit(w IWriter) {
-	this.emit(w, true)
+	this.emit(w, true, "")
 	w.WriteByte(';')
 }
 
-func (this SynBlock) emit(w IWriter, wrapInCurlyBraces bool, appendToBody ...IEmit) {
+func (this SynBlock) emit(w IWriter, wrapInCurlyBraces bool, sep string, appendToBody ...IEmit) {
+	if sep == "" {
+		sep = "   ;   "
+	}
 	if wrapInCurlyBraces {
 		w.WriteByte('{')
 	}
 	for i := range this.Body {
 		this.Body[i].Emit(w)
-		w.WriteByte(';')
+		w.WriteString(sep)
 	}
 	for i := range appendToBody {
 		appendToBody[i].Emit(w)
-		w.WriteByte(';')
+		w.WriteString(sep)
 	}
 	if wrapInCurlyBraces {
 		w.WriteByte('}')
@@ -212,8 +219,11 @@ func (this *SynFunc) Emit(w IWriter) {
 		w.WriteByte(')')
 	}
 	w.WriteString(this.Name)
-	this.Type.emit(w, true)
-	this.SynBlock.emit(w, true, K.Ret)
+	if this.Type.emit(w, true); EmitNoOpFuncBodies {
+		SynBlock{}.emit(w, true, "", K.Ret)
+	} else {
+		this.SynBlock.emit(w, true, "", K.Ret)
+	}
 }
 
 func (StmtBreak) Emit(w IWriter) {
@@ -263,10 +273,10 @@ func (this *StmtIf) Emit(w IWriter) {
 	for i := range this.IfThens {
 		w.WriteString("if ")
 		this.IfThens[i].Cond.Emit(w)
-		this.IfThens[i].emit(w, true)
+		this.IfThens[i].emit(w, true, "")
 		w.WriteString(" else ")
 	}
-	this.Else.emit(w, true)
+	this.Else.emit(w, true, "")
 }
 
 func (this *StmtSwitch) Emit(w IWriter) {
@@ -279,11 +289,11 @@ func (this *StmtSwitch) Emit(w IWriter) {
 		w.WriteString("case ")
 		this.Cases[i].Cond.Emit(w)
 		w.WriteByte(':')
-		this.Cases[i].emit(w, false)
+		this.Cases[i].emit(w, false, "")
 	}
 	if len(this.Default.Body) > 0 {
 		w.WriteString("default: ")
-		this.Default.emit(w, false)
+		this.Default.emit(w, false, "")
 	}
 	w.WriteByte('}')
 }
@@ -312,7 +322,7 @@ func (this *StmtFor) emitRange(w IWriter) {
 	}
 	w.WriteString("range")
 	this.Range.Iteree.Emit(w)
-	this.emit(w, true)
+	this.emit(w, true, "")
 }
 
 func (this *StmtFor) emitLoop(w IWriter) {
@@ -328,7 +338,7 @@ func (this *StmtFor) emitLoop(w IWriter) {
 	if this.Loop.Each != nil {
 		this.Loop.Each.Emit(w)
 	}
-	this.emit(w, true)
+	this.emit(w, true, "")
 }
 
 func (this Op) emit(w IWriter, operator string) {
@@ -419,14 +429,16 @@ func (this *SynFile) Emit(w IWriter, codeGenCommentNotice string) {
 		w.WriteString(")\n\n")
 	}
 
-	this.emit(w, false)
+	this.emit(w, false, "\n\n")
 }
 
 func (this *SynFile) Src(codeGenCommentNotice string) (src []byte, err error) {
 	var buf bytes.Buffer
 	this.Emit(&buf, codeGenCommentNotice)
-	orig := buf.Bytes()
-	if src, err = format.Source(orig); err != nil {
+	const dogofmt = true
+	if orig := buf.Bytes(); !dogofmt {
+		src = orig
+	} else if src, err = format.Source(orig); err != nil {
 		src = orig
 	}
 	return
