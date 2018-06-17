@@ -43,7 +43,14 @@ var (
 
 	// common type-refs
 	T struct {
-		Bool *TypeRef
+		Bool   *TypeRef
+		String *TypeRef
+	}
+
+	// common func sigs
+	Sigs struct {
+		NoneToBool   TypeFunc
+		NoneToString TypeFunc
 	}
 )
 ```
@@ -1159,10 +1166,10 @@ func TrpInt() (this *TypeRef)
 func TrpRune() (this *TypeRef)
 ```
 
-#### func  TrpStr
+#### func  TrpString
 
 ```go
-func TrpStr() (this *TypeRef)
+func TrpString() (this *TypeRef)
 ```
 
 #### func  TrpUi16

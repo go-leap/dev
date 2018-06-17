@@ -37,14 +37,22 @@ var (
 
 	// common type-refs
 	T struct {
-		Bool *TypeRef
+		Bool   *TypeRef
+		String *TypeRef
+	}
+
+	// common func sigs
+	Sigs struct {
+		NoneToBool   TypeFunc
+		NoneToString TypeFunc
 	}
 )
 
 func init() {
 	V.Err.Name, V.Ret.Name, V.This.Name = "err", "ret", "this"
 	B.Append.Name, B.Cap.Name, B.Close.Name, B.Complex.Name, B.Copy.Name, B.Delete.Name, B.Imag.Name, B.Len.Name, B.Make.Name, B.New.Name, B.Panic.Name, B.Print.Name, B.Println.Name, B.Real.Name, B.Recover.Name = "append", "cap", "close", "complex", "copy", "delete", "imag", "len", "make", "new", "panic", "print", "println", "real", "recover"
-	T.Bool = TrpBool()
+	T.Bool, T.String = TrpBool(), TrpString()
+	Sigs.NoneToBool.Rets, Sigs.NoneToString.Rets = NamedsTypeds{V.Ret.Typed(T.Bool)}, NamedsTypeds{V.Ret.Typed(T.String)}
 }
 
 func A(argsOrOperandsOrStmts ...ISyn) []ISyn { return argsOrOperandsOrStmts }
@@ -167,7 +175,7 @@ func TrpRune() (this *TypeRef) {
 	this.Prim.Rune = true
 	return
 }
-func TrpStr() (this *TypeRef) {
+func TrpString() (this *TypeRef) {
 	this = &TypeRef{}
 	this.Prim.String = true
 	return
