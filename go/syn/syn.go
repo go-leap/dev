@@ -88,7 +88,8 @@ func (this *SynBlock) Add(stmts ...IEmit) { this.Body = append(this.Body, stmts.
 type SynFunc struct {
 	SynBlock
 	NamedTyped
-	Recv NamedTyped
+	Recv            NamedTyped
+	DocCommentLines []string
 }
 
 type StmtUnary struct {

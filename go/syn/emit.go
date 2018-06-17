@@ -9,15 +9,19 @@ import (
 	"strconv"
 )
 
-var (
-	EmitNoOpFuncBodies = false
-)
-
 type IEmit interface {
 	Emit(IWriter)
 }
 
+type writer struct {
+	bytes.Buffer
+	emitNoOpFuncBodies bool
+}
+
+func (this *writer) ShouldEmitNoOpFuncBodies() bool { return this.emitNoOpFuncBodies }
+
 type IWriter interface {
+	ShouldEmitNoOpFuncBodies() bool
 	io.ByteWriter
 	io.Writer
 	WriteRune(rune) (int, error)
@@ -211,6 +215,15 @@ func (this SynBlock) emit(w IWriter, wrapInCurlyBraces bool, sep string, appendT
 }
 
 func (this *SynFunc) Emit(w IWriter) {
+	if len(this.DocCommentLines) > 0 {
+		w.WriteString("\n\n")
+		for _, doccommentln := range this.DocCommentLines {
+			w.WriteString("// ")
+			w.WriteString(doccommentln)
+			w.WriteByte('\n')
+		}
+	}
+
 	if w.WriteString("func "); this.Recv.Type != nil {
 		w.WriteByte('(')
 		w.WriteString(this.Recv.Name)
@@ -219,7 +232,7 @@ func (this *SynFunc) Emit(w IWriter) {
 		w.WriteByte(')')
 	}
 	w.WriteString(this.Name)
-	if this.Type.emit(w, true); EmitNoOpFuncBodies {
+	if this.Type.emit(w, true); w.ShouldEmitNoOpFuncBodies() {
 		SynBlock{}.emit(w, true, "", K.Ret)
 	} else {
 		this.SynBlock.emit(w, true, "", K.Ret)
@@ -432,11 +445,12 @@ func (this *SynFile) Emit(w IWriter, codeGenCommentNotice string) {
 	this.emit(w, false, "\n\n")
 }
 
-func (this *SynFile) Src(codeGenCommentNotice string) (src []byte, err error) {
-	var buf bytes.Buffer
+func (this *SynFile) Src(codeGenCommentNotice string, emitNoOpFuncBodies bool) (src []byte, err error) {
+	buf := writer{emitNoOpFuncBodies: emitNoOpFuncBodies}
 	this.Emit(&buf, codeGenCommentNotice)
-	const dogofmt = true
-	if orig := buf.Bytes(); !dogofmt {
+
+	const gofmt = true
+	if orig := buf.Bytes(); !gofmt {
 		src = orig
 	} else if src, err = format.Source(orig); err != nil {
 		src = orig

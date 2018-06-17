@@ -43,12 +43,6 @@ var (
 )
 ```
 
-```go
-var (
-	EmitNoOpFuncBodies = false
-)
-```
-
 #### type ExprCall
 
 ```go
@@ -119,6 +113,7 @@ type IEmit interface {
 
 ```go
 type IWriter interface {
+	ShouldEmitNoOpFuncBodies() bool
 	io.ByteWriter
 	io.Writer
 	WriteRune(rune) (int, error)
@@ -868,7 +863,7 @@ func (this *SynFile) I(pkgImportPath string) (pkgName string)
 #### func (*SynFile) Src
 
 ```go
-func (this *SynFile) Src(codeGenCommentNotice string) (src []byte, err error)
+func (this *SynFile) Src(codeGenCommentNotice string, emitNoOpFuncBodies bool) (src []byte, err error)
 ```
 
 #### type SynFunc
@@ -877,7 +872,8 @@ func (this *SynFile) Src(codeGenCommentNotice string) (src []byte, err error)
 type SynFunc struct {
 	SynBlock
 	NamedTyped
-	Recv NamedTyped
+	Recv            NamedTyped
+	DocCommentLines []string
 }
 ```
 
