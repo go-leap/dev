@@ -593,7 +593,7 @@ declarations destined to be emitted into a single source file, plus the
 #### func  File
 
 ```go
-func File(pkgName string, topLevelDecls ...ISyn) *SourceFile
+func File(pkgName string, allocBodyCap int, topLevelDecls ...ISyn) *SourceFile
 ```
 File constructs a `SourceFile`.
 

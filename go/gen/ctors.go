@@ -157,8 +157,8 @@ func Defer(call *ExprCall) (this StmtDefer) {
 }
 
 // File constructs a `SourceFile`.
-func File(pkgName string, topLevelDecls ...ISyn) *SourceFile {
-	return &SourceFile{PkgName: pkgName, SynBlock: SynBlock{Body: topLevelDecls}}
+func File(pkgName string, allocBodyCap int, topLevelDecls ...ISyn) *SourceFile {
+	return &SourceFile{PkgName: pkgName, SynBlock: SynBlock{Body: append(make([]ISyn, 0, allocBodyCap), topLevelDecls...)}}
 }
 
 // ForLoop constructs a `StmtFor` that emits a classical `for` (not `range`) loop.
