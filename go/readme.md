@@ -338,25 +338,25 @@ func QueryDesc_Guru(fullsrcfilepath string, srcin string, bytepos string) (*Guru
 #### func (*Guru) Len
 
 ```go
-func (me *Guru) Len() int
+func (this *Guru) Len() int
 ```
 
 #### func (*Guru) Less
 
 ```go
-func (me *Guru) Less(i int, j int) bool
+func (this *Guru) Less(i int, j int) bool
 ```
 
 #### func (*Guru) Matches
 
 ```go
-func (me *Guru) Matches(pM *gurujson.DescribeMember, lowerCaseQuery string) bool
+func (this *Guru) Matches(pM *gurujson.DescribeMember, lowerCaseQuery string) bool
 ```
 
 #### func (*Guru) Swap
 
 ```go
-func (me *Guru) Swap(i int, j int)
+func (this *Guru) Swap(i int, j int)
 ```
 
 #### type PackageError
@@ -402,41 +402,41 @@ func PkgsForFiles(filePaths ...string) (pkgs []*Pkg, shouldRefresh bool)
 #### func (*Pkg) CountLoC
 
 ```go
-func (me *Pkg) CountLoC()
+func (this *Pkg) CountLoC()
 ```
 
 #### func (*Pkg) Dependants
 
 ```go
-func (me *Pkg) Dependants() []string
+func (this *Pkg) Dependants() []string
 ```
 
 #### func (*Pkg) GoFilePaths
 
 ```go
-func (me *Pkg) GoFilePaths(inclTests bool) []string
+func (this *Pkg) GoFilePaths(inclTests bool) []string
 ```
 
 #### func (*Pkg) Importers
 
 ```go
-func (me *Pkg) Importers() []string
+func (this *Pkg) Importers() []string
 ```
 
 #### func (*Pkg) IsSortedPriorTo
 
 ```go
-func (me *Pkg) IsSortedPriorTo(pkg interface{}) bool
+func (this *Pkg) IsSortedPriorTo(pkg interface{}) bool
 ```
 
 #### func (*Pkg) IsSortedPriorToByDeps
 
 ```go
-func (me *Pkg) IsSortedPriorToByDeps(cmp *Pkg) bool
+func (this *Pkg) IsSortedPriorToByDeps(cmp *Pkg) bool
 ```
 
 #### func (*Pkg) String
 
 ```go
-func (me *Pkg) String() string
+func (this *Pkg) String() string
 ```

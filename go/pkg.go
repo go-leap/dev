@@ -39,10 +39,10 @@ type Pkg struct {
 	goFilePathsAll    []string
 }
 
-func (me *Pkg) IsSortedPriorTo(pkg interface{}) bool { return me.ImportPath < pkg.(*Pkg).ImportPath }
-func (me *Pkg) String() string                       { return me.ImportPath }
-func (me *Pkg) IsSortedPriorToByDeps(cmp *Pkg) bool {
-	return !ustr.In(cmp.ImportPath, me.Deps...)
+func (this *Pkg) IsSortedPriorTo(pkg interface{}) bool { return this.ImportPath < pkg.(*Pkg).ImportPath }
+func (this *Pkg) String() string                       { return this.ImportPath }
+func (this *Pkg) IsSortedPriorToByDeps(cmp *Pkg) bool {
+	return !ustr.In(cmp.ImportPath, this.Deps...)
 }
 
 //	copied over from `go list` src because that cmd outputs this stuff but one cannot import it from anywhere
@@ -156,61 +156,61 @@ var (
 // 	return
 // }
 
-func (me *Pkg) Dependants() []string {
-	if me.dependants == nil {
+func (this *Pkg) Dependants() []string {
+	if this.dependants == nil {
 		pkgsMutex.Lock()
 		defer pkgsMutex.Unlock()
-		me.dependants = []string{}
+		this.dependants = []string{}
 		for _, pkg := range PkgsByDir {
-			if ustr.In(me.ImportPath, pkg.Deps...) {
-				me.dependants = append(me.dependants, pkg.ImportPath)
+			if ustr.In(this.ImportPath, pkg.Deps...) {
+				this.dependants = append(this.dependants, pkg.ImportPath)
 			}
 		}
 	}
-	return me.dependants
+	return this.dependants
 }
 
-func (me *Pkg) Importers() []string {
-	if me.importers == nil {
+func (this *Pkg) Importers() []string {
+	if this.importers == nil {
 		pkgsMutex.Lock()
 		defer pkgsMutex.Unlock()
-		me.importers = []string{}
+		this.importers = []string{}
 		for _, pkg := range PkgsByDir {
-			if ustr.In(me.ImportPath, pkg.Imports...) {
-				me.importers = append(me.importers, pkg.ImportPath)
+			if ustr.In(this.ImportPath, pkg.Imports...) {
+				this.importers = append(this.importers, pkg.ImportPath)
 			}
 		}
 	}
-	return me.importers
+	return this.importers
 }
 
-func (me *Pkg) GoFilePaths(inclTests bool) []string {
-	l, gofilepaths := len(me.GoFiles), me.goFilePathsNoTest
+func (this *Pkg) GoFilePaths(inclTests bool) []string {
+	l, gofilepaths := len(this.GoFiles), this.goFilePathsNoTest
 	if inclTests {
-		l, gofilepaths = l+len(me.TestGoFiles), me.goFilePathsAll
+		l, gofilepaths = l+len(this.TestGoFiles), this.goFilePathsAll
 	}
 	if l != len(gofilepaths) {
-		slices := [][]string{me.GoFiles}
+		slices := [][]string{this.GoFiles}
 		if gofilepaths = make([]string, 0, l); inclTests {
-			slices = append(slices, me.TestGoFiles)
+			slices = append(slices, this.TestGoFiles)
 		}
 		for _, filenames := range slices {
 			for _, fname := range filenames {
-				gofilepaths = append(gofilepaths, filepath.Join(me.Dir, fname))
+				gofilepaths = append(gofilepaths, filepath.Join(this.Dir, fname))
 			}
 		}
 		if inclTests {
-			me.goFilePathsAll = gofilepaths
+			this.goFilePathsAll = gofilepaths
 		} else {
-			me.goFilePathsNoTest = gofilepaths
+			this.goFilePathsNoTest = gofilepaths
 		}
 	}
 	return gofilepaths
 }
 
-func (me *Pkg) CountLoC() {
-	me.ApproxLoC = 0
-	for _, gfp := range me.GoFilePaths(false) {
+func (this *Pkg) CountLoC() {
+	this.ApproxLoC = 0
+	for _, gfp := range this.GoFilePaths(false) {
 		incomment := false
 		for _, ln := range ustr.Split(ufs.ReadTextFileOr(gfp, ""), "\n") {
 			if ln = ustr.Trim(ln); len(ln) > 0 { // yeap, will bug for pointlessly unusual multiline-comment "compositions"
@@ -219,7 +219,7 @@ func (me *Pkg) CountLoC() {
 				} else if ustr.Pref(ln, "/*") {
 					incomment = true
 				} else if (!incomment) && !ustr.Pref(ln, "//") {
-					me.ApproxLoC++
+					this.ApproxLoC++
 				}
 			}
 		}
@@ -302,11 +302,11 @@ func PkgsForFiles(filePaths ...string) (pkgs []*Pkg, shouldRefresh bool) {
 	return
 }
 
-// func (me *Pkg) Importers(basedirpath string) (pkgimppaths []string) {
+// func (this *Pkg) Importers(basedirpath string) (pkgimppaths []string) {
 // 	pkgsMutex.Lock()
 // 	defer pkgsMutex.Unlock()
 // 	for _, pkg := range PkgsByDir {
-// 		if uslice.StrHas(pkg.Imports, me.ImportPath) {
+// 		if uslice.StrHas(pkg.Imports, this.ImportPath) {
 // 			if len(basedirpath) == 0 {
 // 				pkgimppaths = append(pkgimppaths, pkg.ImportPath)
 // 			} else if reldirpath, _ := filepath.Rel(basedirpath, pkg.Dir); len(reldirpath) > 0 {

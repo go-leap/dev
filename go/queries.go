@@ -35,12 +35,12 @@ type Guru struct {
 	IsLessThan func(*gurujson.DescribeMember, *gurujson.DescribeMember) bool `json:"-"`
 }
 
-func (me *Guru) Len() int { return len(me.Package.Members) }
+func (this *Guru) Len() int { return len(this.Package.Members) }
 
-func (me *Guru) Less(i int, j int) bool {
-	dis, dat := me.Package.Members[i], me.Package.Members[j]
-	if me.IsLessThan != nil {
-		return me.IsLessThan(dis, dat)
+func (this *Guru) Less(i int, j int) bool {
+	dis, dat := this.Package.Members[i], this.Package.Members[j]
+	if this.IsLessThan != nil {
+		return this.IsLessThan(dis, dat)
 	}
 	if dis.Kind != dat.Kind {
 		return dis.Kind < dat.Kind
@@ -50,11 +50,11 @@ func (me *Guru) Less(i int, j int) bool {
 	return dis.Name < dat.Name
 }
 
-func (me *Guru) Swap(i int, j int) {
-	me.Package.Members[i], me.Package.Members[j] = me.Package.Members[j], me.Package.Members[i]
+func (this *Guru) Swap(i int, j int) {
+	this.Package.Members[i], this.Package.Members[j] = this.Package.Members[j], this.Package.Members[i]
 }
 
-func (me *Guru) Matches(pM *gurujson.DescribeMember, lowerCaseQuery string) bool {
+func (this *Guru) Matches(pM *gurujson.DescribeMember, lowerCaseQuery string) bool {
 	return ustr.Has(ustr.Lo(pM.Kind), lowerCaseQuery) ||
 		ustr.Has(ustr.Lo(pM.Type), lowerCaseQuery) ||
 		ustr.Has(ustr.Lo(pM.Name), lowerCaseQuery) ||

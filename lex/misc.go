@@ -15,4 +15,4 @@ type Error struct {
 }
 
 // Error implements Go's standard `error` interface.
-func (me *Error) Error() string { return me.msg }
+func (this *Error) Error() string { return this.msg }
