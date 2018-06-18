@@ -20,6 +20,26 @@ type NamedTyped struct {
 // NamedsTypeds is a slice of 0-or-more `NamedTyped`s.
 type NamedsTypeds []NamedTyped
 
+// AllNamed returns whether all `NamedTyped`s in `this` have a `Name` set.
+func (this NamedsTypeds) AllNamed() bool {
+	for i := range this {
+		if this[i].Name == "" {
+			return false
+		}
+	}
+	return len(this) > 0
+}
+
+// AllTyped returns whether all `NamedTyped`s in `this` have a `Type` set.
+func (this NamedsTypeds) AllTyped() bool {
+	for i := range this {
+		if this[i].Type == nil {
+			return false
+		}
+	}
+	return len(this) > 0
+}
+
 // TypeFunc represents a func signature.
 type TypeFunc struct {
 	// func arguments
@@ -113,9 +133,9 @@ func (this *SynBlock) Add(stmts ...ISyn) { this.Body = append(this.Body, stmts..
 // SynFunc represents either a top-level (named) func /
 // method declaration, or an anonymous func expression.
 type SynFunc struct {
-	// the func's body of statements (a tailing
-	// `StmtRet` will always be implicitly present
-	// and should not be explicitly included in here)
+	// the func's body of statements --- if it is missing
+	// a final `StmtRet` and all return values are named,
+	// one will be automatically appended at code-gen time
 	SynBlock
 	// optionally the func's `Name` (if top-level decl),
 	// the `Type` must point to the func's signature

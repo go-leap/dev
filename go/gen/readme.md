@@ -2,6 +2,17 @@
 --
     import "github.com/go-leap/dev/go/gen"
 
+Package github.com/go-leap/dev/go/gen provides AST constructs for generating Go
+code. These are by design much simpler and leaner than `go/ast`, given that the
+latter is designed to represent existing & parsed code, while the former is for
+on-the-fly construction of newly-to-be-emitted code.
+
+Some language primitives I haven't needed to emit yet aren't covered yet, to be
+added when they're first needed (such as fixed-size-array types or `chan`nels).
+
+As a noteworthy goodie, all `func`s that have named return values automatically
+get a final `return` statement appended to their `Body` at code-gen time, if
+they don't already have one.
 
 ## Usage
 
@@ -115,13 +126,6 @@ func Call(callee ISyn, args ...ISyn) *ExprCall
 ```
 Call constructs an `ExprCall`.
 
-#### func (*ExprCall) Emit
-
-```go
-func (this *ExprCall) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type ExprLit
 
 ```go
@@ -140,13 +144,6 @@ func L(lit interface{}) ExprLit
 ```
 L constructs an `ExprLit`.
 
-#### func (ExprLit) Emit
-
-```go
-func (this ExprLit) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type ExprNil
 
 ```go
@@ -156,19 +153,11 @@ type ExprNil struct {
 
 ExprNil represents Go's `nil` built-in value.
 
-#### func (ExprNil) Emit
-
-```go
-func (ExprNil) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type ISyn
 
 ```go
 type ISyn interface {
-	// generates the code represented by this `ISyn`
-	Emit(IWriter)
+	// contains filtered or unexported methods
 }
 ```
 
@@ -182,21 +171,6 @@ func A(argsOrOperandsOrStmts ...ISyn) []ISyn
 ```
 A is merely a handy convenience short-hand to create a slice of `ISyn`s, as
 sometimes needed for listing arguments, operands, or statements.
-
-#### type IWriter
-
-```go
-type IWriter interface {
-	ShouldEmitNoOpFuncBodies() bool
-	io.ByteWriter
-	io.Writer
-	// WriteRune(rune) (int, error)
-	WriteString(string) (int, error)
-}
-```
-
-IWriter represents the buffer or other output stream that any `ISyn` can `Emit`
-code to.
 
 #### type Named
 
@@ -213,13 +187,6 @@ referring to named vars, consts, types, funcs etc.
 func N(name string) Named
 ```
 N constructs a `Named`.
-
-#### func (Named) Emit
-
-```go
-func (this Named) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### func (Named) Typed
 
@@ -255,6 +222,20 @@ type NamedsTypeds []NamedTyped
 
 NamedsTypeds is a slice of 0-or-more `NamedTyped`s.
 
+#### func (NamedsTypeds) AllNamed
+
+```go
+func (this NamedsTypeds) AllNamed() bool
+```
+AllNamed returns whether all `NamedTyped`s in `this` have a `Name` set.
+
+#### func (NamedsTypeds) AllTyped
+
+```go
+func (this NamedsTypeds) AllTyped() bool
+```
+AllTyped returns whether all `NamedTyped`s in `this` have a `Type` set.
+
 #### type Op
 
 ```go
@@ -282,13 +263,6 @@ func Add(operands ...ISyn) OpAdd
 ```
 Add constructs an `OpAdd`.
 
-#### func (OpAdd) Emit
-
-```go
-func (this OpAdd) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type OpAddr
 
 ```go
@@ -303,13 +277,6 @@ OpNot represents Go's unary address-taking `&` operator.
 func Addr(operands ...ISyn) OpAddr
 ```
 Addr constructs an `OpAddr`.
-
-#### func (OpAddr) Emit
-
-```go
-func (this OpAddr) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type OpAnd
 
@@ -326,13 +293,6 @@ func And(operands ...ISyn) OpAnd
 ```
 And constructs an `OpAnd`.
 
-#### func (OpAnd) Emit
-
-```go
-func (this OpAnd) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type OpComma
 
 ```go
@@ -347,13 +307,6 @@ OpComma emits all its operands separated by `,` commas.
 func C(operands ...ISyn) OpComma
 ```
 C constructs an `OpComma`.
-
-#### func (OpComma) Emit
-
-```go
-func (this OpComma) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type OpDecl
 
@@ -370,13 +323,6 @@ func Decl(operands ...ISyn) OpDecl
 ```
 Decl constructs an `OpDecl`.
 
-#### func (OpDecl) Emit
-
-```go
-func (this OpDecl) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type OpDeref
 
 ```go
@@ -391,13 +337,6 @@ OpNot represents Go's unary pointer-dereferencing `*` operator.
 func Deref(operands ...ISyn) OpDeref
 ```
 Deref constructs an `OpDeref`.
-
-#### func (OpDeref) Emit
-
-```go
-func (this OpDeref) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type OpDiv
 
@@ -414,13 +353,6 @@ func Div(operands ...ISyn) OpDiv
 ```
 Div constructs an `OpDiv`.
 
-#### func (OpDiv) Emit
-
-```go
-func (this OpDiv) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type OpDot
 
 ```go
@@ -435,13 +367,6 @@ OpDot represents Go's `.` selector operator.
 func D(operands ...ISyn) OpDot
 ```
 D constructs an `OpDot`.
-
-#### func (OpDot) Emit
-
-```go
-func (this OpDot) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type OpEq
 
@@ -458,13 +383,6 @@ func Eq(operands ...ISyn) OpEq
 ```
 Eq constructs an `OpEq`.
 
-#### func (OpEq) Emit
-
-```go
-func (this OpEq) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type OpGeq
 
 ```go
@@ -479,13 +397,6 @@ OpGeq represents Go's `>=` greater-or-equal comparison operator.
 func Geq(operands ...ISyn) OpGeq
 ```
 Geq constructs an `OpGeq`.
-
-#### func (OpGeq) Emit
-
-```go
-func (this OpGeq) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type OpGt
 
@@ -502,13 +413,6 @@ func Gt(operands ...ISyn) OpGt
 ```
 Gt constructs an `OpGt`.
 
-#### func (OpGt) Emit
-
-```go
-func (this OpGt) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type OpIdx
 
 ```go
@@ -523,13 +427,6 @@ OpIdx represents one or more `operand0[operand1][operand2]` indexers.
 func I(operands ...ISyn) OpIdx
 ```
 I constructs an `OpIdx`.
-
-#### func (OpIdx) Emit
-
-```go
-func (this OpIdx) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type OpLeq
 
@@ -546,13 +443,6 @@ func Leq(operands ...ISyn) OpLeq
 ```
 Leq constructs an `OpLeq`.
 
-#### func (OpLeq) Emit
-
-```go
-func (this OpLeq) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type OpLt
 
 ```go
@@ -567,13 +457,6 @@ OpLt represents Go's `<` less-than comparison operator.
 func Lt(operands ...ISyn) OpLt
 ```
 Lt constructs an `OpLt`.
-
-#### func (OpLt) Emit
-
-```go
-func (this OpLt) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type OpMul
 
@@ -590,13 +473,6 @@ func Mul(operands ...ISyn) OpMul
 ```
 Mul constructs an `OpMul`.
 
-#### func (OpMul) Emit
-
-```go
-func (this OpMul) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type OpNeq
 
 ```go
@@ -611,13 +487,6 @@ OpNeq represents Go's `!=` inequality comparison operator.
 func Neq(operands ...ISyn) OpNeq
 ```
 Neq constructs an `OpNeq`.
-
-#### func (OpNeq) Emit
-
-```go
-func (this OpNeq) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type OpNot
 
@@ -634,13 +503,6 @@ func Not(operands ...ISyn) OpNot
 ```
 Not constructs an `OpNot`.
 
-#### func (OpNot) Emit
-
-```go
-func (this OpNot) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type OpOr
 
 ```go
@@ -656,13 +518,6 @@ func Or(operands ...ISyn) OpOr
 ```
 Or constructs an `OpOr`.
 
-#### func (OpOr) Emit
-
-```go
-func (this OpOr) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type OpSet
 
 ```go
@@ -677,13 +532,6 @@ OpSet represents Go's `=` assignment operator.
 func Set(operands ...ISyn) OpSet
 ```
 Set constructs an `OpSet`.
-
-#### func (OpSet) Emit
-
-```go
-func (this OpSet) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type OpSub
 
@@ -707,29 +555,22 @@ func Sub(operands ...ISyn) OpSub
 ```
 Sub constructs an `OpSub`.
 
-#### func (OpSub) Emit
-
-```go
-func (this OpSub) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type PkgImports
 
 ```go
 type PkgImports map[string]string
 ```
 
-PkgImports maps (via its `I` method) package import paths to package import
+PkgImports maps (via its `Ensure` method) package import paths to package import
 names.
 
-#### func (*PkgImports) I
+#### func (*PkgImports) Ensure
 
 ```go
-func (this *PkgImports) I(pkgImportPath string) (pkgImportName string)
+func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName string)
 ```
-Returns the `pkgImportName` for the given `pkgImportPath` as stored in `this`
-(or if missing, devises one in the form of eg. `encodingjson` for
+Ensure returns the `pkgImportName` for the given `pkgImportPath` as stored in
+`this` (or if missing, devises one in the form of eg. `pkg__encoding_json` for
 `encoding/json` and stores it).
 
 #### type SourceFile
@@ -756,21 +597,23 @@ func File(pkgName string, topLevelDecls ...ISyn) *SourceFile
 ```
 File constructs a `SourceFile`.
 
-#### func (*SourceFile) Emit
+#### func (*SourceFile) CodeGen
 
 ```go
-func (this *SourceFile) Emit(w IWriter, codeGenCommentNotice string, pkgImportPathsToNames PkgImports)
+func (this *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool, goFmt bool) (src []byte, goFmtTimeTaken time.Duration, goFmtErr error)
 ```
-Emit generates the code represented by `this`.
+CodeGen generates the code via `this.CodeGenPlain()`, and then optionally
+`go/format`s it. Any `error` returned is from `go/format`, and if so, `src` will
+instead contain the original (non-formatted) generated code that was given to
+`go/format` to aid investigating the issue.
 
-#### func (*SourceFile) Src
+#### func (*SourceFile) CodeGenPlain
 
 ```go
-func (this *SourceFile) Src(codeGenCommentNotice string, emitNoOpFuncBodies bool, pkgImportPathsToNames PkgImports) (src []byte, err error)
+func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool) []byte
 ```
-Src calls `this.Emit` to generate the code into `src`, and then `go/format`s it.
-Any `err` returned is from `go/format`, and if so, `src` will instead contain
-the original non-formatted generated code to aid troubleshooting the issue.
+CodeGenPlain generates the code represented by `this` into `src`, without
+`go/format`ting it.
 
 #### type StmtBreak
 
@@ -779,13 +622,6 @@ type StmtBreak struct{}
 ```
 
 StmtBreak represents Go's `break` keyword.
-
-#### func (StmtBreak) Emit
-
-```go
-func (StmtBreak) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type StmtConst
 
@@ -807,13 +643,6 @@ func Const(name string, maybeType *TypeRef, exprLit ExprLit) (this *StmtConst)
 ```
 Const constructs a `StmtConst`.
 
-#### func (*StmtConst) Emit
-
-```go
-func (this *StmtConst) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type StmtContinue
 
 ```go
@@ -821,13 +650,6 @@ type StmtContinue struct{}
 ```
 
 StmtContinue represents Go's `continue` keyword.
-
-#### func (StmtContinue) Emit
-
-```go
-func (StmtContinue) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type StmtDefer
 
@@ -845,13 +667,6 @@ StmtDefer represents Go's `defer` keyword.
 func Defer(call *ExprCall) (this StmtDefer)
 ```
 Defer constructs a `StmtDefer`.
-
-#### func (StmtDefer) Emit
-
-```go
-func (this StmtDefer) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type StmtFor
 
@@ -898,13 +713,6 @@ func ForRange(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (this *
 ```
 ForRange constructs a `StmtFor` that emits a `for .. range` loop.
 
-#### func (*StmtFor) Emit
-
-```go
-func (this *StmtFor) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type StmtGo
 
 ```go
@@ -921,13 +729,6 @@ StmtGo represents Go's `go` keyword.
 func Go(call *ExprCall) (this StmtGo)
 ```
 Go constructs a `StmtGo`.
-
-#### func (StmtGo) Emit
-
-```go
-func (this StmtGo) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type StmtIf
 
@@ -961,13 +762,6 @@ Ifs constructs a more complex `StmtIf` than `If` does, with
 if`) conditions and corresponding `then` branches (each a `SynBlock`), plus
 optionally a final `else` branch (also a `SynBlock`).
 
-#### func (*StmtIf) Emit
-
-```go
-func (this *StmtIf) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type StmtRet
 
 ```go
@@ -984,13 +778,6 @@ StmtRet represents Go's `return` keyword.
 func Ret(retExpr ISyn) (this StmtRet)
 ```
 Ret constructs a `StmtRet`.
-
-#### func (StmtRet) Emit
-
-```go
-func (this StmtRet) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type StmtSwitch
 
@@ -1013,13 +800,6 @@ StmtSwitch represents Go's `switch .. case` construct.
 func Switch(maybeCond ISyn, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch)
 ```
 Switch constructs a `StmtSwitch`.
-
-#### func (*StmtSwitch) Emit
-
-```go
-func (this *StmtSwitch) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type StmtUnary
 
@@ -1054,13 +834,6 @@ func Var(name string, maybeType *TypeRef, maybeExpr ISyn) (this *StmtVar)
 ```
 Var constructs a `StmtVar`.
 
-#### func (*StmtVar) Emit
-
-```go
-func (this *StmtVar) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type SynBlock
 
 ```go
@@ -1085,13 +858,6 @@ Block constructs a `SynBlock`.
 func (this *SynBlock) Add(stmts ...ISyn)
 ```
 Add is a convenience short-hand for `append`.
-
-#### func (SynBlock) Emit
-
-```go
-func (this SynBlock) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type SynCond
 
@@ -1118,9 +884,9 @@ Cond constructs a `SynCond` as used in `StmtIf`s and `StmtSwitch`es.
 
 ```go
 type SynFunc struct {
-	// the func's body of statements (a tailing
-	// `StmtRet` will always be implicitly present
-	// and should not be explicitly included in here)
+	// the func's body of statements --- if it is missing
+	// a final `StmtRet` and all return values are named,
+	// one will be automatically appended at code-gen time
 	SynBlock
 	// optionally the func's `Name` (if top-level decl),
 	// the `Type` must point to the func's signature
@@ -1145,13 +911,6 @@ func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *S
 Fn constructs a `SynFunc`. If `maybeRecv` is given, it will represent a method
 of that type.
 
-#### func (*SynFunc) Emit
-
-```go
-func (this *SynFunc) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type SynStructField
 
 ```go
@@ -1171,13 +930,6 @@ SynStructField represents one of a `TypeStruct`'s `Fields`.
 func TdStructFld(name string, typeRef *TypeRef, tags map[string]string) (fld SynStructField)
 ```
 TdStructFld constructs a `SynStructField` for `TypeStruct`s.
-
-#### func (*SynStructField) Emit
-
-```go
-func (this *SynStructField) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type TypeDecl
 
@@ -1199,13 +951,6 @@ func TDecl(name string, typeRef *TypeRef, isAlias bool) (this TypeDecl)
 ```
 TDecl constructs a named `TypeDecl` of the specified underlying type.
 
-#### func (TypeDecl) Emit
-
-```go
-func (this TypeDecl) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### type TypeFunc
 
 ```go
@@ -1225,13 +970,6 @@ TypeFunc represents a func signature.
 func TdFunc(args NamedsTypeds, rets ...NamedTyped) *TypeFunc
 ```
 TdFunc constructs a `TypeFunc`,
-
-#### func (*TypeFunc) Emit
-
-```go
-func (this *TypeFunc) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type TypeInterface
 
@@ -1254,13 +992,6 @@ TypeInterface represents Go's `interface{..}` construct.
 func TdInterface(embeds []*TypeRef, methods ...NamedTyped) *TypeInterface
 ```
 TdInterface constructs a `TypeInterface`.
-
-#### func (*TypeInterface) Emit
-
-```go
-func (this *TypeInterface) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
 
 #### type TypeRef
 
@@ -1337,13 +1068,6 @@ func TrStruct(typeStruct *TypeStruct) *TypeRef
 ```
 TrStruct constructs a `TypeRef` referring to the specified unnamed `struct{..}`.
 
-#### func (*TypeRef) Emit
-
-```go
-func (this *TypeRef) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-
 #### func (*TypeRef) IsBuiltinPrimType
 
 ```go
@@ -1371,10 +1095,3 @@ TypeStruct represents Go's `struct{..}` construct.
 func TdStruct(fields ...SynStructField) *TypeStruct
 ```
 TdStruct constructs a `TypeStruct`.
-
-#### func (*TypeStruct) Emit
-
-```go
-func (this *TypeStruct) Emit(w IWriter)
-```
-Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.

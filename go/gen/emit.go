@@ -4,34 +4,24 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
-	"io"
 	"sort"
 	"strconv"
+	"time"
 )
 
 type writer struct {
 	bytes.Buffer
-	emitNoOpFuncBodies bool
+	emitNoOpFuncBodies          bool
+	pkgImportsOutsideFuncBodies map[string]bool
 }
 
 func (this *writer) ShouldEmitNoOpFuncBodies() bool { return this.emitNoOpFuncBodies }
 
-// IWriter represents the buffer or other output
-// stream that any `ISyn` can `Emit` code to.
-type IWriter interface {
-	ShouldEmitNoOpFuncBodies() bool
-	io.ByteWriter
-	io.Writer
-	// WriteRune(rune) (int, error)
-	WriteString(string) (int, error)
-}
-
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this Named) Emit(w IWriter) {
+func (this Named) emitTo(w *writer) {
 	w.WriteString(this.Name)
 }
 
-func (this NamedTyped) emit(w IWriter, noFuncKeywordBecauseInterfaceMethod bool) {
+func (this NamedTyped) emit(w *writer, noFuncKeywordBecauseInterfaceMethod bool) {
 	if this.Name != "" {
 		w.WriteString(this.Name)
 		w.WriteByte(' ')
@@ -39,7 +29,7 @@ func (this NamedTyped) emit(w IWriter, noFuncKeywordBecauseInterfaceMethod bool)
 	this.Type.emit(w, noFuncKeywordBecauseInterfaceMethod)
 }
 
-func (this NamedsTypeds) emit(w IWriter, sep byte, noFuncKeywordBecauseInterfaceMethods bool) {
+func (this NamedsTypeds) emit(w *writer, sep byte, noFuncKeywordBecauseInterfaceMethods bool) {
 	for i := range this {
 		if i > 0 {
 			w.WriteByte(sep)
@@ -48,12 +38,11 @@ func (this NamedsTypeds) emit(w IWriter, sep byte, noFuncKeywordBecauseInterface
 	}
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this *TypeFunc) Emit(w IWriter) {
+func (this *TypeFunc) emitTo(w *writer) {
 	this.emit(w, false)
 }
 
-func (this *TypeFunc) emit(w IWriter, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
+func (this *TypeFunc) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
 	if !noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod {
 		w.WriteString("func")
 	}
@@ -62,7 +51,7 @@ func (this *TypeFunc) emit(w IWriter, noFuncKeywordBecauseSigPartOfFullBodyOrOfI
 	w.WriteByte(')')
 	if len(this.Rets) == 1 && this.Rets[0].Name == "" {
 		w.WriteByte(' ')
-		this.Rets[0].Type.Emit(w)
+		this.Rets[0].Type.emitTo(w)
 	} else if len(this.Rets) > 0 {
 		w.WriteString(" (")
 		this.Rets.emit(w, ',', false)
@@ -70,29 +59,26 @@ func (this *TypeFunc) emit(w IWriter, noFuncKeywordBecauseSigPartOfFullBodyOrOfI
 	}
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this *TypeInterface) Emit(w IWriter) {
+func (this *TypeInterface) emitTo(w *writer) {
 	w.WriteString("interface{")
 	for i := range this.Embeds {
-		this.Embeds[i].Emit(w)
+		this.Embeds[i].emitTo(w)
 		w.WriteByte(';')
 	}
 	this.Methods.emit(w, ';', true)
 	w.WriteByte('}')
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this *TypeStruct) Emit(w IWriter) {
+func (this *TypeStruct) emitTo(w *writer) {
 	w.WriteString("struct{")
 	for i := range this.Fields {
-		this.Fields[i].Emit(w)
+		this.Fields[i].emitTo(w)
 		w.WriteByte(';')
 	}
 	w.WriteByte('}')
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this *SynStructField) Emit(w IWriter) {
+func (this *SynStructField) emitTo(w *writer) {
 	this.NamedTyped.emit(w, false)
 	if len(this.Tags) > 0 {
 		w.WriteByte('`')
@@ -111,26 +97,26 @@ func (this *SynStructField) Emit(w IWriter) {
 	}
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this *TypeRef) Emit(w IWriter) {
+func (this *TypeRef) emitTo(w *writer) {
 	this.emit(w, false)
 }
 
-func (this *TypeRef) emit(w IWriter, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
+func (this *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
 	switch {
 	case this.Ptr != nil:
 		w.WriteByte('*')
-		this.Ptr.Emit(w)
+		this.Ptr.emitTo(w)
 	case this.Slice != nil:
 		w.WriteString("[]")
-		this.Slice.Emit(w)
+		this.Slice.emitTo(w)
 	case this.Map.Key != nil:
 		w.WriteString("map[")
-		this.Map.Key.Emit(w)
+		this.Map.Key.emitTo(w)
 		w.WriteByte(']')
-		this.Map.Val.Emit(w)
+		this.Map.Val.emitTo(w)
 	case this.Named.TypeName != "":
 		if this.Named.PkgName != "" {
+			w.pkgImportsOutsideFuncBodies[this.Named.PkgName] = true
 			w.WriteString(this.Named.PkgName)
 			w.WriteByte('.')
 		}
@@ -138,41 +124,39 @@ func (this *TypeRef) emit(w IWriter, noFuncKeywordBecauseSigPartOfFullBodyOrOfIn
 	case this.Func != nil:
 		this.Func.emit(w, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod)
 	case this.Interface != nil:
-		this.Interface.Emit(w)
+		this.Interface.emitTo(w)
 	case this.Struct != nil:
-		this.Struct.Emit(w)
+		this.Struct.emitTo(w)
 	}
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this TypeDecl) Emit(w IWriter) {
+func (this TypeDecl) emitTo(w *writer) {
 	w.WriteString("type ")
 	if w.WriteString(this.Name); this.IsAlias {
 		w.WriteByte('=')
 	}
 	w.WriteByte(' ')
-	this.Type.Emit(w)
+	this.Type.emitTo(w)
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this SynBlock) Emit(w IWriter) {
+func (this SynBlock) emitTo(w *writer) {
 	this.emit(w, true, "")
 	w.WriteByte(';')
 }
 
-func (this SynBlock) emit(w IWriter, wrapInCurlyBraces bool, sep string, appendToBody ...ISyn) {
+func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep string, appendToBody ...ISyn) {
 	if sep == "" {
-		sep = "   ;   "
+		sep = "; "
 	}
 	if wrapInCurlyBraces {
 		w.WriteByte('{')
 	}
 	for i := range this.Body {
-		this.Body[i].Emit(w)
+		this.Body[i].emitTo(w)
 		w.WriteString(sep)
 	}
 	for i := range appendToBody {
-		appendToBody[i].Emit(w)
+		appendToBody[i].emitTo(w)
 		w.WriteString(sep)
 	}
 	if wrapInCurlyBraces {
@@ -180,9 +164,11 @@ func (this SynBlock) emit(w IWriter, wrapInCurlyBraces bool, sep string, appendT
 	}
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this *SynFunc) Emit(w IWriter) {
-	doc, noop := this.Doc, w.ShouldEmitNoOpFuncBodies()
+func (this *SynFunc) emitTo(w *writer) {
+	doc, noop, hasfinalret, hasnamedrets := this.Doc, w.ShouldEmitNoOpFuncBodies(), false, this.Type.Func.Rets.AllNamed()
+	if len(this.Type.Func.Rets) > 0 && len(this.Body) > 0 {
+		_, hasfinalret = this.Body[len(this.Body)-1].(*StmtRet)
+	}
 	if noop {
 		doc = append(doc, "As per your current (and presumably temporary) go-gent code-gen settings, this method is effectively a no-op (so each of its return values will always equal its type's zero-value).")
 	}
@@ -202,88 +188,83 @@ func (this *SynFunc) Emit(w IWriter) {
 		w.WriteByte('(')
 		w.WriteString(this.Recv.Name)
 		w.WriteByte(' ')
-		this.Recv.Type.Emit(w)
+		this.Recv.Type.emitTo(w)
 		w.WriteByte(')')
 	}
 	w.WriteString(this.Name)
+	var appendum []ISyn
+	if hasnamedrets && !hasfinalret {
+		appendum = []ISyn{K.Ret}
+	}
 	if this.Type.emit(w, true); noop {
-		SynBlock{}.emit(w, true, "", K.Ret)
+		SynBlock{}.emit(w, true, "", appendum...)
 	} else {
-		this.SynBlock.emit(w, true, "", K.Ret)
+		this.SynBlock.emit(w, true, "", appendum...)
 	}
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (StmtBreak) Emit(w IWriter) {
+func (StmtBreak) emitTo(w *writer) {
 	w.WriteString("break;")
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (StmtContinue) Emit(w IWriter) {
+func (StmtContinue) emitTo(w *writer) {
 	w.WriteString("continue;")
 }
 
-func (this StmtUnary) emit(w IWriter, keywordPlusSpace string) {
+func (this StmtUnary) emit(w *writer, keywordPlusSpace string) {
 	if w.WriteString(keywordPlusSpace); this.Expr != nil {
-		this.Expr.Emit(w)
+		this.Expr.emitTo(w)
 	}
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this StmtRet) Emit(w IWriter) {
+func (this StmtRet) emitTo(w *writer) {
 	this.StmtUnary.emit(w, "return ")
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this StmtDefer) Emit(w IWriter) {
+func (this StmtDefer) emitTo(w *writer) {
 	this.StmtUnary.emit(w, "defer ")
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this StmtGo) Emit(w IWriter) {
+func (this StmtGo) emitTo(w *writer) {
 	this.StmtUnary.emit(w, "go ")
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this *StmtConst) Emit(w IWriter) {
+func (this *StmtConst) emitTo(w *writer) {
 	w.WriteString("const ")
 	w.WriteString(this.Name)
-	this.Type.Emit(w)
+	this.Type.emitTo(w)
 	w.WriteByte('=')
-	this.Expr.Emit(w)
+	this.Expr.emitTo(w)
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this *StmtVar) Emit(w IWriter) {
+func (this *StmtVar) emitTo(w *writer) {
 	w.WriteString("var ")
 	w.WriteString(this.Name)
-	if this.Type.Emit(w); this.Expr != nil {
+	if this.Type.emitTo(w); this.Expr != nil {
 		w.WriteByte('=')
-		this.Expr.Emit(w)
+		this.Expr.emitTo(w)
 	}
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this *StmtIf) Emit(w IWriter) {
+func (this *StmtIf) emitTo(w *writer) {
 	for i := range this.IfThens {
 		w.WriteString("if ")
-		this.IfThens[i].Cond.Emit(w)
+		this.IfThens[i].Cond.emitTo(w)
 		this.IfThens[i].emit(w, true, "")
 		w.WriteString(" else ")
 	}
 	this.Else.emit(w, true, "")
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this *StmtSwitch) Emit(w IWriter) {
+func (this *StmtSwitch) emitTo(w *writer) {
 	w.WriteString("switch ")
 	if this.Scrutinee != nil {
-		this.Scrutinee.Emit(w)
+		this.Scrutinee.emitTo(w)
 	}
 	w.WriteByte('{')
 	for i := range this.Cases {
 		w.WriteString("case ")
-		this.Cases[i].Cond.Emit(w)
+		this.Cases[i].Cond.emitTo(w)
 		w.WriteByte(':')
 		this.Cases[i].emit(w, false, "")
 	}
@@ -294,8 +275,7 @@ func (this *StmtSwitch) Emit(w IWriter) {
 	w.WriteByte('}')
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this *StmtFor) Emit(w IWriter) {
+func (this *StmtFor) emitTo(w *writer) {
 	if this.Range.Iteree != nil {
 		this.emitRange(w)
 	} else {
@@ -303,42 +283,42 @@ func (this *StmtFor) Emit(w IWriter) {
 	}
 }
 
-func (this *StmtFor) emitRange(w IWriter) {
+func (this *StmtFor) emitRange(w *writer) {
 	w.WriteString("for ")
 	if this.Range.Idx.Name != "" || this.Range.Val.Name != "" {
 		if this.Range.Idx.Name == "" {
 			w.WriteByte('_')
 		} else {
-			this.Range.Idx.Emit(w)
+			this.Range.Idx.emitTo(w)
 		}
 		if this.Range.Val.Name != "" {
 			w.WriteByte(',')
-			this.Range.Val.Emit(w)
+			this.Range.Val.emitTo(w)
 		}
 		w.WriteString(" := ")
 	}
 	w.WriteString("range")
-	this.Range.Iteree.Emit(w)
+	this.Range.Iteree.emitTo(w)
 	this.emit(w, true, "")
 }
 
-func (this *StmtFor) emitLoop(w IWriter) {
+func (this *StmtFor) emitLoop(w *writer) {
 	w.WriteString("for ")
 	if this.Loop.Init != nil {
-		this.Loop.Init.Emit(w)
+		this.Loop.Init.emitTo(w)
 	}
 	w.WriteByte(';')
 	if this.Loop.Cond != nil {
-		this.Loop.Cond.Emit(w)
+		this.Loop.Cond.emitTo(w)
 	}
 	w.WriteByte(';')
 	if this.Loop.Each != nil {
-		this.Loop.Each.Emit(w)
+		this.Loop.Each.emitTo(w)
 	}
 	this.emit(w, true, "")
 }
 
-func (this Op) emit(w IWriter, operator string) {
+func (this Op) emit(w *writer, operator string) {
 	unary := len(this.Operands) == 1
 	for i := range this.Operands {
 		if i > 0 || unary {
@@ -348,7 +328,7 @@ func (this Op) emit(w IWriter, operator string) {
 		if isanotheroperator {
 			w.WriteByte('(')
 		}
-		this.Operands[i].Emit(w)
+		this.Operands[i].emitTo(w)
 		if isanotheroperator {
 			w.WriteByte(')')
 		}
@@ -357,133 +337,124 @@ func (this Op) emit(w IWriter, operator string) {
 
 func (Op) isOp() {}
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpSet) Emit(w IWriter) { this.Op.emit(w, " = ") }
+func (this OpSet) emitTo(w *writer) { this.Op.emit(w, " = ") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpDecl) Emit(w IWriter) { this.Op.emit(w, " := ") }
+func (this OpDecl) emitTo(w *writer) { this.Op.emit(w, " := ") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpComma) Emit(w IWriter) { this.Op.emit(w, ",") }
+func (this OpComma) emitTo(w *writer) { this.Op.emit(w, ",") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpDot) Emit(w IWriter) { this.Op.emit(w, ".") }
+func (this OpDot) emitTo(w *writer) { this.Op.emit(w, ".") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpAnd) Emit(w IWriter) { this.Op.emit(w, " && ") }
+func (this OpAnd) emitTo(w *writer) { this.Op.emit(w, " && ") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpOr) Emit(w IWriter) { this.Op.emit(w, " || ") }
+func (this OpOr) emitTo(w *writer) { this.Op.emit(w, " || ") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpEq) Emit(w IWriter) { this.Op.emit(w, " == ") }
+func (this OpEq) emitTo(w *writer) { this.Op.emit(w, " == ") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpNeq) Emit(w IWriter) { this.Op.emit(w, " != ") }
+func (this OpNeq) emitTo(w *writer) { this.Op.emit(w, " != ") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpGeq) Emit(w IWriter) { this.Op.emit(w, " >= ") }
+func (this OpGeq) emitTo(w *writer) { this.Op.emit(w, " >= ") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpLeq) Emit(w IWriter) { this.Op.emit(w, " <= ") }
+func (this OpLeq) emitTo(w *writer) { this.Op.emit(w, " <= ") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpGt) Emit(w IWriter) { this.Op.emit(w, " > ") }
+func (this OpGt) emitTo(w *writer) { this.Op.emit(w, " > ") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpLt) Emit(w IWriter) { this.Op.emit(w, " < ") }
+func (this OpLt) emitTo(w *writer) { this.Op.emit(w, " < ") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpAdd) Emit(w IWriter) { this.Op.emit(w, "+") }
+func (this OpAdd) emitTo(w *writer) { this.Op.emit(w, "+") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpSub) Emit(w IWriter) { this.Op.emit(w, "-") }
+func (this OpSub) emitTo(w *writer) { this.Op.emit(w, "-") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpMul) Emit(w IWriter) { this.Op.emit(w, "*") }
+func (this OpMul) emitTo(w *writer) { this.Op.emit(w, "*") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpDiv) Emit(w IWriter) { this.Op.emit(w, "/") }
+func (this OpDiv) emitTo(w *writer) { this.Op.emit(w, "/") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpAddr) Emit(w IWriter) { this.Op.emit(w, "&") }
+func (this OpAddr) emitTo(w *writer) { this.Op.emit(w, "&") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpDeref) Emit(w IWriter) { this.Op.emit(w, "*") }
+func (this OpDeref) emitTo(w *writer) { this.Op.emit(w, "*") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpNot) Emit(w IWriter) { this.Op.emit(w, "!") }
+func (this OpNot) emitTo(w *writer) { this.Op.emit(w, "!") }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this OpIdx) Emit(w IWriter) {
+func (this OpIdx) emitTo(w *writer) {
 	for i := range this.Operands {
 		if i > 0 {
 			w.WriteByte('[')
 		}
-		this.Operands[i].Emit(w)
+		this.Operands[i].emitTo(w)
 		if i > 0 {
 			w.WriteByte(']')
 		}
 	}
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this ExprLit) Emit(w IWriter) {
+func (this ExprLit) emitTo(w *writer) {
 	w.WriteString(fmt.Sprintf("%#v", this.Val))
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (ExprNil) Emit(w IWriter) {
+func (ExprNil) emitTo(w *writer) {
 	w.WriteString("nil")
 }
 
-// Emit implements `ISyn.Emit(IWriter)` to generate the code represented by `this`.
-func (this *ExprCall) Emit(w IWriter) {
-	this.Callee.Emit(w)
+func (this *ExprCall) emitTo(w *writer) {
+	this.Callee.emitTo(w)
 	w.WriteByte('(')
 	for i := range this.Args {
-		this.Args[i].Emit(w)
+		this.Args[i].emitTo(w)
 		w.WriteByte(',')
 	}
 	w.WriteByte(')')
 }
 
-// Emit generates the code represented by `this`.
-func (this *SourceFile) Emit(w IWriter, codeGenCommentNotice string, pkgImportPathsToNames PkgImports) {
-	w.WriteString("package ")
-	w.WriteString(this.PkgName)
-	if len(codeGenCommentNotice) > 0 {
-		w.WriteString("\n\n// ")
-		w.WriteString(codeGenCommentNotice)
-	}
-	w.WriteString("\n\n")
-
-	if len(pkgImportPathsToNames) > 0 {
-		w.WriteString("import (")
-		for pkgpath, pkgname := range pkgImportPathsToNames {
-			w.WriteString(pkgname)
-			w.WriteString(" \"")
-			w.WriteString(pkgpath)
-			w.WriteString("\";")
+// CodeGen generates the code via `this.CodeGenPlain()`, and then optionally `go/format`s it.
+// Any `error` returned is from `go/format`, and if so, `src` will instead contain the original
+// (non-formatted) generated code that was given to `go/format` to aid investigating the issue.
+func (this *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool, goFmt bool) (src []byte, goFmtTimeTaken time.Duration, goFmtErr error) {
+	orig := this.CodeGenPlain(codeGenCommentNotice, pkgImportPathsToNames, emitNoOpFuncBodies)
+	if !goFmt {
+		src = orig
+	} else {
+		timestarted := time.Now()
+		src, goFmtErr = format.Source(orig)
+		if goFmtTimeTaken = time.Since(timestarted); goFmtErr != nil {
+			src = orig
 		}
-		w.WriteString(")\n\n")
-	}
-
-	this.emit(w, false, "\n\n")
-}
-
-// Src calls `this.Emit` to generate the code into `src`, and then `go/format`s it.
-// Any `err` returned is from `go/format`, and if so, `src` will instead contain
-// the original non-formatted generated code to aid troubleshooting the issue.
-func (this *SourceFile) Src(codeGenCommentNotice string, emitNoOpFuncBodies bool, pkgImportPathsToNames PkgImports) (src []byte, err error) {
-	buf := writer{emitNoOpFuncBodies: emitNoOpFuncBodies}
-	this.Emit(&buf, codeGenCommentNotice, pkgImportPathsToNames)
-
-	const gofmt = true
-	if orig := buf.Bytes(); !gofmt {
-		src = orig
-	} else if src, err = format.Source(orig); err != nil {
-		src = orig
 	}
 	return
+}
+
+// CodeGenPlain generates the code represented by `this` into `src`, without `go/format`ting it.
+func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool) []byte {
+	wdecls := writer{emitNoOpFuncBodies: emitNoOpFuncBodies, pkgImportsOutsideFuncBodies: map[string]bool{}}
+	this.SynBlock.emit(&wdecls, false, "\n\n")
+
+	var wmain writer
+	wmain.WriteString("package ")
+	wmain.WriteString(this.PkgName)
+	if len(codeGenCommentNotice) > 0 {
+		wmain.WriteString("\n\n// ")
+		wmain.WriteString(codeGenCommentNotice)
+	}
+	wmain.WriteString("\n\n")
+
+	pkgimports := pkgImportPathsToNames
+	if emitNoOpFuncBodies {
+		pkgimports = make(PkgImports, len(wdecls.pkgImportsOutsideFuncBodies))
+		for pkgpath, pkgname := range pkgImportPathsToNames {
+			if wdecls.pkgImportsOutsideFuncBodies[pkgname] {
+				pkgimports[pkgpath] = pkgname
+			}
+		}
+	}
+	if len(pkgimports) > 0 {
+		wmain.WriteString("import (")
+		for pkgpath, pkgname := range pkgimports {
+			wmain.WriteString(pkgname)
+			wmain.WriteString(" \"")
+			wmain.WriteString(pkgpath)
+			wmain.WriteString("\";")
+		}
+		wmain.WriteString(")\n\n")
+	}
+	wmain.Write(wdecls.Bytes())
+	return wmain.Bytes()
 }

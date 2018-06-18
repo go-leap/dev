@@ -1,3 +1,13 @@
+// Package github.com/go-leap/dev/go/gen provides AST constructs for generating Go code.
+// These are by design much simpler and leaner than `go/ast`, given that the latter is
+// designed to represent existing & parsed code, while the former is for on-the-fly
+// construction of newly-to-be-emitted code.
+//
+// Some language primitives I haven't needed to emit yet aren't covered yet, to be
+// added when they're first needed (such as fixed-size-array types or `chan`nels).
+//
+// As a noteworthy goodie, all `func`s that have named return values automatically get a final
+// `return` statement appended to their `Body` at code-gen time, if they don't already have one.
 package udevgogen
 
 import (
@@ -8,7 +18,7 @@ import (
 // literals, vars, consts, type-defs, type-refs, funcs, keywords, operators etc..
 type ISyn interface {
 	// generates the code represented by this `ISyn`
-	Emit(IWriter)
+	emitTo(*writer)
 }
 
 // SourceFile is a simple collection of `ISyn`s
@@ -24,20 +34,20 @@ type SourceFile struct {
 	SynBlock
 }
 
-// PkgImports maps (via its `I` method) package
+// PkgImports maps (via its `Ensure` method) package
 // import paths to package import names.
 type PkgImports map[string]string
 
-// Returns the `pkgImportName` for the given `pkgImportPath`
+// Ensure returns the `pkgImportName` for the given `pkgImportPath`
 // as stored in `this` (or if missing, devises one in the form
-// of eg. `encodingjson` for `encoding/json` and stores it).
-func (this *PkgImports) I(pkgImportPath string) (pkgImportName string) {
+// of eg. `pkg__encoding_json` for `encoding/json` and stores it).
+func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName string) {
 	self := *this
 	if self == nil {
 		self = map[string]string{}
 	}
 	if pkgImportName = self[pkgImportPath]; pkgImportName == "" {
-		pkgImportName = pkgImportsStrReplSlashesToUnderscores.Replace(pkgImportPath)
+		pkgImportName = "pkg__" + pkgImportsStrReplSlashesToUnderscores.Replace(pkgImportPath)
 		self[pkgImportPath] = pkgImportName
 	}
 	*this = self
