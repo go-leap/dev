@@ -141,11 +141,11 @@ func (this TypeDecl) emitTo(w *writer) {
 }
 
 func (this SynBlock) emitTo(w *writer) {
-	this.emit(w, true, "", false, false)
+	this.emit(w, true, "", false)
 	w.WriteByte(';')
 }
 
-func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep string, addFinalRet bool, topLevel bool) {
+func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep string, addFinalRet bool) {
 	if sep == "" {
 		sep = "; "
 	}
@@ -195,7 +195,7 @@ func (this *SynFunc) emitTo(w *writer) {
 	if this.Type.emit(w, true); noop {
 		K.Ret.emitTo(w)
 	} else {
-		this.SynBlock.emit(w, true, "", hasnamedrets && !hasfinalret, false)
+		this.SynBlock.emit(w, true, "", hasnamedrets && !hasfinalret)
 	}
 }
 
@@ -246,10 +246,10 @@ func (this *StmtIf) emitTo(w *writer) {
 	for i := range this.IfThens {
 		w.WriteString("if ")
 		this.IfThens[i].Cond.emitTo(w)
-		this.IfThens[i].emit(w, true, "", false, false)
+		this.IfThens[i].emit(w, true, "", false)
 		w.WriteString(" else ")
 	}
-	this.Else.emit(w, true, "", false, false)
+	this.Else.emit(w, true, "", false)
 }
 
 func (this *StmtSwitch) emitTo(w *writer) {
@@ -262,11 +262,11 @@ func (this *StmtSwitch) emitTo(w *writer) {
 		w.WriteString("case ")
 		this.Cases[i].Cond.emitTo(w)
 		w.WriteByte(':')
-		this.Cases[i].emit(w, false, "", false, false)
+		this.Cases[i].emit(w, false, "", false)
 	}
 	if len(this.Default.Body) > 0 {
 		w.WriteString("default: ")
-		this.Default.emit(w, false, "", false, false)
+		this.Default.emit(w, false, "", false)
 	}
 	w.WriteByte('}')
 }
@@ -295,7 +295,7 @@ func (this *StmtFor) emitRange(w *writer) {
 	}
 	w.WriteString("range")
 	this.Range.Iteree.emitTo(w)
-	this.emit(w, true, "", false, false)
+	this.emit(w, true, "", false)
 }
 
 func (this *StmtFor) emitLoop(w *writer) {
@@ -311,7 +311,7 @@ func (this *StmtFor) emitLoop(w *writer) {
 	if this.Loop.Each != nil {
 		this.Loop.Each.emitTo(w)
 	}
-	this.emit(w, true, "", false, false)
+	this.emit(w, true, "", false)
 }
 
 func (this Op) emit(w *writer, operator string) {
@@ -435,7 +435,7 @@ func (this *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNam
 // CodeGenPlain generates the code represented by `this` into `src`, without `go/format`ting it.
 func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool) []byte {
 	wdecls := writer{emitNoOpFuncBodies: emitNoOpFuncBodies, pkgImportsRegistered: pkgImportPathsToNames, pkgImportsActuallyEmitted: map[string]bool{}}
-	this.SynBlock.emit(&wdecls, false, "\n\n", false, true)
+	this.SynBlock.emit(&wdecls, false, "\n\n", false)
 
 	var wmain writer
 	wmain.WriteString("package ")
