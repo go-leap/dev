@@ -140,11 +140,11 @@ func (this TypeDecl) emitTo(w *writer) {
 }
 
 func (this SynBlock) emitTo(w *writer) {
-	this.emit(w, true, "")
+	this.emit(w, true, "", false)
 	w.WriteByte(';')
 }
 
-func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep string, appendToBody ...ISyn) {
+func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep string, addFinalRet bool) {
 	if sep == "" {
 		sep = "; "
 	}
@@ -155,9 +155,8 @@ func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep string, appendT
 		this.Body[i].emitTo(w)
 		w.WriteString(sep)
 	}
-	for i := range appendToBody {
-		appendToBody[i].emitTo(w)
-		w.WriteString(sep)
+	if addFinalRet {
+		K.Ret.emitTo(w)
 	}
 	if wrapInCurlyBraces {
 		w.WriteByte('}')
@@ -192,14 +191,10 @@ func (this *SynFunc) emitTo(w *writer) {
 		w.WriteByte(')')
 	}
 	w.WriteString(this.Name)
-	var appendum []ISyn
-	if hasnamedrets && !hasfinalret {
-		appendum = []ISyn{K.Ret}
-	}
 	if this.Type.emit(w, true); noop {
-		SynBlock{}.emit(w, true, "", appendum...)
+		K.Ret.emitTo(w)
 	} else {
-		this.SynBlock.emit(w, true, "", appendum...)
+		this.SynBlock.emit(w, true, "", hasnamedrets && !hasfinalret)
 	}
 }
 
@@ -250,10 +245,10 @@ func (this *StmtIf) emitTo(w *writer) {
 	for i := range this.IfThens {
 		w.WriteString("if ")
 		this.IfThens[i].Cond.emitTo(w)
-		this.IfThens[i].emit(w, true, "")
+		this.IfThens[i].emit(w, true, "", false)
 		w.WriteString(" else ")
 	}
-	this.Else.emit(w, true, "")
+	this.Else.emit(w, true, "", false)
 }
 
 func (this *StmtSwitch) emitTo(w *writer) {
@@ -266,11 +261,11 @@ func (this *StmtSwitch) emitTo(w *writer) {
 		w.WriteString("case ")
 		this.Cases[i].Cond.emitTo(w)
 		w.WriteByte(':')
-		this.Cases[i].emit(w, false, "")
+		this.Cases[i].emit(w, false, "", false)
 	}
 	if len(this.Default.Body) > 0 {
 		w.WriteString("default: ")
-		this.Default.emit(w, false, "")
+		this.Default.emit(w, false, "", false)
 	}
 	w.WriteByte('}')
 }
@@ -299,7 +294,7 @@ func (this *StmtFor) emitRange(w *writer) {
 	}
 	w.WriteString("range")
 	this.Range.Iteree.emitTo(w)
-	this.emit(w, true, "")
+	this.emit(w, true, "", false)
 }
 
 func (this *StmtFor) emitLoop(w *writer) {
@@ -315,7 +310,7 @@ func (this *StmtFor) emitLoop(w *writer) {
 	if this.Loop.Each != nil {
 		this.Loop.Each.emitTo(w)
 	}
-	this.emit(w, true, "")
+	this.emit(w, true, "", false)
 }
 
 func (this Op) emit(w *writer, operator string) {
@@ -425,7 +420,7 @@ func (this *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNam
 // CodeGenPlain generates the code represented by `this` into `src`, without `go/format`ting it.
 func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool) []byte {
 	wdecls := writer{emitNoOpFuncBodies: emitNoOpFuncBodies, pkgImportsOutsideFuncBodies: map[string]bool{}}
-	this.SynBlock.emit(&wdecls, false, "\n\n")
+	this.SynBlock.emit(&wdecls, false, "\n\n", false)
 
 	var wmain writer
 	wmain.WriteString("package ")

@@ -19,6 +19,9 @@ they don't already have one.
 ```go
 var (
 
+	// intended to remain zero-valued (Name="" and Type=nil)
+	NoMethodRecv NamedTyped
+
 	// singletons for simple (operand-less / arg-less) keywords
 	K struct {
 		Break    StmtBreak
@@ -112,7 +115,7 @@ Add is a convenience short-hand for `append`.
 ```go
 type ExprCall struct {
 	Callee ISyn
-	Args   []ISyn
+	Args   Syns
 }
 ```
 
@@ -163,14 +166,6 @@ type ISyn interface {
 
 ISyn implementations represent some element in the Abstract Syntax Tree:
 literals, vars, consts, type-defs, type-refs, funcs, keywords, operators etc..
-
-#### func  A
-
-```go
-func A(argsOrOperandsOrStmts ...ISyn) []ISyn
-```
-A is merely a handy convenience short-hand to create a slice of `ISyn`s, as
-sometimes needed for listing arguments, operands, or statements.
 
 #### type Named
 
@@ -242,7 +237,7 @@ AllTyped returns whether all `NamedTyped`s in `this` have a `Type` set.
 type Op struct {
 	// 1 or more operands: if 1 then
 	// unary syntax output, else n-ary
-	Operands []ISyn
+	Operands Syns
 }
 ```
 
@@ -838,7 +833,7 @@ Var constructs a `StmtVar`.
 
 ```go
 type SynBlock struct {
-	Body []ISyn
+	Body Syns
 }
 ```
 
@@ -857,7 +852,7 @@ Block constructs a `SynBlock`.
 ```go
 func (this *SynBlock) Add(stmts ...ISyn)
 ```
-Add is a convenience short-hand for `append`.
+Add is a convenience short-hand for `this.Body = append(this.Body,..)`.
 
 #### type SynCond
 
@@ -930,6 +925,29 @@ SynStructField represents one of a `TypeStruct`'s `Fields`.
 func TdStructFld(name string, typeRef *TypeRef, tags map[string]string) (fld SynStructField)
 ```
 TdStructFld constructs a `SynStructField` for `TypeStruct`s.
+
+#### type Syns
+
+```go
+type Syns []ISyn
+```
+
+Syns is a slice of `ISyn`s.
+
+#### func  A
+
+```go
+func A(argsOrOperandsOrStmts ...ISyn) Syns
+```
+A is merely a handy convenience short-hand to create a slice of `ISyn`s, as
+sometimes needed for listing arguments, operands, or statements.
+
+#### func (*Syns) Add
+
+```go
+func (this *Syns) Add(syns ...ISyn)
+```
+Add is a convenience short-hand for `append`.
 
 #### type TypeDecl
 

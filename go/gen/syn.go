@@ -124,10 +124,10 @@ func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool 
 // SynBlock represents a list of statements typically
 // wrapped in curly-braces and separated by `;` (pre-`gofmt`).
 type SynBlock struct {
-	Body []ISyn
+	Body Syns
 }
 
-// Add is a convenience short-hand for `append`.
+// Add is a convenience short-hand for `this.Body = append(this.Body,..)`.
 func (this *SynBlock) Add(stmts ...ISyn) { this.Body = append(this.Body, stmts...) }
 
 // SynFunc represents either a top-level (named) func /
@@ -260,7 +260,7 @@ type StmtFor struct {
 type Op struct {
 	// 1 or more operands: if 1 then
 	// unary syntax output, else n-ary
-	Operands []ISyn
+	Operands Syns
 }
 
 // OpSet represents Go's `=` assignment operator.
@@ -337,5 +337,5 @@ type ExprNil struct {
 // type conversion (if `Callee` effectively names a type).
 type ExprCall struct {
 	Callee ISyn
-	Args   []ISyn
+	Args   Syns
 }

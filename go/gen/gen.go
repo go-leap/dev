@@ -21,6 +21,12 @@ type ISyn interface {
 	emitTo(*writer)
 }
 
+// Syns is a slice of `ISyn`s.
+type Syns []ISyn
+
+// Add is a convenience short-hand for `append`.
+func (this *Syns) Add(syns ...ISyn) { *this = append(*this, syns...) }
+
 // SourceFile is a simple collection of `ISyn`s
 // representing top-level definition declarations
 // destined to be emitted into a single source file,
@@ -56,6 +62,9 @@ func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName string) {
 
 var (
 	pkgImportsStrReplSlashesToUnderscores = strings.NewReplacer("/", "_")
+
+	// intended to remain zero-valued (Name="" and Type=nil)
+	NoMethodRecv NamedTyped
 
 	// singletons for simple (operand-less / arg-less) keywords
 	K struct {

@@ -2,7 +2,7 @@ package udevgogen
 
 // A is merely a handy convenience short-hand to create a slice of `ISyn`s,
 // as sometimes needed for listing arguments, operands, or statements.
-func A(argsOrOperandsOrStmts ...ISyn) []ISyn { return argsOrOperandsOrStmts }
+func A(argsOrOperandsOrStmts ...ISyn) Syns { return argsOrOperandsOrStmts }
 
 // N constructs a `Named`.
 func N(name string) Named { return Named{Name: name} }
@@ -59,7 +59,7 @@ func Lt(operands ...ISyn) OpLt { return OpLt{Op: Op{Operands: operands}} }
 func Mul(operands ...ISyn) OpMul { return OpMul{Op: Op{Operands: operands}} }
 
 // Neg constructs an unary `OpSub` to represent the given `operand`'s negation.
-func Neg(operand ISyn) OpSub { return OpSub{Op: Op{Operands: []ISyn{operand}}} }
+func Neg(operand ISyn) OpSub { return OpSub{Op: Op{Operands: Syns{operand}}} }
 
 // Neq constructs an `OpNeq`.
 func Neq(operands ...ISyn) OpNeq { return OpNeq{Op: Op{Operands: operands}} }
@@ -158,7 +158,10 @@ func Defer(call *ExprCall) (this StmtDefer) {
 
 // File constructs a `SourceFile`.
 func File(pkgName string, allocBodyCap int, topLevelDecls ...ISyn) *SourceFile {
-	return &SourceFile{PkgName: pkgName, SynBlock: SynBlock{Body: append(make([]ISyn, 0, allocBodyCap), topLevelDecls...)}}
+	if allocBodyCap < len(topLevelDecls) {
+		allocBodyCap = len(topLevelDecls)
+	}
+	return &SourceFile{PkgName: pkgName, SynBlock: SynBlock{Body: append(make(Syns, 0, allocBodyCap), topLevelDecls...)}}
 }
 
 // ForLoop constructs a `StmtFor` that emits a classical `for` (not `range`) loop.
@@ -208,7 +211,7 @@ func Ifs(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
 		ifThensAndMaybeAnElse = ifThensAndMaybeAnElse[:l-1]
 	}
 	for i := 1; i < len(ifThensAndMaybeAnElse); i += 2 {
-		var body []ISyn
+		var body Syns
 		if block, ok := ifThensAndMaybeAnElse[i].(SynBlock); ok {
 			body = block.Body
 		}
@@ -233,7 +236,7 @@ func Switch(maybeCond ISyn, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (th
 		caseCondsAndBlocksPlusMaybeDefaultBlock = caseCondsAndBlocksPlusMaybeDefaultBlock[:l-1]
 	}
 	for i := 1; i < len(caseCondsAndBlocksPlusMaybeDefaultBlock); i += 2 {
-		var body []ISyn
+		var body Syns
 		if block, ok := caseCondsAndBlocksPlusMaybeDefaultBlock[i].(SynBlock); ok {
 			body = block.Body
 		}
