@@ -19,6 +19,9 @@ they don't already have one.
 ```go
 var (
 
+	// see `PkgImports.Ensure(string) string` for details
+	PkgImportNamePrefix = "pkg__"
+
 	// intended to remain zero-valued (Name="" and Type=nil)
 	NoMethodRecv NamedTyped
 
@@ -566,7 +569,8 @@ func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName string)
 ```
 Ensure returns the `pkgImportName` for the given `pkgImportPath` as stored in
 `this` (or if missing, devises one in the form of eg. `pkg__encoding_json` for
-`encoding/json` and stores it).
+`encoding/json` and stores it, assuming that `PkgImportNamePrefix` is set to
+"pkg__", its default value).
 
 #### type SourceFile
 

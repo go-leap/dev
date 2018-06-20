@@ -11,8 +11,9 @@ import (
 
 type writer struct {
 	bytes.Buffer
-	emitNoOpFuncBodies          bool
-	pkgImportsOutsideFuncBodies map[string]bool
+	emitNoOpFuncBodies        bool
+	pkgImportsRegistered      PkgImports
+	pkgImportsActuallyEmitted map[string]bool
 }
 
 func (this *writer) ShouldEmitNoOpFuncBodies() bool { return this.emitNoOpFuncBodies }
@@ -116,7 +117,7 @@ func (this *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfIn
 		this.Map.Val.emitTo(w)
 	case this.Named.TypeName != "":
 		if this.Named.PkgName != "" {
-			w.pkgImportsOutsideFuncBodies[this.Named.PkgName] = true
+			w.pkgImportsActuallyEmitted[this.Named.PkgName] = true
 			w.WriteString(this.Named.PkgName)
 			w.WriteByte('.')
 		}
@@ -140,11 +141,11 @@ func (this TypeDecl) emitTo(w *writer) {
 }
 
 func (this SynBlock) emitTo(w *writer) {
-	this.emit(w, true, "", false)
+	this.emit(w, true, "", false, false)
 	w.WriteByte(';')
 }
 
-func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep string, addFinalRet bool) {
+func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep string, addFinalRet bool, topLevel bool) {
 	if sep == "" {
 		sep = "; "
 	}
@@ -194,7 +195,7 @@ func (this *SynFunc) emitTo(w *writer) {
 	if this.Type.emit(w, true); noop {
 		K.Ret.emitTo(w)
 	} else {
-		this.SynBlock.emit(w, true, "", hasnamedrets && !hasfinalret)
+		this.SynBlock.emit(w, true, "", hasnamedrets && !hasfinalret, false)
 	}
 }
 
@@ -245,10 +246,10 @@ func (this *StmtIf) emitTo(w *writer) {
 	for i := range this.IfThens {
 		w.WriteString("if ")
 		this.IfThens[i].Cond.emitTo(w)
-		this.IfThens[i].emit(w, true, "", false)
+		this.IfThens[i].emit(w, true, "", false, false)
 		w.WriteString(" else ")
 	}
-	this.Else.emit(w, true, "", false)
+	this.Else.emit(w, true, "", false, false)
 }
 
 func (this *StmtSwitch) emitTo(w *writer) {
@@ -261,11 +262,11 @@ func (this *StmtSwitch) emitTo(w *writer) {
 		w.WriteString("case ")
 		this.Cases[i].Cond.emitTo(w)
 		w.WriteByte(':')
-		this.Cases[i].emit(w, false, "", false)
+		this.Cases[i].emit(w, false, "", false, false)
 	}
 	if len(this.Default.Body) > 0 {
 		w.WriteString("default: ")
-		this.Default.emit(w, false, "", false)
+		this.Default.emit(w, false, "", false, false)
 	}
 	w.WriteByte('}')
 }
@@ -294,7 +295,7 @@ func (this *StmtFor) emitRange(w *writer) {
 	}
 	w.WriteString("range")
 	this.Range.Iteree.emitTo(w)
-	this.emit(w, true, "", false)
+	this.emit(w, true, "", false, false)
 }
 
 func (this *StmtFor) emitLoop(w *writer) {
@@ -310,7 +311,7 @@ func (this *StmtFor) emitLoop(w *writer) {
 	if this.Loop.Each != nil {
 		this.Loop.Each.emitTo(w)
 	}
-	this.emit(w, true, "", false)
+	this.emit(w, true, "", false, false)
 }
 
 func (this Op) emit(w *writer, operator string) {
@@ -338,7 +339,14 @@ func (this OpDecl) emitTo(w *writer) { this.Op.emit(w, " := ") }
 
 func (this OpComma) emitTo(w *writer) { this.Op.emit(w, ",") }
 
-func (this OpDot) emitTo(w *writer) { this.Op.emit(w, ".") }
+func (this OpDot) emitTo(w *writer) {
+	if pref := PkgImportNamePrefix; len(this.Operands) > 1 {
+		if n, ok := this.Operands[0].(Named); ok && len(n.Name) > len(pref) && (len(pref) == 0 || n.Name[:len(pref)] == pref) {
+			w.pkgImportsActuallyEmitted[n.Name] = true
+		}
+		this.Op.emit(w, ".")
+	}
+}
 
 func (this OpAnd) emitTo(w *writer) { this.Op.emit(w, " && ") }
 
@@ -391,7 +399,14 @@ func (ExprNil) emitTo(w *writer) {
 }
 
 func (this *ExprCall) emitTo(w *writer) {
+	_, calleeistyperef := this.Callee.(*TypeRef)
+	if calleeistyperef {
+		w.WriteByte('(')
+	}
 	this.Callee.emitTo(w)
+	if calleeistyperef {
+		w.WriteByte(')')
+	}
 	w.WriteByte('(')
 	for i := range this.Args {
 		this.Args[i].emitTo(w)
@@ -419,8 +434,8 @@ func (this *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNam
 
 // CodeGenPlain generates the code represented by `this` into `src`, without `go/format`ting it.
 func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool) []byte {
-	wdecls := writer{emitNoOpFuncBodies: emitNoOpFuncBodies, pkgImportsOutsideFuncBodies: map[string]bool{}}
-	this.SynBlock.emit(&wdecls, false, "\n\n", false)
+	wdecls := writer{emitNoOpFuncBodies: emitNoOpFuncBodies, pkgImportsRegistered: pkgImportPathsToNames, pkgImportsActuallyEmitted: map[string]bool{}}
+	this.SynBlock.emit(&wdecls, false, "\n\n", false, true)
 
 	var wmain writer
 	wmain.WriteString("package ")
@@ -433,9 +448,9 @@ func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPaths
 
 	pkgimports := pkgImportPathsToNames
 	if emitNoOpFuncBodies {
-		pkgimports = make(PkgImports, len(wdecls.pkgImportsOutsideFuncBodies))
+		pkgimports = make(PkgImports, len(wdecls.pkgImportsActuallyEmitted))
 		for pkgpath, pkgname := range pkgImportPathsToNames {
-			if wdecls.pkgImportsOutsideFuncBodies[pkgname] {
+			if wdecls.pkgImportsActuallyEmitted[pkgname] {
 				pkgimports[pkgpath] = pkgname
 			}
 		}

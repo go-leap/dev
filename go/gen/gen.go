@@ -45,15 +45,16 @@ type SourceFile struct {
 type PkgImports map[string]string
 
 // Ensure returns the `pkgImportName` for the given `pkgImportPath`
-// as stored in `this` (or if missing, devises one in the form
-// of eg. `pkg__encoding_json` for `encoding/json` and stores it).
+// as stored in `this` (or if missing, devises one in the form of eg.
+// `pkg__encoding_json` for `encoding/json` and stores it, assuming
+// that `PkgImportNamePrefix` is set to "pkg__", its default value).
 func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName string) {
 	self := *this
 	if self == nil {
 		self = map[string]string{}
 	}
 	if pkgImportName = self[pkgImportPath]; pkgImportName == "" {
-		pkgImportName = "pkg__" + pkgImportsStrReplSlashesToUnderscores.Replace(pkgImportPath)
+		pkgImportName = PkgImportNamePrefix + pkgImportsStrReplSlashesToUnderscores.Replace(pkgImportPath)
 		self[pkgImportPath] = pkgImportName
 	}
 	*this = self
@@ -62,6 +63,9 @@ func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName string) {
 
 var (
 	pkgImportsStrReplSlashesToUnderscores = strings.NewReplacer("/", "_")
+
+	// see `PkgImports.Ensure(string) string` for details
+	PkgImportNamePrefix = "pkg__"
 
 	// intended to remain zero-valued (Name="" and Type=nil)
 	NoMethodRecv NamedTyped
