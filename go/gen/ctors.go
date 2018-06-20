@@ -7,8 +7,17 @@ func A(argsOrOperandsOrStmts ...ISyn) Syns { return argsOrOperandsOrStmts }
 // N constructs a `Named`.
 func N(name string) Named { return Named{Name: name} }
 
-// Nt constructs a `NamedTyped`.
-func Nt(name string, t *TypeRef) NamedTyped { return NamedTyped{Type: t, Named: Named{Name: name}} }
+// NT constructs a `NamedTyped`.
+func NT(name string, t *TypeRef) NamedTyped { return NamedTyped{Type: t, Named: Named{Name: name}} }
+
+// NTs is merely a handy convenience short-hand to create a slice of `NamedTyped`s.
+func NTs(namesAndTypeRefs ...interface{}) (nts NamedsTypeds) {
+	nts = make(NamedsTypeds, len(namesAndTypeRefs)/2)
+	for i := range nts {
+		nts[i].Name, nts[i].Type = namesAndTypeRefs[i*2].(string), namesAndTypeRefs[i*2+1].(*TypeRef)
+	}
+	return
+}
 
 // L constructs an `ExprLit`.
 func L(lit interface{}) ExprLit { return ExprLit{Val: lit} }

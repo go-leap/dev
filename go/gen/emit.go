@@ -167,7 +167,9 @@ func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep string, addFina
 func (this *SynFunc) emitTo(w *writer) {
 	doc, noop, hasfinalret, hasnamedrets := this.Doc, w.ShouldEmitNoOpFuncBodies(), false, this.Type.Func.Rets.AllNamed()
 	if len(this.Type.Func.Rets) > 0 && len(this.Body) > 0 {
-		_, hasfinalret = this.Body[len(this.Body)-1].(*StmtRet)
+		if _, hasfinalret = this.Body[len(this.Body)-1].(*StmtRet); !hasfinalret {
+			_, hasfinalret = this.Body[len(this.Body)-1].(StmtRet)
+		}
 	}
 	if noop {
 		doc = append(doc, "As per your current (and presumably temporary) go-gent code-gen settings, this method is effectively a no-op (so each of its return values will always equal its type's zero-value).")

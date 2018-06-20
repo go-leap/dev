@@ -56,7 +56,7 @@ var (
 	// singletons for common var names
 	V struct {
 		// `err`
-		Err Named
+		Err NamedTyped
 		// `this`
 		This Named
 		// `ret`
@@ -205,12 +205,12 @@ type NamedTyped struct {
 NamedTyped details a `Name` and a `TypeRef`, such as needed for func args,
 return values, struct fields etc.
 
-#### func  Nt
+#### func  NT
 
 ```go
-func Nt(name string, t *TypeRef) NamedTyped
+func NT(name string, t *TypeRef) NamedTyped
 ```
-Nt constructs a `NamedTyped`.
+NT constructs a `NamedTyped`.
 
 #### type NamedsTypeds
 
@@ -219,6 +219,13 @@ type NamedsTypeds []NamedTyped
 ```
 
 NamedsTypeds is a slice of 0-or-more `NamedTyped`s.
+
+#### func  NTs
+
+```go
+func NTs(namesAndTypeRefs ...interface{}) (nts NamedsTypeds)
+```
+NTs is merely a handy convenience short-hand to create a slice of `NamedTyped`s.
 
 #### func (NamedsTypeds) AllNamed
 
