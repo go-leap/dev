@@ -100,6 +100,24 @@ type TypeRef struct {
 	}
 }
 
+func (me *TypeRef) SafeBitSizeIfBuiltInNumberType() int {
+	if me.Named.PkgName == "" {
+		switch me.Named.TypeName {
+		case "int8", "uint8", "byte":
+			return 8
+		case "int16", "uint16":
+			return 16
+		case "int64", "uint64", "float64", "complex64":
+			return 64
+		case "complex128":
+			return 128
+		case "int32", "uint32", "float32", "rune", "int", "uint":
+			return 32
+		}
+	}
+	return 0
+}
+
 // IsBuiltinPrimType returns whether `this` refers to one of Go's
 // built-in primitive-types such as `bool`, `byte`, `uint`, `string` etc.
 // (If `orIsUnderlyingBuiltinPrimType`, it walks the `Slice` / `Ptr` / `Map` as applicable.)

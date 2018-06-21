@@ -1122,6 +1122,12 @@ primitive-types such as `bool`, `byte`, `uint`, `string` etc. (If
 `orIsUnderlyingBuiltinPrimType`, it walks the `Slice` / `Ptr` / `Map` as
 applicable.)
 
+#### func (*TypeRef) SafeBitSizeIfBuiltInNumberType
+
+```go
+func (me *TypeRef) SafeBitSizeIfBuiltInNumberType() int
+```
+
 #### type TypeStruct
 
 ```go
