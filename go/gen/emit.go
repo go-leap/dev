@@ -238,6 +238,7 @@ func (this *StmtConst) emitTo(w *writer) {
 func (this *StmtVar) emitTo(w *writer) {
 	w.WriteString("var ")
 	w.WriteString(this.Name)
+	w.WriteByte(' ')
 	if this.Type.emitTo(w); this.Expr != nil {
 		w.WriteByte('=')
 		this.Expr.emitTo(w)
@@ -245,13 +246,18 @@ func (this *StmtVar) emitTo(w *writer) {
 }
 
 func (this *StmtIf) emitTo(w *writer) {
+	finali, finalelse := len(this.IfThens)-1, len(this.Else.Body) > 0
 	for i := range this.IfThens {
 		w.WriteString("if ")
 		this.IfThens[i].Cond.emitTo(w)
 		this.IfThens[i].emit(w, true, "", false)
-		w.WriteString(" else ")
+		if i != finali || finalelse {
+			w.WriteString(" else ")
+		}
 	}
-	this.Else.emit(w, true, "", false)
+	if finalelse {
+		this.Else.emit(w, true, "", false)
+	}
 }
 
 func (this *StmtSwitch) emitTo(w *writer) {
@@ -317,17 +323,26 @@ func (this *StmtFor) emitLoop(w *writer) {
 }
 
 func (this Op) emit(w *writer, operator string) {
-	unary := len(this.Operands) == 1
+	last, unary := len(this.Operands), len(this.Operands) == 1
+	parens, canparens := false, operator != "=" && operator != ":="
 	for i := range this.Operands {
 		if i > 0 || unary {
 			w.WriteString(operator)
 		}
-		_, isanotheroperator := this.Operands[i].(interface{ isOp() })
-		if isanotheroperator {
+		if canparens {
+			_, parens = this.Operands[i].(interface{ isOp() })
+			if (!parens) && i == last && operator == "." {
+				if _, parens = this.Operands[i].(*TypeRef); !parens {
+					name, _ := this.Operands[i].(Named)
+					parens = name.Name == "type"
+				}
+			}
+		}
+		if parens {
 			w.WriteByte('(')
 		}
 		this.Operands[i].emitTo(w)
-		if isanotheroperator {
+		if parens {
 			w.WriteByte(')')
 		}
 	}
@@ -335,9 +350,9 @@ func (this Op) emit(w *writer, operator string) {
 
 func (Op) isOp() {}
 
-func (this OpSet) emitTo(w *writer) { this.Op.emit(w, " = ") }
+func (this OpSet) emitTo(w *writer) { this.Op.emit(w, "=") }
 
-func (this OpDecl) emitTo(w *writer) { this.Op.emit(w, " := ") }
+func (this OpDecl) emitTo(w *writer) { this.Op.emit(w, ":=") }
 
 func (this OpComma) emitTo(w *writer) { this.Op.emit(w, ",") }
 

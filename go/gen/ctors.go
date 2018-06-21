@@ -203,7 +203,7 @@ func Go(call *ExprCall) (this StmtGo) {
 // If constructs a simple `StmtIf` with a single condition
 // and `then` branch (plus initially empty `else` branch).
 func If(cond ISyn, thens ...ISyn) *StmtIf {
-	return &StmtIf{IfThens: []SynCond{{Cond: cond, SynBlock: SynBlock{Body: thens}}}}
+	return &StmtIf{IfThens: SynConds{{Cond: cond, SynBlock: SynBlock{Body: thens}}}}
 }
 
 // Ifs constructs a more complex `StmtIf` than `If` does,
@@ -236,8 +236,11 @@ func Ret(retExpr ISyn) (this StmtRet) {
 }
 
 // Switch constructs a `StmtSwitch`.
-func Switch(maybeCond ISyn, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch) {
-	this = &StmtSwitch{Scrutinee: maybeCond}
+func Switch(maybeCond ISyn, casesCap int, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch) {
+	if c := len(caseCondsAndBlocksPlusMaybeDefaultBlock) / 2; casesCap < c {
+		casesCap = c
+	}
+	this = &StmtSwitch{Scrutinee: maybeCond, Cases: make(SynConds, 0, casesCap)}
 	if l := len(caseCondsAndBlocksPlusMaybeDefaultBlock); l%2 != 0 {
 		if block, ok := caseCondsAndBlocksPlusMaybeDefaultBlock[l-1].(SynBlock); ok {
 			this.Default.Body = block.Body

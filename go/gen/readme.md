@@ -742,7 +742,7 @@ Go constructs a `StmtGo`.
 type StmtIf struct {
 	// one or more `if` or `else if` conditions
 	// with their associated branches
-	IfThens []SynCond
+	IfThens SynConds
 	// optional final `else` branch
 	Else SynBlock
 }
@@ -792,7 +792,7 @@ type StmtSwitch struct {
 	// optional scrutinee
 	Scrutinee ISyn
 	// 0 or more `case` branches
-	Cases []SynCond
+	Cases SynConds
 	// optional `default` branch
 	Default SynBlock
 }
@@ -803,7 +803,7 @@ StmtSwitch represents Go's `switch .. case` construct.
 #### func  Switch
 
 ```go
-func Switch(maybeCond ISyn, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch)
+func Switch(maybeCond ISyn, casesCap int, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch)
 ```
 Switch constructs a `StmtSwitch`.
 
@@ -885,6 +885,21 @@ used for both `StmtIf`s and `StmtSwitch`es.
 func Cond(cond ISyn, thens ...ISyn) (this SynCond)
 ```
 Cond constructs a `SynCond` as used in `StmtIf`s and `StmtSwitch`es.
+
+#### type SynConds
+
+```go
+type SynConds []SynCond
+```
+
+SynConds is a slice of `SynCond`s.
+
+#### func (*SynConds) Add
+
+```go
+func (this *SynConds) Add(cond ISyn, thens ...ISyn)
+```
+Add is a convenience short-hand for `append`.
 
 #### type SynFunc
 

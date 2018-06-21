@@ -206,9 +206,17 @@ type StmtVar struct {
 type StmtIf struct {
 	// one or more `if` or `else if` conditions
 	// with their associated branches
-	IfThens []SynCond
+	IfThens SynConds
 	// optional final `else` branch
 	Else SynBlock
+}
+
+// SynConds is a slice of `SynCond`s.
+type SynConds []SynCond
+
+// Add is a convenience short-hand for `append`.
+func (this *SynConds) Add(cond ISyn, thens ...ISyn) {
+	*this = append(*this, Cond(cond, thens...))
 }
 
 // SynCond represents a condition expression together with a block
@@ -225,7 +233,7 @@ type StmtSwitch struct {
 	// optional scrutinee
 	Scrutinee ISyn
 	// 0 or more `case` branches
-	Cases []SynCond
+	Cases SynConds
 	// optional `default` branch
 	Default SynBlock
 }
