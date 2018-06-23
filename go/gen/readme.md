@@ -158,7 +158,7 @@ type ISyn interface {
 }
 ```
 
-ISyn implementations represent some element in the Abstract Syntax Tree:
+ISyn implementations represent some discrete item in the Abstract Syntax Tree:
 literals, vars, consts, type-defs, type-refs, funcs, keywords, operators etc..
 
 #### type Named
