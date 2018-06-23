@@ -11,6 +11,7 @@ func N(name string) Named { return Named{Name: name} }
 func NT(name string, t *TypeRef) NamedTyped { return NamedTyped{Type: t, Named: Named{Name: name}} }
 
 // NTs is merely a handy convenience short-hand to create a slice of `NamedTyped`s.
+// `namesAndTypeRefs` must be alternating: `string`, `*TypeRef`, `string`, `*TypeRef`, etc.
 func NTs(namesAndTypeRefs ...interface{}) (nts NamedsTypeds) {
 	nts = make(NamedsTypeds, len(namesAndTypeRefs)/2)
 	for i := range nts {

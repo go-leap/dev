@@ -20,6 +20,11 @@ type NamedTyped struct {
 // NamedsTypeds is a slice of 0-or-more `NamedTyped`s.
 type NamedsTypeds []NamedTyped
 
+// Add is a convenience short-hand for `append`.
+func (this *NamedsTypeds) Add(name string, typeRef *TypeRef) {
+	*this = append(*this, NamedTyped{Type: typeRef, Named: Named{Name: name}})
+}
+
 // AllNamed returns whether all `NamedTyped`s in `this` have a `Name` set.
 func (this NamedsTypeds) AllNamed() bool {
 	for i := range this {

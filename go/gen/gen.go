@@ -110,6 +110,9 @@ var (
 
 	// singletons for common type-refs
 	T struct {
+		// empty interface{}
+		Interface *TypeRef
+
 		Bool       *TypeRef
 		Byte       *TypeRef
 		Complex64  *TypeRef
@@ -144,6 +147,7 @@ func init() {
 	V.Err.Name, V.Err.Type, V.Ret.Name, V.This.Name = "err", TrNamed("", "error"), "ret", "this"
 	B.Append.Name, B.Cap.Name, B.Close.Name, B.Complex.Name, B.Copy.Name, B.Delete.Name, B.Imag.Name, B.Len.Name, B.Make.Name, B.New.Name, B.Panic.Name, B.Print.Name, B.Println.Name, B.Real.Name, B.Recover.Name = "append", "cap", "close", "complex", "copy", "delete", "imag", "len", "make", "new", "panic", "print", "println", "real", "recover"
 	T.Bool, T.Byte, T.Complex128, T.Complex64, T.Float32, T.Float64, T.Int, T.Int16, T.Int32, T.Int64, T.Int8, T.Rune, T.String, T.Uint, T.Uint16, T.Uint32, T.Uint64, T.Uint8 = TrNamed("", "bool"), TrNamed("", "byte"), TrNamed("", "complex128"), TrNamed("", "complex64"), TrNamed("", "float32"), TrNamed("", "float64"), TrNamed("", "int"), TrNamed("", "int16"), TrNamed("", "int32"), TrNamed("", "int64"), TrNamed("", "int8"), TrNamed("", "rune"), TrNamed("", "string"), TrNamed("", "uint"), TrNamed("", "uint16"), TrNamed("", "uint32"), TrNamed("", "uint64"), TrNamed("", "uint8")
+	T.Interface = TrInterface(TdInterface(nil))
 
 	Sigs.NoneToBool.Rets, Sigs.NoneToString.Rets = NamedsTypeds{V.Ret.Typed(T.Bool)}, NamedsTypeds{V.Ret.Typed(T.String)}
 }

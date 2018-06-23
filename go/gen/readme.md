@@ -65,6 +65,9 @@ var (
 
 	// singletons for common type-refs
 	T struct {
+		// empty interface{}
+		Interface *TypeRef
+
 		Bool       *TypeRef
 		Byte       *TypeRef
 		Complex64  *TypeRef
@@ -226,6 +229,15 @@ NamedsTypeds is a slice of 0-or-more `NamedTyped`s.
 func NTs(namesAndTypeRefs ...interface{}) (nts NamedsTypeds)
 ```
 NTs is merely a handy convenience short-hand to create a slice of `NamedTyped`s.
+`namesAndTypeRefs` must be alternating: `string`, `*TypeRef`, `string`,
+`*TypeRef`, etc.
+
+#### func (*NamedsTypeds) Add
+
+```go
+func (this *NamedsTypeds) Add(name string, typeRef *TypeRef)
+```
+Add is a convenience short-hand for `append`.
 
 #### func (NamedsTypeds) AllNamed
 
