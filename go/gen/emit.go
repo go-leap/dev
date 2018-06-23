@@ -194,19 +194,21 @@ func (this *SynFunc) emitTo(w *writer) {
 		w.WriteByte(')')
 	}
 	w.WriteString(this.Name)
-	if this.Type.emit(w, true); noop {
-		K.Ret.emitTo(w)
-	} else {
+	if this.Type.emit(w, true); !noop {
 		this.SynBlock.emit(w, true, "", hasnamedrets && !hasfinalret)
+	} else {
+		w.WriteByte('{')
+		K.Ret.emitTo(w)
+		w.WriteByte('}')
 	}
 }
 
 func (StmtBreak) emitTo(w *writer) {
-	w.WriteString("break;")
+	w.WriteString("break")
 }
 
 func (StmtContinue) emitTo(w *writer) {
-	w.WriteString("continue;")
+	w.WriteString("continue")
 }
 
 func (this StmtUnary) emit(w *writer, keywordPlusSpace string) {
