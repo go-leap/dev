@@ -168,15 +168,15 @@ type SynFunc struct {
 	// non-`nil`) method receiver
 	Recv NamedTyped
 	// doc comments for this func declaration
-	Doc DocCommentSingleLineParagraphs
+	Doc SingleLineDocCommentParagraphs
 }
 
-// DocCommentSingleLineParagraphs prepends doc-comments to a top-level `SynFunc` being `Emit`ted. Each represents
+// SingleLineDocCommentParagraphs prepends doc-comments to a top-level `SynFunc` being `Emit`ted. Each represents
 // a "single-line-paragraph" that in the generated output will be separated from the next via an empty `// ` line.
-type DocCommentSingleLineParagraphs []string
+type SingleLineDocCommentParagraphs []string
 
 // Add is a convenience short-hand for `append`.
-func (this *DocCommentSingleLineParagraphs) Add(docCommentLines ...string) {
+func (this *SingleLineDocCommentParagraphs) Add(docCommentLines ...string) {
 	*this = append(*this, docCommentLines...)
 }
 

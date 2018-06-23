@@ -99,23 +99,6 @@ var (
 )
 ```
 
-#### type DocCommentSingleLineParagraphs
-
-```go
-type DocCommentSingleLineParagraphs []string
-```
-
-DocCommentSingleLineParagraphs prepends doc-comments to a top-level `SynFunc`
-being `Emit`ted. Each represents a "single-line-paragraph" that in the generated
-output will be separated from the next via an empty `// ` line.
-
-#### func (*DocCommentSingleLineParagraphs) Add
-
-```go
-func (this *DocCommentSingleLineParagraphs) Add(docCommentLines ...string)
-```
-Add is a convenience short-hand for `append`.
-
 #### type ExprCall
 
 ```go
@@ -591,6 +574,23 @@ Ensure returns the `pkgImportName` for the given `pkgImportPath` as stored in
 `encoding/json` and stores it, assuming that `PkgImportNamePrefix` is set to
 "pkg__", its default value).
 
+#### type SingleLineDocCommentParagraphs
+
+```go
+type SingleLineDocCommentParagraphs []string
+```
+
+SingleLineDocCommentParagraphs prepends doc-comments to a top-level `SynFunc`
+being `Emit`ted. Each represents a "single-line-paragraph" that in the generated
+output will be separated from the next via an empty `// ` line.
+
+#### func (*SingleLineDocCommentParagraphs) Add
+
+```go
+func (this *SingleLineDocCommentParagraphs) Add(docCommentLines ...string)
+```
+Add is a convenience short-hand for `append`.
+
 #### type SourceFile
 
 ```go
@@ -929,7 +929,7 @@ type SynFunc struct {
 	// non-`nil`) method receiver
 	Recv NamedTyped
 	// doc comments for this func declaration
-	Doc DocCommentSingleLineParagraphs
+	Doc SingleLineDocCommentParagraphs
 }
 ```
 

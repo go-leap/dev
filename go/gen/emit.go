@@ -16,7 +16,7 @@ type writer struct {
 	pkgImportsActuallyEmitted map[string]bool
 }
 
-func (this *writer) ShouldEmitNoOpFuncBodies() bool { return this.emitNoOpFuncBodies }
+func (this *writer) shouldEmitNoOpFuncBodies() bool { return this.emitNoOpFuncBodies }
 
 func (this Named) emitTo(w *writer) {
 	w.WriteString(this.Name)
@@ -165,13 +165,13 @@ func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep string, addFina
 }
 
 func (this *SynFunc) emitTo(w *writer) {
-	doc, noop, hasfinalret, hasnamedrets := this.Doc, w.ShouldEmitNoOpFuncBodies(), false, this.Type.Func.Rets.AllNamed()
+	doc, noop, hasfinalret, hasnamedrets := this.Doc, w.shouldEmitNoOpFuncBodies(), false, this.Type.Func.Rets.AllNamed()
 	if len(this.Type.Func.Rets) > 0 && len(this.Body) > 0 {
 		if _, hasfinalret = this.Body[len(this.Body)-1].(*StmtRet); !hasfinalret {
 			_, hasfinalret = this.Body[len(this.Body)-1].(StmtRet)
 		}
 	}
-	if noop {
+	if noop = noop && (len(this.Type.Func.Rets) == 0 || hasnamedrets); noop {
 		doc = append(doc, "As per your current (and presumably temporary) go-gent code-gen settings, this method is effectively a no-op (so each of its return values will always equal its type's zero-value).")
 	}
 	if len(doc) > 0 {
