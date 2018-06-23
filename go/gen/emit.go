@@ -408,7 +408,44 @@ func (this OpIdx) emitTo(w *writer) {
 }
 
 func (this ExprLit) emitTo(w *writer) {
-	w.WriteString(fmt.Sprintf("%#v", this.Val))
+	this.emit(w, this.Val)
+}
+
+func (this ExprLit) emit(w *writer, val interface{}) {
+	switch v := val.(type) {
+	case ExprLit:
+		v.emitTo(w)
+	case Named:
+		v.emitTo(w)
+	case NamedTyped:
+		v.emitTo(w)
+	case bool:
+		if v {
+			w.WriteString("true")
+		} else {
+			w.WriteString("false")
+		}
+	case string:
+		w.WriteString(strconv.Quote(v))
+	case Syns:
+		w.WriteString("[]")
+		switch first := v[0].(type) {
+		case ExprLit:
+			fmt.Fprintf(w, "%T", first.Val)
+		case NamedTyped:
+			first.Type.emitTo(w)
+		default:
+			fmt.Fprintf(w, "%T", first)
+		}
+		w.WriteByte('{')
+		for i := range v {
+			this.emit(w, v[i])
+			w.WriteByte(',')
+		}
+		w.WriteByte('}')
+	default:
+		fmt.Fprintf(w, "%#v", v)
+	}
 }
 
 func (ExprNil) emitTo(w *writer) {

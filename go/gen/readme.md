@@ -86,6 +86,11 @@ var (
 		Uint64     *TypeRef
 		Rune       *TypeRef
 		String     *TypeRef
+
+		// some not-so-uncommon slices
+		Sl struct {
+			Strings *TypeRef
+		}
 	}
 
 	// singletons for common func sigs
