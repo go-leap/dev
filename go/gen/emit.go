@@ -471,6 +471,10 @@ func (this *ExprCall) emitTo(w *writer) {
 	w.WriteByte(')')
 }
 
+func (this SynRaw) emitTo(w *writer) {
+	w.Write(this)
+}
+
 // CodeGen generates the code via `this.CodeGenPlain()`, and then optionally `go/format`s it.
 // Any `error` returned is from `go/format`, and if so, `src` will instead contain the original
 // (non-formatted) generated code that was given to `go/format` to aid investigating the issue.

@@ -370,3 +370,7 @@ type ExprCall struct {
 	Callee ISyn
 	Args   Syns
 }
+
+// SynRaw is an `ISyn` that at codegen time simply emits its self-contained raw Go
+// source-code (perhaps hardcoded or generated via templates or other means) directly.
+type SynRaw []byte

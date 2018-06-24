@@ -949,6 +949,16 @@ func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *S
 Fn constructs a `SynFunc`. If `maybeRecv` is given, it will represent a method
 of that type.
 
+#### type SynRaw
+
+```go
+type SynRaw []byte
+```
+
+SynRaw is an `ISyn` that at codegen time simply emits its self-contained raw Go
+source-code (perhaps hardcoded or generated via templates or other means)
+directly.
+
 #### type SynStructField
 
 ```go
