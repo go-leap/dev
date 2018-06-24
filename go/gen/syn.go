@@ -90,11 +90,18 @@ type TypeDecl struct {
 // such as used for func arguments' or struct
 // fields' explicit type annotations.
 type TypeRef struct {
-	Slice *TypeRef // slice-of-foo
-	Ptr   *TypeRef // pointer-to-foo
-	Map   struct { // etc...
+	ArrOrSliceOf         *TypeRef // slice-of-foo
+	ArrIsFixedLen        *uint64
+	ArrOrSliceIsEllipsis bool
+	PtrTo                *TypeRef // pointer-to-foo
+	MapOf                struct { // etc...
 		Key *TypeRef
 		Val *TypeRef
+	}
+	ChanOf struct {
+		Val     *TypeRef
+		DirRecv bool
+		DirSend bool
 	}
 	Func      *TypeFunc
 	Interface *TypeInterface
@@ -133,12 +140,12 @@ func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool 
 	}
 	if orIsUnderlyingBuiltinPrimType {
 		switch {
-		case this.Slice != nil:
-			return this.Slice.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType)
-		case this.Ptr != nil:
-			return this.Ptr.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType)
-		case this.Map.Key != nil && this.Map.Val != nil:
-			return this.Map.Key.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType) && this.Map.Val.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType)
+		case this.ArrOrSliceOf != nil:
+			return this.ArrOrSliceOf.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType)
+		case this.PtrTo != nil:
+			return this.PtrTo.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType)
+		case this.MapOf.Key != nil && this.MapOf.Val != nil:
+			return this.MapOf.Key.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType) && this.MapOf.Val.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType)
 		}
 	}
 	return false

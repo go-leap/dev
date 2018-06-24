@@ -1068,11 +1068,18 @@ TdInterface constructs a `TypeInterface`.
 
 ```go
 type TypeRef struct {
-	Slice *TypeRef // slice-of-foo
-	Ptr   *TypeRef // pointer-to-foo
-	Map   struct {
+	ArrOrSliceOf         *TypeRef // slice-of-foo
+	ArrIsFixedLen        *uint64
+	ArrOrSliceIsEllipsis bool
+	PtrTo                *TypeRef // pointer-to-foo
+	MapOf                struct {
 		Key *TypeRef
 		Val *TypeRef
+	}
+	ChanOf struct {
+		Val     *TypeRef
+		DirRecv bool
+		DirSend bool
 	}
 	Func      *TypeFunc
 	Interface *TypeInterface
@@ -1086,6 +1093,21 @@ type TypeRef struct {
 
 TypeRef represents a reference to a type, such as used for func arguments' or
 struct fields' explicit type annotations.
+
+#### func  TrArray
+
+```go
+func TrArray(numElems uint64, typeRef *TypeRef) *TypeRef
+```
+TrSlice constructs a `TypeRef` referring to an array of the specified type.
+
+#### func  TrChan
+
+```go
+func TrChan(dirRecv bool, dirSend bool, val *TypeRef) *TypeRef
+```
+TrChan constructs a `TypeRef` referring to the specified channel. TODO:
+TypeRef.emitTo implementation!
 
 #### func  TrFunc
 

@@ -123,10 +123,25 @@ func TrInterface(typeIface *TypeInterface) *TypeRef { return &TypeRef{Interface:
 func TrStruct(typeStruct *TypeStruct) *TypeRef { return &TypeRef{Struct: typeStruct} }
 
 // TrPtr constructs a `TypeRef` referring to a pointer to the specified type.
-func TrPtr(typeRef *TypeRef) *TypeRef { return &TypeRef{Ptr: typeRef} }
+func TrPtr(typeRef *TypeRef) *TypeRef { return &TypeRef{PtrTo: typeRef} }
+
+// TrSlice constructs a `TypeRef` referring to an array of the specified type.
+func TrArray(numElems uint64, typeRef *TypeRef) *TypeRef {
+	return &TypeRef{ArrOrSliceOf: typeRef, ArrIsFixedLen: &numElems}
+}
+
+// TrChan constructs a `TypeRef` referring to the specified channel. TODO: TypeRef.emitTo implementation!
+func TrChan(dirRecv bool, dirSend bool, val *TypeRef) *TypeRef {
+	var tref TypeRef
+	if !(dirRecv || dirSend) {
+		dirRecv, dirSend = true, true
+	}
+	tref.ChanOf.DirRecv, tref.ChanOf.DirSend, tref.ChanOf.Val = dirRecv, dirSend, val
+	return &tref
+}
 
 // TrSlice constructs a `TypeRef` referring to a slice of the specified type.
-func TrSlice(typeRef *TypeRef) *TypeRef { return &TypeRef{Slice: typeRef} }
+func TrSlice(typeRef *TypeRef) *TypeRef { return &TypeRef{ArrOrSliceOf: typeRef} }
 
 // TrNamed constructs a `TypeRef` referring to the specified named type.
 func TrNamed(pkgName string, typeName string) (this *TypeRef) {
@@ -138,7 +153,7 @@ func TrNamed(pkgName string, typeName string) (this *TypeRef) {
 // TrMap constructs a `TypeRef` referring to a map with the specified key and value types.
 func TrMap(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
 	this = &TypeRef{}
-	this.Map.Key, this.Map.Val = keyType, valType
+	this.MapOf.Key, this.MapOf.Val = keyType, valType
 	return
 }
 

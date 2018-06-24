@@ -82,19 +82,31 @@ func (this *TypeStruct) emitTo(w *writer) {
 func (this *SynStructField) emitTo(w *writer) {
 	this.NamedTyped.emit(w, false)
 	if len(this.Tags) > 0 {
-		w.WriteByte('`')
-		idx, sortednames := 0, make(sort.StringSlice, len(this.Tags))
-		for tagname := range this.Tags {
-			sortednames[idx], idx = tagname, idx+1
+		if unconventional := this.Tags[""]; unconventional != "" && len(this.Tags) == 1 {
+			w.WriteString(strconv.Quote(unconventional))
+		} else {
+			w.WriteByte('`')
+			idx, sortednames := 0, make(sort.StringSlice, len(this.Tags))
+			for tagname := range this.Tags {
+				if tagname != "" {
+					idx, sortednames[idx] = idx+1, tagname
+				}
+			}
+			sortednames.Sort()
+			for i, tagname := range sortednames {
+				if i > 0 {
+					w.WriteByte(' ')
+				}
+				if tagname != "" {
+					w.WriteString(tagname)
+					w.WriteByte(':')
+					w.WriteString(strconv.Quote(this.Tags[tagname]))
+				} else {
+					w.WriteString(unconventional)
+				}
+			}
+			w.WriteByte('`')
 		}
-		sortednames.Sort()
-		for _, tagname := range sortednames {
-			w.WriteString(tagname)
-			w.WriteByte(':')
-			w.WriteString(strconv.Quote(this.Tags[tagname]))
-			w.WriteByte(' ')
-		}
-		w.WriteByte('`')
 	}
 }
 
@@ -104,17 +116,21 @@ func (this *TypeRef) emitTo(w *writer) {
 
 func (this *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
 	switch {
-	case this.Ptr != nil:
+	case this.PtrTo != nil:
 		w.WriteByte('*')
-		this.Ptr.emitTo(w)
-	case this.Slice != nil:
-		w.WriteString("[]")
-		this.Slice.emitTo(w)
-	case this.Map.Key != nil:
-		w.WriteString("map[")
-		this.Map.Key.emitTo(w)
+		this.PtrTo.emitTo(w)
+	case this.ArrOrSliceOf != nil:
+		w.WriteByte('[')
+		if this.ArrIsFixedLen != nil {
+			w.WriteString(strconv.FormatUint(*this.ArrIsFixedLen, 10))
+		}
 		w.WriteByte(']')
-		this.Map.Val.emitTo(w)
+		this.ArrOrSliceOf.emitTo(w)
+	case this.MapOf.Key != nil:
+		w.WriteString("map[")
+		this.MapOf.Key.emitTo(w)
+		w.WriteByte(']')
+		this.MapOf.Val.emitTo(w)
 	case this.Named.TypeName != "":
 		if this.Named.PkgName != "" {
 			w.pkgImportsActuallyEmitted[this.Named.PkgName] = true
