@@ -374,7 +374,28 @@ func (this Op) emit(w *writer, operator string) {
 
 func (Op) isOp() {}
 
-func (this OpSet) emitTo(w *writer) { this.Op.emit(w, "=") }
+func (this OpSet) emitTo(w *writer) {
+	if len(this.Operands) == 2 { // goodie: turn `foo=foo-1` into `foo--` ...
+		if lname, lnok := this.Operands[0].(Named); lnok { // ... and same for `+`
+			try := func(operands Syns, opop string) bool {
+				if rname, rnok := operands[0].(Named); rnok && rname.Name == lname.Name {
+					if rlit, rlok := operands[1].(ExprLit); rlok && rlit.Val == 1 {
+						rname.emitTo(w)
+						w.WriteString(opop)
+						return true
+					}
+				}
+				return false
+			}
+			if rsub, rsok := this.Operands[1].(OpSub); rsok && len(rsub.Operands) == 2 && try(rsub.Operands, "--") {
+				return
+			} else if radd, raok := this.Operands[1].(OpAdd); raok && len(radd.Operands) == 2 && try(radd.Operands, "++") {
+				return
+			}
+		}
+	}
+	this.Op.emit(w, "=")
+}
 
 func (this OpDecl) emitTo(w *writer) { this.Op.emit(w, ":=") }
 
