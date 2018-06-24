@@ -319,7 +319,7 @@ func (this *StmtFor) emitRange(w *writer) {
 		}
 		w.WriteString(" := ")
 	}
-	w.WriteString("range")
+	w.WriteString("range ")
 	this.Range.Iteree.emitTo(w)
 	this.emit(w, true, "", false)
 }
@@ -349,6 +349,12 @@ func (this Op) emit(w *writer, operator string) {
 		}
 		if canparens {
 			_, parens = this.Operands[i].(interface{ isOp() })
+			if parens {
+				switch this.Operands[i].(type) {
+				case OpIdx:
+					parens = false
+				}
+			}
 			if (!parens) && i == last && operator == "." {
 				if _, parens = this.Operands[i].(*TypeRef); !parens {
 					name, _ := this.Operands[i].(Named)

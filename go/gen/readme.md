@@ -25,6 +25,9 @@ var (
 	// intended to remain zero-valued (Name="" and Type=nil)
 	NoMethodRecv NamedTyped
 
+	// intended to remain zero-valued (Name="")
+	None Named
+
 	// singletons for simple (operand-less / arg-less) keywords
 	K struct {
 		Break    StmtBreak
@@ -59,8 +62,16 @@ var (
 		Err NamedTyped
 		// `this`
 		This Named
-		// `ret`
-		Ret Named
+		// `ok`
+		Ok Named
+		// `r`
+		R Named
+		// `i`
+		I Named
+		// `k`
+		K Named
+		// `v`
+		V Named
 	}
 
 	// singletons for common type-refs
