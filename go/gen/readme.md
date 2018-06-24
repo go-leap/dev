@@ -89,6 +89,7 @@ var (
 
 		// some not-so-uncommon slices
 		Sl struct {
+			Ints    *TypeRef
 			Strings *TypeRef
 		}
 	}
@@ -1068,11 +1069,13 @@ TdInterface constructs a `TypeInterface`.
 
 ```go
 type TypeRef struct {
-	ArrOrSliceOf         *TypeRef // slice-of-foo
-	ArrIsFixedLen        *uint64
-	ArrOrSliceIsEllipsis bool
-	PtrTo                *TypeRef // pointer-to-foo
-	MapOf                struct {
+	PtrTo        *TypeRef // pointer-to-foo
+	ArrOrSliceOf struct {
+		Val        *TypeRef
+		IsFixedLen *uint64
+		IsEllipsis bool
+	}
+	MapOf struct {
 		Key *TypeRef
 		Val *TypeRef
 	}

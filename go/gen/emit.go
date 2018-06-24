@@ -119,13 +119,13 @@ func (this *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfIn
 	case this.PtrTo != nil:
 		w.WriteByte('*')
 		this.PtrTo.emitTo(w)
-	case this.ArrOrSliceOf != nil:
+	case this.ArrOrSliceOf.Val != nil:
 		w.WriteByte('[')
-		if this.ArrIsFixedLen != nil {
-			w.WriteString(strconv.FormatUint(*this.ArrIsFixedLen, 10))
+		if this.ArrOrSliceOf.IsFixedLen != nil {
+			w.WriteString(strconv.FormatUint(*this.ArrOrSliceOf.IsFixedLen, 10))
 		}
 		w.WriteByte(']')
-		this.ArrOrSliceOf.emitTo(w)
+		this.ArrOrSliceOf.Val.emitTo(w)
 	case this.MapOf.Key != nil:
 		w.WriteString("map[")
 		this.MapOf.Key.emitTo(w)

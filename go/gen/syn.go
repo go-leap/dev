@@ -90,11 +90,13 @@ type TypeDecl struct {
 // such as used for func arguments' or struct
 // fields' explicit type annotations.
 type TypeRef struct {
-	ArrOrSliceOf         *TypeRef // slice-of-foo
-	ArrIsFixedLen        *uint64
-	ArrOrSliceIsEllipsis bool
-	PtrTo                *TypeRef // pointer-to-foo
-	MapOf                struct { // etc...
+	PtrTo        *TypeRef // pointer-to-foo
+	ArrOrSliceOf struct {
+		Val        *TypeRef
+		IsFixedLen *uint64
+		IsEllipsis bool
+	}
+	MapOf struct { // etc...
 		Key *TypeRef
 		Val *TypeRef
 	}
@@ -140,8 +142,8 @@ func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool 
 	}
 	if orIsUnderlyingBuiltinPrimType {
 		switch {
-		case this.ArrOrSliceOf != nil:
-			return this.ArrOrSliceOf.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType)
+		case this.ArrOrSliceOf.Val != nil:
+			return this.ArrOrSliceOf.Val.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType)
 		case this.PtrTo != nil:
 			return this.PtrTo.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType)
 		case this.MapOf.Key != nil && this.MapOf.Val != nil:

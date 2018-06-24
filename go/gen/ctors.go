@@ -127,7 +127,9 @@ func TrPtr(typeRef *TypeRef) *TypeRef { return &TypeRef{PtrTo: typeRef} }
 
 // TrSlice constructs a `TypeRef` referring to an array of the specified type.
 func TrArray(numElems uint64, typeRef *TypeRef) *TypeRef {
-	return &TypeRef{ArrOrSliceOf: typeRef, ArrIsFixedLen: &numElems}
+	var tref TypeRef
+	tref.ArrOrSliceOf.Val, tref.ArrOrSliceOf.IsFixedLen = typeRef, &numElems
+	return &tref
 }
 
 // TrChan constructs a `TypeRef` referring to the specified channel. TODO: TypeRef.emitTo implementation!
@@ -141,7 +143,11 @@ func TrChan(dirRecv bool, dirSend bool, val *TypeRef) *TypeRef {
 }
 
 // TrSlice constructs a `TypeRef` referring to a slice of the specified type.
-func TrSlice(typeRef *TypeRef) *TypeRef { return &TypeRef{ArrOrSliceOf: typeRef} }
+func TrSlice(typeRef *TypeRef) *TypeRef {
+	var tref TypeRef
+	tref.ArrOrSliceOf.Val = typeRef
+	return &tref
+}
 
 // TrNamed constructs a `TypeRef` referring to the specified named type.
 func TrNamed(pkgName string, typeName string) (this *TypeRef) {
