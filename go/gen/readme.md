@@ -68,6 +68,8 @@ var (
 		R Named
 		// `i`
 		I Named
+		// `j`
+		J Named
 		// `k`
 		K Named
 		// `v`

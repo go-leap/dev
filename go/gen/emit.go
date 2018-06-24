@@ -120,11 +120,15 @@ func (this *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfIn
 		w.WriteByte('*')
 		this.PtrTo.emitTo(w)
 	case this.ArrOrSliceOf.Val != nil:
-		w.WriteByte('[')
-		if this.ArrOrSliceOf.IsFixedLen != nil {
-			w.WriteString(strconv.FormatUint(*this.ArrOrSliceOf.IsFixedLen, 10))
+		if this.ArrOrSliceOf.IsEllipsis {
+			w.WriteString("...")
+		} else {
+			w.WriteByte('[')
+			if this.ArrOrSliceOf.IsFixedLen != nil {
+				w.WriteString(strconv.FormatUint(*this.ArrOrSliceOf.IsFixedLen, 10))
+			}
+			w.WriteByte(']')
 		}
-		w.WriteByte(']')
 		this.ArrOrSliceOf.Val.emitTo(w)
 	case this.MapOf.Key != nil:
 		w.WriteString("map[")
