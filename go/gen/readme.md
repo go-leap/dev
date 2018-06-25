@@ -60,7 +60,9 @@ var (
 
 	// common Call constructors
 	C struct {
-		Append func(...ISyn) *ExprCall
+		Append builtinCall
+		Len    builtinCall
+		Make   builtinCall
 	}
 
 	// singletons for common var names
