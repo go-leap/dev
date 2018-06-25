@@ -22,6 +22,11 @@ func (this Named) emitTo(w *writer) {
 	w.WriteString(this.Name)
 }
 
+func (this Named) emit(w *writer, keywordPlusSpace string) {
+	w.WriteString(keywordPlusSpace)
+	w.WriteString(this.Name)
+}
+
 func (this NamedTyped) emit(w *writer, noFuncKeywordBecauseInterfaceMethod bool) {
 	if this.Name != "" {
 		w.WriteString(this.Name)
@@ -223,12 +228,16 @@ func (this *SynFunc) emitTo(w *writer) {
 	}
 }
 
-func (StmtBreak) emitTo(w *writer) {
-	w.WriteString("break")
+func (this StmtBreak) emitTo(w *writer) {
+	Named(this).emit(w, "break ")
 }
 
-func (StmtContinue) emitTo(w *writer) {
-	w.WriteString("continue")
+func (this StmtContinue) emitTo(w *writer) {
+	Named(this).emit(w, "continue ")
+}
+
+func (this StmtGoTo) emitTo(w *writer) {
+	Named(this).emit(w, "goto ")
 }
 
 func (this StmtUnary) emit(w *writer, keywordPlusSpace string) {

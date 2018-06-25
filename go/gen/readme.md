@@ -666,7 +666,7 @@ CodeGenPlain generates the code represented by `this` into `src`, without
 #### type StmtBreak
 
 ```go
-type StmtBreak struct{}
+type StmtBreak Named
 ```
 
 StmtBreak represents Go's `break` keyword.
@@ -694,7 +694,7 @@ Const constructs a `StmtConst`.
 #### type StmtContinue
 
 ```go
-type StmtContinue struct{}
+type StmtContinue Named
 ```
 
 StmtContinue represents Go's `continue` keyword.
@@ -778,6 +778,14 @@ func Go(call *ExprCall) (this StmtGo)
 ```
 Go constructs a `StmtGo`.
 
+#### type StmtGoTo
+
+```go
+type StmtGoTo Named
+```
+
+StmtContinue represents Go's `goto` keyword.
+
 #### type StmtIf
 
 ```go
@@ -809,6 +817,14 @@ Ifs constructs a more complex `StmtIf` than `If` does, with
 `ifThensAndMaybeAnElse` containing 0 or more alternating pairs of `if` (or `else
 if`) conditions and corresponding `then` branches (each a `SynBlock`), plus
 optionally a final `else` branch (also a `SynBlock`).
+
+#### type StmtLabel
+
+```go
+type StmtLabel Named
+```
+
+StmtLabel represents a label that one can `goto` or `break` from.
 
 #### type StmtRet
 

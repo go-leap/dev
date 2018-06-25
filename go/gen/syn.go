@@ -202,11 +202,17 @@ type StmtUnary struct {
 	Expr ISyn
 }
 
+// StmtLabel represents a label that one can `goto` or `break` from.
+type StmtLabel Named
+
 // StmtBreak represents Go's `break` keyword.
-type StmtBreak struct{}
+type StmtBreak Named
 
 // StmtContinue represents Go's `continue` keyword.
-type StmtContinue struct{}
+type StmtContinue Named
+
+// StmtContinue represents Go's `goto` keyword.
+type StmtGoTo Named
 
 // StmtRet represents Go's `return` keyword.
 type StmtRet struct {
