@@ -128,7 +128,7 @@ func TrStruct(typeStruct *TypeStruct) *TypeRef { return &TypeRef{Struct: typeStr
 // TrPtr constructs a `TypeRef` referring to a pointer to the specified type.
 func TrPtr(typeRef *TypeRef) *TypeRef { return &TypeRef{PtrTo: typeRef} }
 
-// TrSlice constructs a `TypeRef` referring to an array of the specified type.
+// TrArray constructs a `TypeRef` referring to an array of the specified type.
 func TrArray(numElems uint64, typeRef *TypeRef) *TypeRef {
 	var tref TypeRef
 	tref.ArrOrSliceOf.Val, tref.ArrOrSliceOf.IsFixedLen = typeRef, &numElems
@@ -255,17 +255,20 @@ func Ifs(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
 }
 
 // Ret constructs a `StmtRet`.
+// To have it generate `return nil`, your `retExpr` should equal
+// `B.Nil` (aka. an `ExprLit` with no `Val` set). If `nil` is passed
+// for `retExpr`, this generates an empty `return;` statement.
 func Ret(retExpr ISyn) (this StmtRet) {
 	this.Expr = retExpr
 	return
 }
 
 // Switch constructs a `StmtSwitch`.
-func Switch(maybeCond ISyn, casesCap int, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch) {
+func Switch(maybeScrutinee ISyn, casesCap int, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch) {
 	if c := len(caseCondsAndBlocksPlusMaybeDefaultBlock) / 2; casesCap < c {
 		casesCap = c
 	}
-	this = &StmtSwitch{Scrutinee: maybeCond, Cases: make(SynConds, 0, casesCap)}
+	this = &StmtSwitch{Scrutinee: maybeScrutinee, Cases: make(SynConds, 0, casesCap)}
 	if l := len(caseCondsAndBlocksPlusMaybeDefaultBlock); l%2 != 0 {
 		if block, ok := caseCondsAndBlocksPlusMaybeDefaultBlock[l-1].(SynBlock); ok {
 			this.Default.Body = block.Body

@@ -825,7 +825,9 @@ StmtRet represents Go's `return` keyword.
 ```go
 func Ret(retExpr ISyn) (this StmtRet)
 ```
-Ret constructs a `StmtRet`.
+Ret constructs a `StmtRet`. To have it generate `return nil`, your `retExpr`
+should equal `B.Nil` (aka. an `ExprLit` with no `Val` set). If `nil` is passed
+for `retExpr`, this generates an empty `return;` statement.
 
 #### type StmtSwitch
 
@@ -845,7 +847,7 @@ StmtSwitch represents Go's `switch .. case` construct.
 #### func  Switch
 
 ```go
-func Switch(maybeCond ISyn, casesCap int, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch)
+func Switch(maybeScrutinee ISyn, casesCap int, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch)
 ```
 Switch constructs a `StmtSwitch`.
 
@@ -855,7 +857,7 @@ Switch constructs a `StmtSwitch`.
 type StmtUnary struct {
 	// the keyword's argument: must be non-`nil`
 	// `*ExprCall` for `StmtGo` / `StmtDefer`,
-	// can be anything incl. `nil` for `StmtRet`.
+	// can be anything or nothing for `StmtRet`.
 	Expr ISyn
 }
 ```
@@ -947,9 +949,9 @@ Add is a convenience short-hand for `append`.
 
 ```go
 type SynFunc struct {
-	// the func's body of statements --- if it is missing
-	// a final `StmtRet` and all return values are named,
-	// one will be automatically appended at code-gen time
+	// the func's body of statements --- if it is lacking a
+	// final `StmtRet` and all return values are named, one
+	// will automatically appear at the end during code-gen
 	SynBlock
 	// optionally the func's `Name` (if top-level decl),
 	// the `Type` must point to the func's signature
@@ -1175,7 +1177,7 @@ type TypeRef struct {
 	Interface *TypeInterface
 	Struct    *TypeStruct
 	Named     struct {
-		PkgName  string // empty if package-local (not imported) type
+		PkgName  string // "" if Go-native (built-in) or package-local (non-import) type
 		TypeName string
 	}
 }
@@ -1189,7 +1191,7 @@ struct fields' explicit type annotations.
 ```go
 func TrArray(numElems uint64, typeRef *TypeRef) *TypeRef
 ```
-TrSlice constructs a `TypeRef` referring to an array of the specified type.
+TrArray constructs a `TypeRef` referring to an array of the specified type.
 
 #### func  TrChan
 
@@ -1272,8 +1274,11 @@ Method constructs a `SynFunc` with the given `name` and `args` plus a
 #### func (*TypeRef) SafeBitSizeIfBuiltInNumberType
 
 ```go
-func (me *TypeRef) SafeBitSizeIfBuiltInNumberType() int
+func (this *TypeRef) SafeBitSizeIfBuiltInNumberType() int
 ```
+SafeBitSizeIfBuiltInNumberType returns 8 for `int8`, `byte`, `uint8`, or 16, 32,
+64, 128 as applicable, recognizing only direct `Named` refs to Go' native
+`builtin` number types (no type-alias dereferencing yet).
 
 #### type TypeStruct
 

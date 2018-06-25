@@ -109,14 +109,17 @@ type TypeRef struct {
 	Interface *TypeInterface
 	Struct    *TypeStruct
 	Named     struct {
-		PkgName  string // empty if package-local (not imported) type
+		PkgName  string // "" if Go-native (built-in) or package-local (non-import) type
 		TypeName string
 	}
 }
 
-func (me *TypeRef) SafeBitSizeIfBuiltInNumberType() int {
-	if me.Named.PkgName == "" {
-		switch me.Named.TypeName {
+// SafeBitSizeIfBuiltInNumberType returns 8 for `int8`, `byte`, `uint8`,
+// or 16, 32, 64, 128 as applicable, recognizing only direct `Named` refs
+// to Go' native `builtin` number types (no type-alias dereferencing yet).
+func (this *TypeRef) SafeBitSizeIfBuiltInNumberType() int {
+	if this.Named.PkgName == "" {
+		switch this.Named.TypeName {
 		case "int8", "uint8", "byte":
 			return 8
 		case "int16", "uint16":
@@ -143,11 +146,13 @@ func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool 
 	if orIsUnderlyingBuiltinPrimType {
 		switch {
 		case this.ArrOrSliceOf.Val != nil:
-			return this.ArrOrSliceOf.Val.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType)
+			return this.ArrOrSliceOf.Val.IsBuiltinPrimType(true)
+		case this.ChanOf.Val != nil:
+			return this.ChanOf.Val.IsBuiltinPrimType(true)
 		case this.PtrTo != nil:
-			return this.PtrTo.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType)
+			return this.PtrTo.IsBuiltinPrimType(true)
 		case this.MapOf.Key != nil && this.MapOf.Val != nil:
-			return this.MapOf.Key.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType) && this.MapOf.Val.IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType)
+			return this.MapOf.Key.IsBuiltinPrimType(true) && this.MapOf.Val.IsBuiltinPrimType(true)
 		}
 	}
 	return false
@@ -165,9 +170,9 @@ func (this *SynBlock) Add(stmts ...ISyn) { this.Body = append(this.Body, stmts..
 // SynFunc represents either a top-level (named) func /
 // method declaration, or an anonymous func expression.
 type SynFunc struct {
-	// the func's body of statements --- if it is missing
-	// a final `StmtRet` and all return values are named,
-	// one will be automatically appended at code-gen time
+	// the func's body of statements --- if it is lacking a
+	// final `StmtRet` and all return values are named, one
+	// will automatically appear at the end during code-gen
 	SynBlock
 	// optionally the func's `Name` (if top-level decl),
 	// the `Type` must point to the func's signature
@@ -193,7 +198,7 @@ func (this *SingleLineDocCommentParagraphs) Add(docCommentLines ...string) {
 type StmtUnary struct {
 	// the keyword's argument: must be non-`nil`
 	// `*ExprCall` for `StmtGo` / `StmtDefer`,
-	// can be anything incl. `nil` for `StmtRet`.
+	// can be anything or nothing for `StmtRet`.
 	Expr ISyn
 }
 
