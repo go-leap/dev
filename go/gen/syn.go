@@ -2,7 +2,9 @@ package udevgogen
 
 // Named `Emit`s its `Name` during code-generation as-is, hence
 // useful for referring to named vars, consts, types, funcs etc.
-type Named struct{ Name string }
+type Named struct {
+	Name string
+}
 
 // T returns a `NamedTyped` with `this.Name` and `typeRef`.
 func (this Named) T(typeRef *TypeRef) (nt NamedTyped) {

@@ -360,3 +360,7 @@ func (this *SynFunc) Sig(sig *TypeFunc) *SynFunc {
 	this.Type.Func = sig
 	return this
 }
+
+func (this Named) At(idxs ...ISyn) OpIdx {
+	return I(append(Syns{this}, idxs...)...)
+}

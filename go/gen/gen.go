@@ -110,6 +110,9 @@ var (
 		Append builtinCall
 		Len    builtinCall
 		Make   builtinCall
+
+		D func(string, string, ...ISyn) *ExprCall
+		N func(string, ...ISyn) *ExprCall
 	}
 
 	// singletons for common var names
@@ -187,7 +190,12 @@ func init() {
 		return func(args ...ISyn) *ExprCall { return Call(n, args...) }
 	}
 	C.Append, C.Len, C.Make = c(B.Append), c(B.Len), c(B.Make)
-
+	C.N = func(name string, args ...ISyn) *ExprCall {
+		return Call(N(name), args...)
+	}
+	C.D = func(dotLeft string, dotRight string, args ...ISyn) *ExprCall {
+		return Call(D(N(dotLeft), N(dotRight)), args...)
+	}
 	T.Bool, T.Byte, T.Complex128, T.Complex64, T.Float32, T.Float64, T.Int, T.Int16, T.Int32, T.Int64, T.Int8, T.Rune, T.String, T.Uint, T.Uint16, T.Uint32, T.Uint64, T.Uint8 = TrNamed("", "bool"), TrNamed("", "byte"), TrNamed("", "complex128"), TrNamed("", "complex64"), TrNamed("", "float32"), TrNamed("", "float64"), TrNamed("", "int"), TrNamed("", "int16"), TrNamed("", "int32"), TrNamed("", "int64"), TrNamed("", "int8"), TrNamed("", "rune"), TrNamed("", "string"), TrNamed("", "uint"), TrNamed("", "uint16"), TrNamed("", "uint32"), TrNamed("", "uint64"), TrNamed("", "uint8")
 	T.Interface = TrInterface(TdInterface(nil))
 	T.Sl.Ints, T.Sl.Strings = TrSlice(T.Int), TrSlice(T.String)

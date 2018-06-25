@@ -63,6 +63,9 @@ var (
 		Append builtinCall
 		Len    builtinCall
 		Make   builtinCall
+
+		D func(string, string, ...ISyn) *ExprCall
+		N func(string, ...ISyn) *ExprCall
 	}
 
 	// singletons for common var names
@@ -182,7 +185,9 @@ literals, vars, consts, type-defs, type-refs, funcs, keywords, operators etc..
 #### type Named
 
 ```go
-type Named struct{ Name string }
+type Named struct {
+	Name string
+}
 ```
 
 Named `Emit`s its `Name` during code-generation as-is, hence useful for
@@ -194,6 +199,12 @@ referring to named vars, consts, types, funcs etc.
 func N(name string) Named
 ```
 N constructs a `Named`.
+
+#### func (Named) At
+
+```go
+func (this Named) At(idxs ...ISyn) OpIdx
+```
 
 #### func (Named) T
 
