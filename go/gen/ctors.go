@@ -20,6 +20,9 @@ func NTs(namesAndTypeRefs ...interface{}) (nts NamedsTypeds) {
 	return
 }
 
+// Args is merely a handy convenience short-hand to create a slice of `NamedTyped`s.
+func Args(nts ...NamedTyped) NamedsTypeds { return nts }
+
 // L constructs an `ExprLit`.
 func L(lit interface{}) ExprLit { return ExprLit{Val: lit} }
 

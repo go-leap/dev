@@ -225,6 +225,14 @@ type NamedsTypeds []NamedTyped
 
 NamedsTypeds is a slice of 0-or-more `NamedTyped`s.
 
+#### func  Args
+
+```go
+func Args(nts ...NamedTyped) NamedsTypeds
+```
+Args is merely a handy convenience short-hand to create a slice of
+`NamedTyped`s.
+
 #### func  NTs
 
 ```go
