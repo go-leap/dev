@@ -784,7 +784,7 @@ Go constructs a `StmtGo`.
 type StmtGoTo Named
 ```
 
-StmtContinue represents Go's `goto` keyword.
+StmtGoTo represents Go's `goto` keyword.
 
 #### type StmtIf
 

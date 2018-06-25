@@ -211,7 +211,7 @@ type StmtBreak Named
 // StmtContinue represents Go's `continue` keyword.
 type StmtContinue Named
 
-// StmtContinue represents Go's `goto` keyword.
+// StmtGoTo represents Go's `goto` keyword.
 type StmtGoTo Named
 
 // StmtRet represents Go's `return` keyword.
