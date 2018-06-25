@@ -37,7 +37,7 @@ var (
 
 	// singletons for stdlib-builtins
 	B struct {
-		Nil ExprNil
+		Nil ExprLit
 
 		Append  Named
 		Cap     Named
@@ -62,6 +62,10 @@ var (
 		Err NamedTyped
 		// `this`
 		This Named
+		// `self`
+		Self Named
+		// `me`
+		Me Named
 		// `ok`
 		Ok Named
 		// `r`
@@ -155,15 +159,6 @@ func L(lit interface{}) ExprLit
 ```
 L constructs an `ExprLit`.
 
-#### type ExprNil
-
-```go
-type ExprNil struct {
-}
-```
-
-ExprNil represents Go's `nil` built-in value.
-
 #### type ISyn
 
 ```go
@@ -191,12 +186,12 @@ func N(name string) Named
 ```
 N constructs a `Named`.
 
-#### func (Named) Typed
+#### func (Named) T
 
 ```go
-func (this Named) Typed(typeRef *TypeRef) (nt NamedTyped)
+func (this Named) T(typeRef *TypeRef) (nt NamedTyped)
 ```
-Typed returns a `NamedTyped` with `this.Name` and `typeRef`.
+T returns a `NamedTyped` with `this.Name` and `typeRef`.
 
 #### type NamedTyped
 
@@ -216,6 +211,14 @@ return values, struct fields etc.
 func NT(name string, t *TypeRef) NamedTyped
 ```
 NT constructs a `NamedTyped`.
+
+#### func (NamedTyped) Method
+
+```go
+func (this NamedTyped) Method(name string, args ...NamedTyped) *SynFunc
+```
+Method constructs a `SynFunc` with the given `name` and `args` plus `this` as
+its method `Recv`.
 
 #### type NamedsTypeds
 
@@ -971,6 +974,69 @@ func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *S
 Fn constructs a `SynFunc`. If `maybeRecv` is given, it will represent a method
 of that type.
 
+#### func  Func
+
+```go
+func Func(name string, args ...NamedTyped) *SynFunc
+```
+Func constructs a `SynFunc` with the given `name` and `args`.
+
+#### func (*SynFunc) Arg
+
+```go
+func (this *SynFunc) Arg(name string, typeRef *TypeRef) *SynFunc
+```
+Arg adds to `this.Type.Func.Args` and returns `this`.
+
+#### func (*SynFunc) Args
+
+```go
+func (this *SynFunc) Args(args ...NamedTyped) *SynFunc
+```
+Args sets `this.Type.Func.Args` and returns `this`.
+
+#### func (*SynFunc) B
+
+```go
+func (this *SynFunc) B(stmts ...ISyn) *SynFunc
+```
+B adds to `this.SynBlock.Body` and returns `this`.
+
+#### func (*SynFunc) D
+
+```go
+func (this *SynFunc) D(docCommentLines ...string) *SynFunc
+```
+D adds to `this.Doc` and returns `this`.
+
+#### func (*SynFunc) N
+
+```go
+func (this *SynFunc) N(name string) *SynFunc
+```
+N sets `this.Named.Name` and returns `this`.
+
+#### func (*SynFunc) Ret
+
+```go
+func (this *SynFunc) Ret(name string, typeRef *TypeRef) *SynFunc
+```
+Ret adds to `this.Type.Func.Rets` and returns `this`.
+
+#### func (*SynFunc) Rets
+
+```go
+func (this *SynFunc) Rets(rets ...NamedTyped) *SynFunc
+```
+Rets sets `this.Type.Func.Rets` and returns `this`.
+
+#### func (*SynFunc) Sig
+
+```go
+func (this *SynFunc) Sig(sig *TypeFunc) *SynFunc
+```
+Sig sets `this.Type.Func` to `sig` and returns `this`.
+
 #### type SynRaw
 
 ```go
@@ -1194,6 +1260,14 @@ IsBuiltinPrimType returns whether `this` refers to one of Go's built-in
 primitive-types such as `bool`, `byte`, `uint`, `string` etc. (If
 `orIsUnderlyingBuiltinPrimType`, it walks the `Slice` / `Ptr` / `Map` as
 applicable.)
+
+#### func (*TypeRef) Method
+
+```go
+func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc
+```
+Method constructs a `SynFunc` with the given `name` and `args` plus a
+`this`-typed method `Recv` also named `"this"`.
 
 #### func (*TypeRef) SafeBitSizeIfBuiltInNumberType
 

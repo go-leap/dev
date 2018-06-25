@@ -4,8 +4,8 @@ package udevgogen
 // useful for referring to named vars, consts, types, funcs etc.
 type Named struct{ Name string }
 
-// Typed returns a `NamedTyped` with `this.Name` and `typeRef`.
-func (this Named) Typed(typeRef *TypeRef) (nt NamedTyped) {
+// T returns a `NamedTyped` with `this.Name` and `typeRef`.
+func (this Named) T(typeRef *TypeRef) (nt NamedTyped) {
 	nt.Named, nt.Type = this, typeRef
 	return
 }
@@ -367,10 +367,6 @@ type OpNot struct{ Op }
 // such as a string, rune, number or boolean.
 type ExprLit struct {
 	Val interface{}
-}
-
-// ExprNil represents Go's `nil` built-in value.
-type ExprNil struct {
 }
 
 // ExprCall represents a call to any callable `Callee`, or a

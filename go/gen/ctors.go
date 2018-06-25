@@ -215,7 +215,7 @@ func ForRange(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (this *
 // Fn constructs a `SynFunc`. If `maybeRecv` is given, it will represent a method of that type.
 func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *SynFunc) {
 	this = &SynFunc{Recv: maybeRecv}
-	this.Body, this.Name, this.Type = body, name, TrFunc(sig)
+	this.Body, this.Named.Name, this.Type = body, name, TrFunc(sig)
 	return
 }
 
@@ -293,4 +293,67 @@ func Var(name string, maybeType *TypeRef, maybeExpr ISyn) (this *StmtVar) {
 func Cond(cond ISyn, thens ...ISyn) (this SynCond) {
 	this.Cond, this.Body = cond, thens
 	return
+}
+
+// Func constructs a `SynFunc` with the given `name` and `args`.
+func Func(name string, args ...NamedTyped) *SynFunc {
+	return Fn(NoMethodRecv, name, TdFunc(args))
+}
+
+// Method constructs a `SynFunc` with the given `name` and `args` plus `this` as its method `Recv`.
+func (this NamedTyped) Method(name string, args ...NamedTyped) *SynFunc {
+	return Fn(this, name, TdFunc(args))
+}
+
+// Method constructs a `SynFunc` with the given `name` and `args` plus a `this`-typed method `Recv` also named `"this"`.
+func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc {
+	return V.This.T(this).Method(name, args...)
+}
+
+// Args sets `this.Type.Func.Args` and returns `this`.
+func (this *SynFunc) Args(args ...NamedTyped) *SynFunc {
+	this.Type.Func.Args = args
+	return this
+}
+
+// Arg adds to `this.Type.Func.Args` and returns `this`.
+func (this *SynFunc) Arg(name string, typeRef *TypeRef) *SynFunc {
+	this.Type.Func.Args.Add(name, typeRef)
+	return this
+}
+
+// B adds to `this.SynBlock.Body` and returns `this`.
+func (this *SynFunc) B(stmts ...ISyn) *SynFunc {
+	this.Add(stmts...)
+	return this
+}
+
+// D adds to `this.Doc` and returns `this`.
+func (this *SynFunc) D(docCommentLines ...string) *SynFunc {
+	this.Doc.Add(docCommentLines...)
+	return this
+}
+
+// N sets `this.Named.Name` and returns `this`.
+func (this *SynFunc) N(name string) *SynFunc {
+	this.Named.Name = name
+	return this
+}
+
+// Rets sets `this.Type.Func.Rets` and returns `this`.
+func (this *SynFunc) Rets(rets ...NamedTyped) *SynFunc {
+	this.Type.Func.Rets = rets
+	return this
+}
+
+// Ret adds to `this.Type.Func.Rets` and returns `this`.
+func (this *SynFunc) Ret(name string, typeRef *TypeRef) *SynFunc {
+	this.Type.Func.Rets.Add(name, typeRef)
+	return this
+}
+
+// Sig sets `this.Type.Func` to `sig` and returns `this`.
+func (this *SynFunc) Sig(sig *TypeFunc) *SynFunc {
+	this.Type.Func = sig
+	return this
 }

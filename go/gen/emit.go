@@ -213,7 +213,7 @@ func (this *SynFunc) emitTo(w *writer) {
 		this.Recv.Type.emitTo(w)
 		w.WriteByte(')')
 	}
-	w.WriteString(this.Name)
+	w.WriteString(this.Named.Name)
 	if this.Type.emit(w, true); !noop {
 		this.SynBlock.emit(w, true, "", hasnamedrets && !hasfinalret)
 	} else {
@@ -461,7 +461,13 @@ func (this ExprLit) emitTo(w *writer) {
 }
 
 func (this ExprLit) emit(w *writer, val interface{}) {
+	if val == nil {
+		w.WriteString("nil")
+		return
+	}
 	switch v := val.(type) {
+	case nil:
+		w.WriteString("nil")
 	case ExprLit:
 		v.emitTo(w)
 	case Named:
@@ -495,10 +501,6 @@ func (this ExprLit) emit(w *writer, val interface{}) {
 	default:
 		fmt.Fprintf(w, "%#v", v)
 	}
-}
-
-func (ExprNil) emitTo(w *writer) {
-	w.WriteString("nil")
 }
 
 func (this *ExprCall) emitTo(w *writer) {
