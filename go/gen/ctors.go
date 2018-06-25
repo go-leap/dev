@@ -35,8 +35,8 @@ func Addr(operands ...ISyn) OpAddr { return OpAddr{Op: Op{Operands: operands}} }
 // And constructs an `OpAnd`.
 func And(operands ...ISyn) OpAnd { return OpAnd{Op: Op{Operands: operands}} }
 
-// C constructs an `OpComma`.
-func C(operands ...ISyn) OpComma { return OpComma{Op: Op{Operands: operands}} }
+// Tup constructs an `OpComma`.
+func Tup(operands ...ISyn) OpComma { return OpComma{Op: Op{Operands: operands}} }
 
 // D constructs an `OpDot`.
 func D(operands ...ISyn) OpDot { return OpDot{Op: Op{Operands: operands}} }

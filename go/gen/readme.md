@@ -37,7 +37,9 @@ var (
 
 	// singletons for stdlib-builtins
 	B struct {
-		Nil ExprLit
+		Nil   ExprLit
+		True  ExprLit
+		False ExprLit
 
 		Append  Named
 		Cap     Named
@@ -54,6 +56,11 @@ var (
 		Println Named
 		Real    Named
 		Recover Named
+	}
+
+	// common Call constructors
+	C struct {
+		Append func(...ISyn) *ExprCall
 	}
 
 	// singletons for common var names
@@ -331,12 +338,12 @@ type OpComma struct{ Op }
 
 OpComma emits all its operands separated by `,` commas.
 
-#### func  C
+#### func  Tup
 
 ```go
-func C(operands ...ISyn) OpComma
+func Tup(operands ...ISyn) OpComma
 ```
-C constructs an `OpComma`.
+Tup constructs an `OpComma`.
 
 #### type OpDecl
 
