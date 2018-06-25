@@ -190,7 +190,7 @@ func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep string, addFina
 }
 
 func (this *SynFunc) emitTo(w *writer) {
-	doc, noop, hasfinalret, hasnamedrets := this.Doc, w.shouldEmitNoOpFuncBodies(), false, this.Type.Func.Rets.AllNamed()
+	doc, noop, hasfinalret, hasnamedrets := this.Docs, w.shouldEmitNoOpFuncBodies(), false, this.Type.Func.Rets.AllNamed()
 	if len(this.Type.Func.Rets) > 0 && len(this.Body) > 0 {
 		if _, hasfinalret = this.Body[len(this.Body)-1].(*StmtRet); !hasfinalret {
 			_, hasfinalret = this.Body[len(this.Body)-1].(StmtRet)

@@ -325,15 +325,15 @@ func (this *SynFunc) Arg(name string, typeRef *TypeRef) *SynFunc {
 	return this
 }
 
-// B adds to `this.SynBlock.Body` and returns `this`.
-func (this *SynFunc) B(stmts ...ISyn) *SynFunc {
+// Code adds to `this.SynBlock.Body` and returns `this`.
+func (this *SynFunc) Code(stmts ...ISyn) *SynFunc {
 	this.Add(stmts...)
 	return this
 }
 
-// D adds to `this.Doc` and returns `this`.
-func (this *SynFunc) D(docCommentLines ...string) *SynFunc {
-	this.Doc.Add(docCommentLines...)
+// Doc adds to `this.Docs` and returns `this`.
+func (this *SynFunc) Doc(docCommentLines ...string) *SynFunc {
+	this.Docs.Add(docCommentLines...)
 	return this
 }
 

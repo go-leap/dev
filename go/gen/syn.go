@@ -184,7 +184,7 @@ type SynFunc struct {
 	// non-`nil`) method receiver
 	Recv NamedTyped
 	// doc comments for this func declaration
-	Doc SingleLineDocCommentParagraphs
+	Docs SingleLineDocCommentParagraphs
 }
 
 // SingleLineDocCommentParagraphs prepends doc-comments to a top-level `SynFunc` being `Emit`ted. Each represents

@@ -997,7 +997,7 @@ type SynFunc struct {
 	// non-`nil`) method receiver
 	Recv NamedTyped
 	// doc comments for this func declaration
-	Doc SingleLineDocCommentParagraphs
+	Docs SingleLineDocCommentParagraphs
 }
 ```
 
@@ -1033,19 +1033,19 @@ func (this *SynFunc) Args(args ...NamedTyped) *SynFunc
 ```
 Args sets `this.Type.Func.Args` and returns `this`.
 
-#### func (*SynFunc) B
+#### func (*SynFunc) Code
 
 ```go
-func (this *SynFunc) B(stmts ...ISyn) *SynFunc
+func (this *SynFunc) Code(stmts ...ISyn) *SynFunc
 ```
-B adds to `this.SynBlock.Body` and returns `this`.
+Code adds to `this.SynBlock.Body` and returns `this`.
 
-#### func (*SynFunc) D
+#### func (*SynFunc) Doc
 
 ```go
-func (this *SynFunc) D(docCommentLines ...string) *SynFunc
+func (this *SynFunc) Doc(docCommentLines ...string) *SynFunc
 ```
-D adds to `this.Doc` and returns `this`.
+Doc adds to `this.Docs` and returns `this`.
 
 #### func (*SynFunc) N
 
