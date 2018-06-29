@@ -14,19 +14,6 @@ import (
 	"strings"
 )
 
-// ISyn implementations represent some discrete item in the Abstract Syntax Tree:
-// literals, vars, consts, type-defs, type-refs, funcs, keywords, operators etc..
-type ISyn interface {
-	// generates the code represented by this `ISyn`
-	emitTo(*writer)
-}
-
-// Syns is a slice of `ISyn`s.
-type Syns []ISyn
-
-// Add is a convenience short-hand for `append`.
-func (this *Syns) Add(syns ...ISyn) { *this = append(*this, syns...) }
-
 // SourceFile is a simple collection of `ISyn`s
 // representing top-level definition declarations
 // destined to be emitted into a single source file,

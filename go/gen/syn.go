@@ -1,5 +1,18 @@
 package udevgogen
 
+// ISyn implementations represent some discrete item in the Abstract Syntax Tree:
+// literals, vars, consts, type-defs, type-refs, funcs, keywords, operators etc..
+type ISyn interface {
+	// generates the code represented by this `ISyn`
+	emitTo(*writer)
+}
+
+// Syns is a slice of `ISyn`s.
+type Syns []ISyn
+
+// Add is a convenience short-hand for `append`.
+func (this *Syns) Add(syns ...ISyn) { *this = append(*this, syns...) }
+
 // Named `Emit`s its `Name` during code-generation as-is, hence
 // useful for referring to named vars, consts, types, funcs etc.
 type Named struct {

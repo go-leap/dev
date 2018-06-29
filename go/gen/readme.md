@@ -171,6 +171,34 @@ func L(lit interface{}) ExprLit
 ```
 L constructs an `ExprLit`.
 
+#### type IExpr
+
+```go
+type IExpr interface {
+	ISyn
+	Geq(ISyn) OpGeq
+	Leq(ISyn) OpLeq
+	Gt(ISyn) OpGt
+	Lt(ISyn) OpLt
+	Set(ISyn) OpSet
+	Decl(ISyn) OpDecl
+	And(ISyn) OpAnd
+	Or(ISyn) OpOr
+	Eq(ISyn) OpEq
+	Neq(ISyn) OpNeq
+	Add(ISyn) OpAdd
+	Sub(ISyn) OpSub
+	Mul(ISyn) OpMul
+	Div(ISyn) OpDiv
+	Idx(ISyn) OpIdx
+	Addr() OpAddr
+	Deref() OpDeref
+	Not() OpNot
+	Neg() OpSub
+}
+```
+
+
 #### type ISyn
 
 ```go
@@ -200,10 +228,124 @@ func N(name string) Named
 ```
 N constructs a `Named`.
 
+#### func (Named) Add
+
+```go
+func (this Named) Add(operand ISyn) OpAdd
+```
+
+#### func (Named) Addr
+
+```go
+func (this Named) Addr() OpAddr
+```
+
+#### func (Named) And
+
+```go
+func (this Named) And(operand ISyn) OpAnd
+```
+
 #### func (Named) At
 
 ```go
 func (this Named) At(idxs ...ISyn) OpIdx
+```
+
+#### func (Named) Decl
+
+```go
+func (this Named) Decl(operand ISyn) OpDecl
+```
+
+#### func (Named) Deref
+
+```go
+func (this Named) Deref() OpDeref
+```
+
+#### func (Named) Div
+
+```go
+func (this Named) Div(operand ISyn) OpDiv
+```
+
+#### func (Named) Eq
+
+```go
+func (this Named) Eq(operand ISyn) OpEq
+```
+
+#### func (Named) Geq
+
+```go
+func (this Named) Geq(operand ISyn) OpGeq
+```
+
+#### func (Named) Gt
+
+```go
+func (this Named) Gt(operand ISyn) OpGt
+```
+
+#### func (Named) Idx
+
+```go
+func (this Named) Idx(operand ISyn) OpIdx
+```
+
+#### func (Named) Leq
+
+```go
+func (this Named) Leq(operand ISyn) OpLeq
+```
+
+#### func (Named) Lt
+
+```go
+func (this Named) Lt(operand ISyn) OpLt
+```
+
+#### func (Named) Mul
+
+```go
+func (this Named) Mul(operand ISyn) OpMul
+```
+
+#### func (Named) Neg
+
+```go
+func (this Named) Neg() OpSub
+```
+
+#### func (Named) Neq
+
+```go
+func (this Named) Neq(operand ISyn) OpNeq
+```
+
+#### func (Named) Not
+
+```go
+func (this Named) Not() OpNot
+```
+
+#### func (Named) Or
+
+```go
+func (this Named) Or(operand ISyn) OpOr
+```
+
+#### func (Named) SetTo
+
+```go
+func (this Named) SetTo(operand ISyn) OpSet
+```
+
+#### func (Named) Sub
+
+```go
+func (this Named) Sub(operand ISyn) OpSub
 ```
 
 #### func (Named) T
