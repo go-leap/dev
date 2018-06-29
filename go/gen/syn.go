@@ -41,6 +41,7 @@ func (this *NamedsTypeds) Add(name string, typeRef *TypeRef) {
 }
 
 // AllNamed returns whether all `NamedTyped`s in `this` have a `Name` set.
+// If `this` is empty, `false` is returned.
 func (this NamedsTypeds) AllNamed() bool {
 	for i := range this {
 		if this[i].Name == "" {
@@ -51,6 +52,7 @@ func (this NamedsTypeds) AllNamed() bool {
 }
 
 // AllTyped returns whether all `NamedTyped`s in `this` have a `Type` set.
+// If `this` is empty, `false` is returned.
 func (this NamedsTypeds) AllTyped() bool {
 	for i := range this {
 		if this[i].Type == nil {

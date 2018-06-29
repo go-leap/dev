@@ -153,6 +153,18 @@ func Call(callee ISyn, args ...ISyn) *ExprCall
 ```
 Call constructs an `ExprCall`.
 
+#### func (*ExprCall) Defer
+
+```go
+func (this *ExprCall) Defer() StmtDefer
+```
+
+#### func (*ExprCall) Go
+
+```go
+func (this *ExprCall) Go() StmtGo
+```
+
 #### type ExprLit
 
 ```go
@@ -171,16 +183,27 @@ func L(lit interface{}) ExprLit
 ```
 L constructs an `ExprLit`.
 
-#### type IExpr
+#### type ISyn
 
 ```go
-type IExpr interface {
+type ISyn interface {
+	// contains filtered or unexported methods
+}
+```
+
+ISyn implementations represent some discrete item in the Abstract Syntax Tree:
+literals, vars, consts, type-defs, type-refs, funcs, keywords, operators etc..
+
+#### type ISynDot
+
+```go
+type ISynDot interface {
 	ISyn
 	Geq(ISyn) OpGeq
 	Leq(ISyn) OpLeq
 	Gt(ISyn) OpGt
 	Lt(ISyn) OpLt
-	Set(ISyn) OpSet
+	SetTo(ISyn) OpSet
 	Decl(ISyn) OpDecl
 	And(ISyn) OpAnd
 	Or(ISyn) OpOr
@@ -195,20 +218,10 @@ type IExpr interface {
 	Deref() OpDeref
 	Not() OpNot
 	Neg() OpSub
+	Call(...ISyn) *ExprCall
 }
 ```
 
-
-#### type ISyn
-
-```go
-type ISyn interface {
-	// contains filtered or unexported methods
-}
-```
-
-ISyn implementations represent some discrete item in the Abstract Syntax Tree:
-literals, vars, consts, type-defs, type-refs, funcs, keywords, operators etc..
 
 #### type Named
 
@@ -250,6 +263,12 @@ func (this Named) And(operand ISyn) OpAnd
 
 ```go
 func (this Named) At(idxs ...ISyn) OpIdx
+```
+
+#### func (Named) Call
+
+```go
+func (this Named) Call(args ...ISyn) *ExprCall
 ```
 
 #### func (Named) Decl
@@ -419,14 +438,16 @@ Add is a convenience short-hand for `append`.
 ```go
 func (this NamedsTypeds) AllNamed() bool
 ```
-AllNamed returns whether all `NamedTyped`s in `this` have a `Name` set.
+AllNamed returns whether all `NamedTyped`s in `this` have a `Name` set. If
+`this` is empty, `false` is returned.
 
 #### func (NamedsTypeds) AllTyped
 
 ```go
 func (this NamedsTypeds) AllTyped() bool
 ```
-AllTyped returns whether all `NamedTyped`s in `this` have a `Type` set.
+AllTyped returns whether all `NamedTyped`s in `this` have a `Type` set. If
+`this` is empty, `false` is returned.
 
 #### type Op
 
@@ -493,12 +514,144 @@ type OpComma struct{ Op }
 
 OpComma emits all its operands separated by `,` commas.
 
+#### func  Idents
+
+```go
+func Idents(names ...string) OpComma
+```
+
+#### func  Lits
+
+```go
+func Lits(lits ...interface{}) OpComma
+```
+
 #### func  Tup
 
 ```go
 func Tup(operands ...ISyn) OpComma
 ```
 Tup constructs an `OpComma`.
+
+#### func (OpComma) Add
+
+```go
+func (this OpComma) Add(operand ISyn) OpAdd
+```
+
+#### func (OpComma) Addr
+
+```go
+func (this OpComma) Addr() OpAddr
+```
+
+#### func (OpComma) And
+
+```go
+func (this OpComma) And(operand ISyn) OpAnd
+```
+
+#### func (OpComma) Call
+
+```go
+func (this OpComma) Call(args ...ISyn) *ExprCall
+```
+
+#### func (OpComma) Decl
+
+```go
+func (this OpComma) Decl(operand ISyn) OpDecl
+```
+
+#### func (OpComma) Deref
+
+```go
+func (this OpComma) Deref() OpDeref
+```
+
+#### func (OpComma) Div
+
+```go
+func (this OpComma) Div(operand ISyn) OpDiv
+```
+
+#### func (OpComma) Eq
+
+```go
+func (this OpComma) Eq(operand ISyn) OpEq
+```
+
+#### func (OpComma) Geq
+
+```go
+func (this OpComma) Geq(operand ISyn) OpGeq
+```
+
+#### func (OpComma) Gt
+
+```go
+func (this OpComma) Gt(operand ISyn) OpGt
+```
+
+#### func (OpComma) Idx
+
+```go
+func (this OpComma) Idx(operand ISyn) OpIdx
+```
+
+#### func (OpComma) Leq
+
+```go
+func (this OpComma) Leq(operand ISyn) OpLeq
+```
+
+#### func (OpComma) Lt
+
+```go
+func (this OpComma) Lt(operand ISyn) OpLt
+```
+
+#### func (OpComma) Mul
+
+```go
+func (this OpComma) Mul(operand ISyn) OpMul
+```
+
+#### func (OpComma) Neg
+
+```go
+func (this OpComma) Neg() OpSub
+```
+
+#### func (OpComma) Neq
+
+```go
+func (this OpComma) Neq(operand ISyn) OpNeq
+```
+
+#### func (OpComma) Not
+
+```go
+func (this OpComma) Not() OpNot
+```
+
+#### func (OpComma) Or
+
+```go
+func (this OpComma) Or(operand ISyn) OpOr
+```
+
+#### func (OpComma) SetTo
+
+```go
+func (this OpComma) SetTo(operand ISyn) OpSet
+```
+
+#### func (OpComma) Sub
+
+```go
+func (this OpComma) Sub(operand ISyn) OpSub
+```
 
 #### type OpDecl
 
@@ -590,6 +743,126 @@ func Geq(operands ...ISyn) OpGeq
 ```
 Geq constructs an `OpGeq`.
 
+#### func (OpGeq) Add
+
+```go
+func (this OpGeq) Add(operand ISyn) OpAdd
+```
+
+#### func (OpGeq) Addr
+
+```go
+func (this OpGeq) Addr() OpAddr
+```
+
+#### func (OpGeq) And
+
+```go
+func (this OpGeq) And(operand ISyn) OpAnd
+```
+
+#### func (OpGeq) Call
+
+```go
+func (this OpGeq) Call(args ...ISyn) *ExprCall
+```
+
+#### func (OpGeq) Decl
+
+```go
+func (this OpGeq) Decl(operand ISyn) OpDecl
+```
+
+#### func (OpGeq) Deref
+
+```go
+func (this OpGeq) Deref() OpDeref
+```
+
+#### func (OpGeq) Div
+
+```go
+func (this OpGeq) Div(operand ISyn) OpDiv
+```
+
+#### func (OpGeq) Eq
+
+```go
+func (this OpGeq) Eq(operand ISyn) OpEq
+```
+
+#### func (OpGeq) Geq
+
+```go
+func (this OpGeq) Geq(operand ISyn) OpGeq
+```
+
+#### func (OpGeq) Gt
+
+```go
+func (this OpGeq) Gt(operand ISyn) OpGt
+```
+
+#### func (OpGeq) Idx
+
+```go
+func (this OpGeq) Idx(operand ISyn) OpIdx
+```
+
+#### func (OpGeq) Leq
+
+```go
+func (this OpGeq) Leq(operand ISyn) OpLeq
+```
+
+#### func (OpGeq) Lt
+
+```go
+func (this OpGeq) Lt(operand ISyn) OpLt
+```
+
+#### func (OpGeq) Mul
+
+```go
+func (this OpGeq) Mul(operand ISyn) OpMul
+```
+
+#### func (OpGeq) Neg
+
+```go
+func (this OpGeq) Neg() OpSub
+```
+
+#### func (OpGeq) Neq
+
+```go
+func (this OpGeq) Neq(operand ISyn) OpNeq
+```
+
+#### func (OpGeq) Not
+
+```go
+func (this OpGeq) Not() OpNot
+```
+
+#### func (OpGeq) Or
+
+```go
+func (this OpGeq) Or(operand ISyn) OpOr
+```
+
+#### func (OpGeq) SetTo
+
+```go
+func (this OpGeq) SetTo(operand ISyn) OpSet
+```
+
+#### func (OpGeq) Sub
+
+```go
+func (this OpGeq) Sub(operand ISyn) OpSub
+```
+
 #### type OpGt
 
 ```go
@@ -604,6 +877,126 @@ OpGt represents Go's `>` greater-than comparison operator.
 func Gt(operands ...ISyn) OpGt
 ```
 Gt constructs an `OpGt`.
+
+#### func (OpGt) Add
+
+```go
+func (this OpGt) Add(operand ISyn) OpAdd
+```
+
+#### func (OpGt) Addr
+
+```go
+func (this OpGt) Addr() OpAddr
+```
+
+#### func (OpGt) And
+
+```go
+func (this OpGt) And(operand ISyn) OpAnd
+```
+
+#### func (OpGt) Call
+
+```go
+func (this OpGt) Call(args ...ISyn) *ExprCall
+```
+
+#### func (OpGt) Decl
+
+```go
+func (this OpGt) Decl(operand ISyn) OpDecl
+```
+
+#### func (OpGt) Deref
+
+```go
+func (this OpGt) Deref() OpDeref
+```
+
+#### func (OpGt) Div
+
+```go
+func (this OpGt) Div(operand ISyn) OpDiv
+```
+
+#### func (OpGt) Eq
+
+```go
+func (this OpGt) Eq(operand ISyn) OpEq
+```
+
+#### func (OpGt) Geq
+
+```go
+func (this OpGt) Geq(operand ISyn) OpGeq
+```
+
+#### func (OpGt) Gt
+
+```go
+func (this OpGt) Gt(operand ISyn) OpGt
+```
+
+#### func (OpGt) Idx
+
+```go
+func (this OpGt) Idx(operand ISyn) OpIdx
+```
+
+#### func (OpGt) Leq
+
+```go
+func (this OpGt) Leq(operand ISyn) OpLeq
+```
+
+#### func (OpGt) Lt
+
+```go
+func (this OpGt) Lt(operand ISyn) OpLt
+```
+
+#### func (OpGt) Mul
+
+```go
+func (this OpGt) Mul(operand ISyn) OpMul
+```
+
+#### func (OpGt) Neg
+
+```go
+func (this OpGt) Neg() OpSub
+```
+
+#### func (OpGt) Neq
+
+```go
+func (this OpGt) Neq(operand ISyn) OpNeq
+```
+
+#### func (OpGt) Not
+
+```go
+func (this OpGt) Not() OpNot
+```
+
+#### func (OpGt) Or
+
+```go
+func (this OpGt) Or(operand ISyn) OpOr
+```
+
+#### func (OpGt) SetTo
+
+```go
+func (this OpGt) SetTo(operand ISyn) OpSet
+```
+
+#### func (OpGt) Sub
+
+```go
+func (this OpGt) Sub(operand ISyn) OpSub
+```
 
 #### type OpIdx
 
@@ -635,6 +1028,126 @@ func Leq(operands ...ISyn) OpLeq
 ```
 Leq constructs an `OpLeq`.
 
+#### func (OpLeq) Add
+
+```go
+func (this OpLeq) Add(operand ISyn) OpAdd
+```
+
+#### func (OpLeq) Addr
+
+```go
+func (this OpLeq) Addr() OpAddr
+```
+
+#### func (OpLeq) And
+
+```go
+func (this OpLeq) And(operand ISyn) OpAnd
+```
+
+#### func (OpLeq) Call
+
+```go
+func (this OpLeq) Call(args ...ISyn) *ExprCall
+```
+
+#### func (OpLeq) Decl
+
+```go
+func (this OpLeq) Decl(operand ISyn) OpDecl
+```
+
+#### func (OpLeq) Deref
+
+```go
+func (this OpLeq) Deref() OpDeref
+```
+
+#### func (OpLeq) Div
+
+```go
+func (this OpLeq) Div(operand ISyn) OpDiv
+```
+
+#### func (OpLeq) Eq
+
+```go
+func (this OpLeq) Eq(operand ISyn) OpEq
+```
+
+#### func (OpLeq) Geq
+
+```go
+func (this OpLeq) Geq(operand ISyn) OpGeq
+```
+
+#### func (OpLeq) Gt
+
+```go
+func (this OpLeq) Gt(operand ISyn) OpGt
+```
+
+#### func (OpLeq) Idx
+
+```go
+func (this OpLeq) Idx(operand ISyn) OpIdx
+```
+
+#### func (OpLeq) Leq
+
+```go
+func (this OpLeq) Leq(operand ISyn) OpLeq
+```
+
+#### func (OpLeq) Lt
+
+```go
+func (this OpLeq) Lt(operand ISyn) OpLt
+```
+
+#### func (OpLeq) Mul
+
+```go
+func (this OpLeq) Mul(operand ISyn) OpMul
+```
+
+#### func (OpLeq) Neg
+
+```go
+func (this OpLeq) Neg() OpSub
+```
+
+#### func (OpLeq) Neq
+
+```go
+func (this OpLeq) Neq(operand ISyn) OpNeq
+```
+
+#### func (OpLeq) Not
+
+```go
+func (this OpLeq) Not() OpNot
+```
+
+#### func (OpLeq) Or
+
+```go
+func (this OpLeq) Or(operand ISyn) OpOr
+```
+
+#### func (OpLeq) SetTo
+
+```go
+func (this OpLeq) SetTo(operand ISyn) OpSet
+```
+
+#### func (OpLeq) Sub
+
+```go
+func (this OpLeq) Sub(operand ISyn) OpSub
+```
+
 #### type OpLt
 
 ```go
@@ -649,6 +1162,126 @@ OpLt represents Go's `<` less-than comparison operator.
 func Lt(operands ...ISyn) OpLt
 ```
 Lt constructs an `OpLt`.
+
+#### func (OpLt) Add
+
+```go
+func (this OpLt) Add(operand ISyn) OpAdd
+```
+
+#### func (OpLt) Addr
+
+```go
+func (this OpLt) Addr() OpAddr
+```
+
+#### func (OpLt) And
+
+```go
+func (this OpLt) And(operand ISyn) OpAnd
+```
+
+#### func (OpLt) Call
+
+```go
+func (this OpLt) Call(args ...ISyn) *ExprCall
+```
+
+#### func (OpLt) Decl
+
+```go
+func (this OpLt) Decl(operand ISyn) OpDecl
+```
+
+#### func (OpLt) Deref
+
+```go
+func (this OpLt) Deref() OpDeref
+```
+
+#### func (OpLt) Div
+
+```go
+func (this OpLt) Div(operand ISyn) OpDiv
+```
+
+#### func (OpLt) Eq
+
+```go
+func (this OpLt) Eq(operand ISyn) OpEq
+```
+
+#### func (OpLt) Geq
+
+```go
+func (this OpLt) Geq(operand ISyn) OpGeq
+```
+
+#### func (OpLt) Gt
+
+```go
+func (this OpLt) Gt(operand ISyn) OpGt
+```
+
+#### func (OpLt) Idx
+
+```go
+func (this OpLt) Idx(operand ISyn) OpIdx
+```
+
+#### func (OpLt) Leq
+
+```go
+func (this OpLt) Leq(operand ISyn) OpLeq
+```
+
+#### func (OpLt) Lt
+
+```go
+func (this OpLt) Lt(operand ISyn) OpLt
+```
+
+#### func (OpLt) Mul
+
+```go
+func (this OpLt) Mul(operand ISyn) OpMul
+```
+
+#### func (OpLt) Neg
+
+```go
+func (this OpLt) Neg() OpSub
+```
+
+#### func (OpLt) Neq
+
+```go
+func (this OpLt) Neq(operand ISyn) OpNeq
+```
+
+#### func (OpLt) Not
+
+```go
+func (this OpLt) Not() OpNot
+```
+
+#### func (OpLt) Or
+
+```go
+func (this OpLt) Or(operand ISyn) OpOr
+```
+
+#### func (OpLt) SetTo
+
+```go
+func (this OpLt) SetTo(operand ISyn) OpSet
+```
+
+#### func (OpLt) Sub
+
+```go
+func (this OpLt) Sub(operand ISyn) OpSub
+```
 
 #### type OpMul
 

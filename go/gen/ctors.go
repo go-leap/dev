@@ -20,11 +20,27 @@ func NTs(namesAndTypeRefs ...interface{}) (nts NamedsTypeds) {
 	return
 }
 
+func Idents(names ...string) OpComma {
+	operands := make(Syns, len(names))
+	for i := range names {
+		operands[i] = N(names[i])
+	}
+	return Tup(operands...)
+}
+
 // Args is merely a handy convenience short-hand to create a slice of `NamedTyped`s.
 func Args(nts ...NamedTyped) NamedsTypeds { return nts }
 
 // L constructs an `ExprLit`.
 func L(lit interface{}) ExprLit { return ExprLit{Val: lit} }
+
+func Lits(lits ...interface{}) OpComma {
+	operands := make(Syns, len(lits))
+	for i := range lits {
+		operands[i] = L(lits[i])
+	}
+	return Tup(operands...)
+}
 
 // Add constructs an `OpAdd`.
 func Add(operands ...ISyn) OpAdd { return OpAdd{Op: Op{Operands: operands}} }
@@ -301,66 +317,4 @@ func Cond(cond ISyn, thens ...ISyn) (this SynCond) {
 // Func constructs a `SynFunc` with the given `name` and `args`.
 func Func(name string, args ...NamedTyped) *SynFunc {
 	return Fn(NoMethodRecv, name, TdFunc(args))
-}
-
-// Method constructs a `SynFunc` with the given `name` and `args` plus `this` as its method `Recv`.
-func (this NamedTyped) Method(name string, args ...NamedTyped) *SynFunc {
-	return Fn(this, name, TdFunc(args))
-}
-
-// Method constructs a `SynFunc` with the given `name` and `args` plus a `this`-typed method `Recv` also named `"this"`.
-func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc {
-	return V.This.T(this).Method(name, args...)
-}
-
-// Args sets `this.Type.Func.Args` and returns `this`.
-func (this *SynFunc) Args(args ...NamedTyped) *SynFunc {
-	this.Type.Func.Args = args
-	return this
-}
-
-// Arg adds to `this.Type.Func.Args` and returns `this`.
-func (this *SynFunc) Arg(name string, typeRef *TypeRef) *SynFunc {
-	this.Type.Func.Args.Add(name, typeRef)
-	return this
-}
-
-// Code adds to `this.SynBlock.Body` and returns `this`.
-func (this *SynFunc) Code(stmts ...ISyn) *SynFunc {
-	this.Add(stmts...)
-	return this
-}
-
-// Doc adds to `this.Docs` and returns `this`.
-func (this *SynFunc) Doc(docCommentLines ...string) *SynFunc {
-	this.Docs.Add(docCommentLines...)
-	return this
-}
-
-// N sets `this.Named.Name` and returns `this`.
-func (this *SynFunc) N(name string) *SynFunc {
-	this.Named.Name = name
-	return this
-}
-
-// Rets sets `this.Type.Func.Rets` and returns `this`.
-func (this *SynFunc) Rets(rets ...NamedTyped) *SynFunc {
-	this.Type.Func.Rets = rets
-	return this
-}
-
-// Ret adds to `this.Type.Func.Rets` and returns `this`.
-func (this *SynFunc) Ret(name string, typeRef *TypeRef) *SynFunc {
-	this.Type.Func.Rets.Add(name, typeRef)
-	return this
-}
-
-// Sig sets `this.Type.Func` to `sig` and returns `this`.
-func (this *SynFunc) Sig(sig *TypeFunc) *SynFunc {
-	this.Type.Func = sig
-	return this
-}
-
-func (this Named) At(idxs ...ISyn) OpIdx {
-	return I(append(Syns{this}, idxs...)...)
 }
