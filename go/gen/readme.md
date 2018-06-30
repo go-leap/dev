@@ -1672,6 +1672,18 @@ func Switch(maybeScrutinee ISyn, casesCap int, caseCondsAndBlocksPlusMaybeDefaul
 ```
 Switch constructs a `StmtSwitch`.
 
+#### func (*StmtSwitch) Case
+
+```go
+func (this *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch
+```
+
+#### func (*StmtSwitch) DefaultCase
+
+```go
+func (this *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch
+```
+
 #### type StmtUnary
 
 ```go

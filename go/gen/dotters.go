@@ -65,6 +65,16 @@ func (this *SynFunc) Sig(sig *TypeFunc) *SynFunc {
 	return this
 }
 
+func (this *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch {
+	this.Cases.Add(cond, thens...)
+	return this
+}
+
+func (this *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch {
+	this.Default.Body = stmts
+	return this
+}
+
 type ISynDot interface {
 	ISyn
 	Geq(ISyn) OpGeq
