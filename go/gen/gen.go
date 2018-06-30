@@ -24,21 +24,23 @@ type SourceFile struct {
 	SynBlock
 }
 
+type PkgName string
+
 // PkgImports maps (via its `Ensure` method) package
 // import paths to package import names.
-type PkgImports map[string]string
+type PkgImports map[string]PkgName
 
 // Ensure returns the `pkgImportName` for the given `pkgImportPath`
 // as stored in `this` (or if missing, devises one in the form of eg.
 // `pkg__encoding_json` for `encoding/json` and stores it, assuming
 // that `PkgImportNamePrefix` is set to "pkg__", its default value).
-func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName string) {
+func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName) {
 	self := *this
 	if self == nil {
-		self = map[string]string{}
+		self = map[string]PkgName{}
 	}
 	if pkgImportName = self[pkgImportPath]; pkgImportName == "" {
-		pkgImportName = PkgImportNamePrefix + pkgImportsStrReplSlashesToUnderscores.Replace(pkgImportPath)
+		pkgImportName = PkgImportNamePrefix + PkgName(pkgImportsStrReplSlashesToUnderscores.Replace(pkgImportPath))
 		self[pkgImportPath] = pkgImportName
 	}
 	*this = self
@@ -51,7 +53,7 @@ var (
 	pkgImportsStrReplSlashesToUnderscores = strings.NewReplacer("/", "_")
 
 	// see `PkgImports.Ensure(string) string` for details
-	PkgImportNamePrefix = "pkg__"
+	PkgImportNamePrefix PkgName = "pkg__"
 
 	// intended to remain zero-valued (Name="" and Type=nil)
 	NoMethodRecv NamedTyped

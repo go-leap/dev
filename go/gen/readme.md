@@ -17,7 +17,7 @@ they don't already have one.
 var (
 
 	// see `PkgImports.Ensure(string) string` for details
-	PkgImportNamePrefix = "pkg__"
+	PkgImportNamePrefix PkgName = "pkg__"
 
 	// intended to remain zero-valued (Name="" and Type=nil)
 	NoMethodRecv NamedTyped
@@ -1380,7 +1380,7 @@ Sub constructs an `OpSub`.
 #### type PkgImports
 
 ```go
-type PkgImports map[string]string
+type PkgImports map[string]PkgName
 ```
 
 PkgImports maps (via its `Ensure` method) package import paths to package import
@@ -1389,12 +1389,25 @@ names.
 #### func (*PkgImports) Ensure
 
 ```go
-func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName string)
+func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName)
 ```
 Ensure returns the `pkgImportName` for the given `pkgImportPath` as stored in
 `this` (or if missing, devises one in the form of eg. `pkg__encoding_json` for
 `encoding/json` and stores it, assuming that `PkgImportNamePrefix` is set to
 "pkg__", its default value).
+
+#### type PkgName
+
+```go
+type PkgName string
+```
+
+
+#### func (PkgName) C
+
+```go
+func (this PkgName) C(n string, args ...ISyn) *ExprCall
+```
 
 #### type SingleLineDocCommentParagraphs
 
@@ -2060,6 +2073,12 @@ TrSlice constructs a `TypeRef` referring to a slice of the specified type.
 func TrStruct(typeStruct *TypeStruct) *TypeRef
 ```
 TrStruct constructs a `TypeRef` referring to the specified unnamed `struct{..}`.
+
+#### func (*TypeRef) Conv
+
+```go
+func (this *TypeRef) Conv(expr ISyn) *ExprCall
+```
 
 #### func (*TypeRef) IsBuiltinPrimType
 

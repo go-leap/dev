@@ -416,7 +416,7 @@ func (this OpComma) emitTo(w *writer) { this.Op.emit(w, ",") }
 
 func (this OpDot) emitTo(w *writer) {
 	if pref := PkgImportNamePrefix; len(this.Operands) > 1 {
-		if n, ok := this.Operands[0].(Named); ok && len(n.Name) > len(pref) && (len(pref) == 0 || n.Name[:len(pref)] == pref) {
+		if n, ok := this.Operands[0].(Named); ok && len(n.Name) > len(pref) && (len(pref) == 0 || n.Name[:len(pref)] == string(pref)) {
 			w.pkgImportsActuallyEmitted[n.Name] = true
 		}
 		this.Op.emit(w, ".")
@@ -568,7 +568,7 @@ func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPaths
 	if emitNoOpFuncBodies {
 		pkgimports = make(PkgImports, len(wdecls.pkgImportsActuallyEmitted))
 		for pkgpath, pkgname := range pkgImportPathsToNames {
-			if wdecls.pkgImportsActuallyEmitted[pkgname] {
+			if wdecls.pkgImportsActuallyEmitted[string(pkgname)] {
 				pkgimports[pkgpath] = pkgname
 			}
 		}
@@ -576,7 +576,7 @@ func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPaths
 	if len(pkgimports) > 0 {
 		wmain.WriteString("import (")
 		for pkgpath, pkgname := range pkgimports {
-			wmain.WriteString(pkgname)
+			wmain.WriteString(string(pkgname))
 			wmain.WriteString(" \"")
 			wmain.WriteString(pkgpath)
 			wmain.WriteString("\";")

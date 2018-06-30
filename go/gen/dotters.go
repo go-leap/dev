@@ -1,8 +1,9 @@
 package udevgogen
 
-func (this Named) At(idxs ...ISyn) OpIdx { return I(append(Syns{this}, idxs...)...) }
-func (this *ExprCall) Defer() StmtDefer  { return Defer(this) }
-func (this *ExprCall) Go() StmtGo        { return Go(this) }
+func (this Named) At(idxs ...ISyn) OpIdx                { return I(append(Syns{this}, idxs...)...) }
+func (this *ExprCall) Defer() StmtDefer                 { return Defer(this) }
+func (this *ExprCall) Go() StmtGo                       { return Go(this) }
+func (this PkgName) C(n string, args ...ISyn) *ExprCall { return C.D(string(this), n, args...) }
 
 // Method constructs a `SynFunc` with the given `name` and `args` plus `this` as its method `Recv`.
 func (this NamedTyped) Method(name string, args ...NamedTyped) *SynFunc {
@@ -13,6 +14,8 @@ func (this NamedTyped) Method(name string, args ...NamedTyped) *SynFunc {
 func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc {
 	return V.This.T(this).Method(name, args...)
 }
+
+func (this *TypeRef) Conv(expr ISyn) *ExprCall { return Call(this, expr) }
 
 // Args sets `this.Type.Func.Args` and returns `this`.
 func (this *SynFunc) Args(args ...NamedTyped) *SynFunc {
