@@ -60,7 +60,7 @@ var (
 		Len    builtinCall
 		Make   builtinCall
 
-		D     func(string, string, ...ISyn) *ExprCall
+		Dot   func(string, string, ...ISyn) *ExprCall
 		Named func(string, ...ISyn) *ExprCall
 	}
 
@@ -156,84 +156,105 @@ Call constructs an `ExprCall`.
 ```go
 func (this *ExprCall) Add(operand ISyn) OpAdd
 ```
+Add implements `IExprNumerish`.
 
 #### func (*ExprCall) And
 
 ```go
 func (this *ExprCall) And(operand ISyn) OpAnd
 ```
+And implements `IExprBoolish`.
 
 #### func (*ExprCall) At
 
 ```go
 func (this *ExprCall) At(operand ISyn) OpIdx
 ```
+At implements `IExprVarish`.
 
 #### func (*ExprCall) Call
 
 ```go
 func (this *ExprCall) Call(args ...ISyn) *ExprCall
 ```
+Call implements `IExprCallish`.
 
 #### func (*ExprCall) Defer
 
 ```go
 func (this *ExprCall) Defer() StmtDefer
 ```
+Defer constructs a `StmtDefer` of `this` call.
 
 #### func (*ExprCall) Deref
 
 ```go
 func (this *ExprCall) Deref() OpDeref
 ```
+Deref implements `IExprVarish`.
 
 #### func (*ExprCall) Div
 
 ```go
 func (this *ExprCall) Div(operand ISyn) OpDiv
 ```
+Div implements `IExprNumerish`.
 
 #### func (*ExprCall) Eq
 
 ```go
 func (this *ExprCall) Eq(operand ISyn) OpEq
 ```
+Eq implements `IExprEqualish`.
 
 #### func (*ExprCall) Geq
 
 ```go
 func (this *ExprCall) Geq(operand ISyn) OpGeq
 ```
+Geq implements `IExprOrdish`.
 
 #### func (*ExprCall) Go
 
 ```go
 func (this *ExprCall) Go() StmtGo
 ```
+Go constructs a `StmtGo` on `this` call.
 
 #### func (*ExprCall) Gt
 
 ```go
 func (this *ExprCall) Gt(operand ISyn) OpGt
 ```
+Gt implements `IExprOrdish`.
 
 #### func (*ExprCall) Leq
 
 ```go
 func (this *ExprCall) Leq(operand ISyn) OpLeq
 ```
+Leq implements `IExprOrdish`.
 
 #### func (*ExprCall) Lt
 
 ```go
 func (this *ExprCall) Lt(operand ISyn) OpLt
 ```
+Lt implements `IExprOrdish`.
+
+#### func (*ExprCall) Mod
+
+```go
+func (this *ExprCall) Mod(operand ISyn) OpMod
+```
+Mod implements `IExprNumerish`.
 
 #### func (*ExprCall) Mul
 
 ```go
 func (this *ExprCall) Mul(operand ISyn) OpMul
 ```
+Mul implements `IExprNumerish`.
 
 #### func (*ExprCall) Neg
 
@@ -246,24 +267,28 @@ func (this *ExprCall) Neg() OpSub
 ```go
 func (this *ExprCall) Neq(operand ISyn) OpNeq
 ```
+Neq implements `IExprEqualish`.
 
 #### func (*ExprCall) Not
 
 ```go
 func (this *ExprCall) Not() OpNot
 ```
+Not implements `IExprBoolish`.
 
 #### func (*ExprCall) Or
 
 ```go
 func (this *ExprCall) Or(operand ISyn) OpOr
 ```
+Or implements `IExprBoolish`.
 
 #### func (*ExprCall) Sub
 
 ```go
 func (this *ExprCall) Sub(operand ISyn) OpSub
 ```
+Sub implements `IExprNumerish`.
 
 #### type ExprLit
 
@@ -294,6 +319,8 @@ type IExprAssignish interface {
 }
 ```
 
+IExprAssignish is implemented by `ISyn`s that wish to offer dot-accessor syntax
+over the `Set` and `Decl` constructors.
 
 #### type IExprBoolish
 
@@ -307,6 +334,8 @@ type IExprBoolish interface {
 }
 ```
 
+IExprBoolish is implemented by `ISyn`s that also wish to offer dot-accessor
+syntax over the `And`, `Or`, `Not` constructors.
 
 #### type IExprCallish
 
@@ -318,6 +347,8 @@ type IExprCallish interface {
 }
 ```
 
+IExprCallish is implemented by `ISyn`s that also wish to offer dot-accessor
+syntax over the `Call` constructor.
 
 #### type IExprEqualish
 
@@ -330,26 +361,42 @@ type IExprEqualish interface {
 }
 ```
 
+IExprEqualish is implemented by `ISyn`s that also wish to offer dot-accessor
+syntax over the `Eq` and `Neq` constructors.
 
 #### type IExprNumerish
 
 ```go
 type IExprNumerish interface {
+	IExprOrdish
+
+	Add(ISyn) OpAdd
+	Sub(ISyn) OpSub
+	Mul(ISyn) OpMul
+	Div(ISyn) OpDiv
+	Mod(ISyn) OpMod
+	Neg() OpSub
+}
+```
+
+IExprOrdish is implemented by `ISyn`s that also wish to offer dot-accessor
+syntax over the `Add`, `Sub`, `Mul`, `Div`, `Mod`, `Neg` constructors.
+
+#### type IExprOrdish
+
+```go
+type IExprOrdish interface {
 	IExprEqualish
 
 	Geq(ISyn) OpGeq
 	Leq(ISyn) OpLeq
 	Gt(ISyn) OpGt
 	Lt(ISyn) OpLt
-
-	Add(ISyn) OpAdd
-	Sub(ISyn) OpSub
-	Mul(ISyn) OpMul
-	Div(ISyn) OpDiv
-	Neg() OpSub
 }
 ```
 
+IExprOrdish is implemented by `ISyn`s that also wish to offer dot-accessor
+syntax over the `Geq`, `Gt`, `Leq`, `Lt` constructors.
 
 #### type IExprVarish
 
@@ -363,6 +410,8 @@ type IExprVarish interface {
 }
 ```
 
+IExprVarish is implemented by `ISyn`s that also wish to offer dot-accessor
+syntax over the `I`, `Addr`, `Deref` constructors.
 
 #### type ISyn
 
@@ -398,84 +447,105 @@ N constructs a `Named`.
 ```go
 func (this Named) Add(operand ISyn) OpAdd
 ```
+Add implements `IExprNumerish`.
 
 #### func (Named) Addr
 
 ```go
 func (this Named) Addr() OpAddr
 ```
+Addr implements `IExprVarish`.
 
 #### func (Named) And
 
 ```go
 func (this Named) And(operand ISyn) OpAnd
 ```
+And implements `IExprBoolish`.
 
 #### func (Named) At
 
 ```go
 func (this Named) At(operand ISyn) OpIdx
 ```
+At implements `IExprVarish`.
 
 #### func (Named) Call
 
 ```go
 func (this Named) Call(args ...ISyn) *ExprCall
 ```
+Call implements `IExprCallish`.
 
 #### func (Named) Decl
 
 ```go
 func (this Named) Decl(operand ISyn) OpDecl
 ```
+Decl implements `IExprAssignish`
 
 #### func (Named) Deref
 
 ```go
 func (this Named) Deref() OpDeref
 ```
+Deref implements `IExprVarish`.
 
 #### func (Named) Div
 
 ```go
 func (this Named) Div(operand ISyn) OpDiv
 ```
+Div implements `IExprNumerish`.
 
 #### func (Named) Eq
 
 ```go
 func (this Named) Eq(operand ISyn) OpEq
 ```
+Eq implements `IExprEqualish`.
 
 #### func (Named) Geq
 
 ```go
 func (this Named) Geq(operand ISyn) OpGeq
 ```
+Geq implements `IExprOrdish`.
 
 #### func (Named) Gt
 
 ```go
 func (this Named) Gt(operand ISyn) OpGt
 ```
+Gt implements `IExprOrdish`.
 
 #### func (Named) Leq
 
 ```go
 func (this Named) Leq(operand ISyn) OpLeq
 ```
+Leq implements `IExprOrdish`.
 
 #### func (Named) Lt
 
 ```go
 func (this Named) Lt(operand ISyn) OpLt
 ```
+Lt implements `IExprOrdish`.
+
+#### func (Named) Mod
+
+```go
+func (this Named) Mod(operand ISyn) OpMod
+```
+Mod implements `IExprNumerish`.
 
 #### func (Named) Mul
 
 ```go
 func (this Named) Mul(operand ISyn) OpMul
 ```
+Mul implements `IExprNumerish`.
 
 #### func (Named) Neg
 
@@ -488,30 +558,35 @@ func (this Named) Neg() OpSub
 ```go
 func (this Named) Neq(operand ISyn) OpNeq
 ```
+Neq implements `IExprEqualish`.
 
 #### func (Named) Not
 
 ```go
 func (this Named) Not() OpNot
 ```
+Not implements `IExprBoolish`.
 
 #### func (Named) Or
 
 ```go
 func (this Named) Or(operand ISyn) OpOr
 ```
+Or implements `IExprBoolish`.
 
 #### func (Named) SetTo
 
 ```go
 func (this Named) SetTo(operand ISyn) OpSet
 ```
+SetTo implements `IExprAssignish`
 
 #### func (Named) Sub
 
 ```go
 func (this Named) Sub(operand ISyn) OpSub
 ```
+Sub implements `IExprNumerish`.
 
 #### func (Named) T
 
@@ -657,30 +732,35 @@ And constructs an `OpAnd`.
 ```go
 func (this OpAnd) And(operand ISyn) OpAnd
 ```
+And implements `IExprBoolish`.
 
 #### func (OpAnd) Eq
 
 ```go
 func (this OpAnd) Eq(operand ISyn) OpEq
 ```
+Eq implements `IExprEqualish`.
 
 #### func (OpAnd) Neq
 
 ```go
 func (this OpAnd) Neq(operand ISyn) OpNeq
 ```
+Neq implements `IExprEqualish`.
 
 #### func (OpAnd) Not
 
 ```go
 func (this OpAnd) Not() OpNot
 ```
+Not implements `IExprBoolish`.
 
 #### func (OpAnd) Or
 
 ```go
 func (this OpAnd) Or(operand ISyn) OpOr
 ```
+Or implements `IExprBoolish`.
 
 #### type OpColon
 
@@ -710,12 +790,14 @@ OpComma emits all its operands separated by `,` commas.
 ```go
 func Lits(lits ...interface{}) OpComma
 ```
+Lits constructs an `OpComma` of `ExprLit` operands.
 
 #### func  Names
 
 ```go
 func Names(names ...string) OpComma
 ```
+Names constructs an `OpComma` of `Named` operands.
 
 #### func  Tup
 
@@ -729,12 +811,14 @@ Tup constructs an `OpComma`.
 ```go
 func (this OpComma) Decl(operand ISyn) OpDecl
 ```
+Decl implements `IExprAssignish`
 
 #### func (OpComma) SetTo
 
 ```go
 func (this OpComma) SetTo(operand ISyn) OpSet
 ```
+SetTo implements `IExprAssignish`
 
 #### type OpDecl
 
@@ -816,30 +900,35 @@ Eq constructs an `OpEq`.
 ```go
 func (this OpEq) And(operand ISyn) OpAnd
 ```
+And implements `IExprBoolish`.
 
 #### func (OpEq) Eq
 
 ```go
 func (this OpEq) Eq(operand ISyn) OpEq
 ```
+Eq implements `IExprEqualish`.
 
 #### func (OpEq) Neq
 
 ```go
 func (this OpEq) Neq(operand ISyn) OpNeq
 ```
+Neq implements `IExprEqualish`.
 
 #### func (OpEq) Not
 
 ```go
 func (this OpEq) Not() OpNot
 ```
+Not implements `IExprBoolish`.
 
 #### func (OpEq) Or
 
 ```go
 func (this OpEq) Or(operand ISyn) OpOr
 ```
+Or implements `IExprBoolish`.
 
 #### type OpGeq
 
@@ -861,30 +950,35 @@ Geq constructs an `OpGeq`.
 ```go
 func (this OpGeq) And(operand ISyn) OpAnd
 ```
+And implements `IExprBoolish`.
 
 #### func (OpGeq) Eq
 
 ```go
 func (this OpGeq) Eq(operand ISyn) OpEq
 ```
+Eq implements `IExprEqualish`.
 
 #### func (OpGeq) Neq
 
 ```go
 func (this OpGeq) Neq(operand ISyn) OpNeq
 ```
+Neq implements `IExprEqualish`.
 
 #### func (OpGeq) Not
 
 ```go
 func (this OpGeq) Not() OpNot
 ```
+Not implements `IExprBoolish`.
 
 #### func (OpGeq) Or
 
 ```go
 func (this OpGeq) Or(operand ISyn) OpOr
 ```
+Or implements `IExprBoolish`.
 
 #### type OpGt
 
@@ -906,30 +1000,35 @@ Gt constructs an `OpGt`.
 ```go
 func (this OpGt) And(operand ISyn) OpAnd
 ```
+And implements `IExprBoolish`.
 
 #### func (OpGt) Eq
 
 ```go
 func (this OpGt) Eq(operand ISyn) OpEq
 ```
+Eq implements `IExprEqualish`.
 
 #### func (OpGt) Neq
 
 ```go
 func (this OpGt) Neq(operand ISyn) OpNeq
 ```
+Neq implements `IExprEqualish`.
 
 #### func (OpGt) Not
 
 ```go
 func (this OpGt) Not() OpNot
 ```
+Not implements `IExprBoolish`.
 
 #### func (OpGt) Or
 
 ```go
 func (this OpGt) Or(operand ISyn) OpOr
 ```
+Or implements `IExprBoolish`.
 
 #### type OpIdx
 
@@ -966,30 +1065,35 @@ Leq constructs an `OpLeq`.
 ```go
 func (this OpLeq) And(operand ISyn) OpAnd
 ```
+And implements `IExprBoolish`.
 
 #### func (OpLeq) Eq
 
 ```go
 func (this OpLeq) Eq(operand ISyn) OpEq
 ```
+Eq implements `IExprEqualish`.
 
 #### func (OpLeq) Neq
 
 ```go
 func (this OpLeq) Neq(operand ISyn) OpNeq
 ```
+Neq implements `IExprEqualish`.
 
 #### func (OpLeq) Not
 
 ```go
 func (this OpLeq) Not() OpNot
 ```
+Not implements `IExprBoolish`.
 
 #### func (OpLeq) Or
 
 ```go
 func (this OpLeq) Or(operand ISyn) OpOr
 ```
+Or implements `IExprBoolish`.
 
 #### type OpLt
 
@@ -1011,30 +1115,50 @@ Lt constructs an `OpLt`.
 ```go
 func (this OpLt) And(operand ISyn) OpAnd
 ```
+And implements `IExprBoolish`.
 
 #### func (OpLt) Eq
 
 ```go
 func (this OpLt) Eq(operand ISyn) OpEq
 ```
+Eq implements `IExprEqualish`.
 
 #### func (OpLt) Neq
 
 ```go
 func (this OpLt) Neq(operand ISyn) OpNeq
 ```
+Neq implements `IExprEqualish`.
 
 #### func (OpLt) Not
 
 ```go
 func (this OpLt) Not() OpNot
 ```
+Not implements `IExprBoolish`.
 
 #### func (OpLt) Or
 
 ```go
 func (this OpLt) Or(operand ISyn) OpOr
 ```
+Or implements `IExprBoolish`.
+
+#### type OpMod
+
+```go
+type OpMod struct{ Op }
+```
+
+OpMod represents one or more `%` modulos.
+
+#### func  Mod
+
+```go
+func Mod(operands ...ISyn) OpMod
+```
+Mod constructs an `OpMod`.
 
 #### type OpMul
 
@@ -1071,30 +1195,35 @@ Neq constructs an `OpNeq`.
 ```go
 func (this OpNeq) And(operand ISyn) OpAnd
 ```
+And implements `IExprBoolish`.
 
 #### func (OpNeq) Eq
 
 ```go
 func (this OpNeq) Eq(operand ISyn) OpEq
 ```
+Eq implements `IExprEqualish`.
 
 #### func (OpNeq) Neq
 
 ```go
 func (this OpNeq) Neq(operand ISyn) OpNeq
 ```
+Neq implements `IExprEqualish`.
 
 #### func (OpNeq) Not
 
 ```go
 func (this OpNeq) Not() OpNot
 ```
+Not implements `IExprBoolish`.
 
 #### func (OpNeq) Or
 
 ```go
 func (this OpNeq) Or(operand ISyn) OpOr
 ```
+Or implements `IExprBoolish`.
 
 #### type OpNot
 
@@ -1116,30 +1245,35 @@ Not constructs an `OpNot`.
 ```go
 func (this OpNot) And(operand ISyn) OpAnd
 ```
+And implements `IExprBoolish`.
 
 #### func (OpNot) Eq
 
 ```go
 func (this OpNot) Eq(operand ISyn) OpEq
 ```
+Eq implements `IExprEqualish`.
 
 #### func (OpNot) Neq
 
 ```go
 func (this OpNot) Neq(operand ISyn) OpNeq
 ```
+Neq implements `IExprEqualish`.
 
 #### func (OpNot) Not
 
 ```go
 func (this OpNot) Not() OpNot
 ```
+Not implements `IExprBoolish`.
 
 #### func (OpNot) Or
 
 ```go
 func (this OpNot) Or(operand ISyn) OpOr
 ```
+Or implements `IExprBoolish`.
 
 #### type OpOr
 
@@ -1161,30 +1295,35 @@ Or constructs an `OpOr`.
 ```go
 func (this OpOr) And(operand ISyn) OpAnd
 ```
+And implements `IExprBoolish`.
 
 #### func (OpOr) Eq
 
 ```go
 func (this OpOr) Eq(operand ISyn) OpEq
 ```
+Eq implements `IExprEqualish`.
 
 #### func (OpOr) Neq
 
 ```go
 func (this OpOr) Neq(operand ISyn) OpNeq
 ```
+Neq implements `IExprEqualish`.
 
 #### func (OpOr) Not
 
 ```go
 func (this OpOr) Not() OpNot
 ```
+Not implements `IExprBoolish`.
 
 #### func (OpOr) Or
 
 ```go
 func (this OpOr) Or(operand ISyn) OpOr
 ```
+Or implements `IExprBoolish`.
 
 #### type OpSet
 
@@ -1248,12 +1387,14 @@ Ensure returns the `pkgImportName` for the given `pkgImportPath` as stored in
 type PkgName string
 ```
 
+PkgName offers some handy methods on package import names.
 
 #### func (PkgName) C
 
 ```go
 func (this PkgName) C(n string, args ...ISyn) *ExprCall
 ```
+C constructs an `ExprCall` of `n` exposed by `this` imported-package.
 
 #### type SingleLineDocCommentParagraphs
 
@@ -1442,6 +1583,7 @@ StmtGoTo represents Go's `goto` keyword.
 ```go
 func GoTo(name string) StmtGoTo
 ```
+GoTo constructs a `StmtGoTo`.
 
 #### type StmtIf
 
@@ -1491,6 +1633,8 @@ StmtLabel represents a label that one can `goto` or `break` from.
 ```go
 func Label(name string, stmts ...ISyn) *StmtLabel
 ```
+Label constructs a `StmtLabel` with the given `name` and associated code
+`SynBlock`.
 
 #### type StmtRet
 
@@ -1538,18 +1682,21 @@ Switch constructs a `StmtSwitch`.
 ```go
 func (this *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch
 ```
+Case adds the given `case` branch to the `StmtSwitch.Cases` of `this`.
 
 #### func (*StmtSwitch) CasesOf
 
 ```go
 func (this *StmtSwitch) CasesOf(conds ...SynCond) *StmtSwitch
 ```
+Case adds the given `case` branches to the `StmtSwitch.Cases` of `this`.
 
 #### func (*StmtSwitch) DefaultCase
 
 ```go
 func (this *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch
 ```
+DefaultCase sets the `default` branch of this `StmtSwitch`.
 
 #### type StmtUnary
 
@@ -1891,7 +2038,7 @@ type TypeRef struct {
 	Interface *TypeInterface
 	Struct    *TypeStruct
 	Named     struct {
-		PkgName  string // "" if Go-native (built-in) or package-local (non-import) type
+		PkgName  string // empty ("") if Go-native (built-in) or package-local (non-import) type
 		TypeName string
 	}
 }
@@ -1972,6 +2119,9 @@ TrStruct constructs a `TypeRef` referring to the specified unnamed `struct{..}`.
 ```go
 func (this *TypeRef) Conv(expr ISyn) *ExprCall
 ```
+Conv constructs an `ExprCall` that represents a conversion of `expr` into `this`
+type. (Go's conversion syntax, eg. `int(myexpr)`, is covered by `ExprCall` due
+to identical emitting logic.)
 
 #### func (*TypeRef) IsBuiltinPrimType
 

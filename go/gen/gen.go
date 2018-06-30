@@ -24,6 +24,7 @@ type SourceFile struct {
 	SynBlock
 }
 
+// PkgName offers some handy methods on package import names.
 type PkgName string
 
 // PkgImports maps (via its `Ensure` method) package
@@ -95,7 +96,7 @@ var (
 		Len    builtinCall
 		Make   builtinCall
 
-		D     func(string, string, ...ISyn) *ExprCall
+		Dot   func(string, string, ...ISyn) *ExprCall
 		Named func(string, ...ISyn) *ExprCall
 	}
 
@@ -179,7 +180,7 @@ func init() {
 	C.Named = func(name string, args ...ISyn) *ExprCall {
 		return Call(N(name), args...)
 	}
-	C.D = func(dotLeft string, dotRight string, args ...ISyn) *ExprCall {
+	C.Dot = func(dotLeft string, dotRight string, args ...ISyn) *ExprCall {
 		return Call(D(N(dotLeft), N(dotRight)), args...)
 	}
 	T.Bool, T.Byte, T.Complex128, T.Complex64, T.Float32, T.Float64, T.Int, T.Int16, T.Int32, T.Int64, T.Int8, T.Rune, T.String, T.Uint, T.Uint16, T.Uint32, T.Uint64, T.Uint8 = TrNamed("", "bool"), TrNamed("", "byte"), TrNamed("", "complex128"), TrNamed("", "complex64"), TrNamed("", "float32"), TrNamed("", "float64"), TrNamed("", "int"), TrNamed("", "int16"), TrNamed("", "int32"), TrNamed("", "int64"), TrNamed("", "int8"), TrNamed("", "rune"), TrNamed("", "string"), TrNamed("", "uint"), TrNamed("", "uint16"), TrNamed("", "uint32"), TrNamed("", "uint64"), TrNamed("", "uint8")

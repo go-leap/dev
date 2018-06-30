@@ -72,9 +72,14 @@ func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool 
 	return false
 }
 
-func (this *ExprCall) Defer() StmtDefer                 { return Defer(this) }
-func (this *ExprCall) Go() StmtGo                       { return Go(this) }
-func (this PkgName) C(n string, args ...ISyn) *ExprCall { return C.D(string(this), n, args...) }
+// Defer constructs a `StmtDefer` of `this` call.
+func (this *ExprCall) Defer() StmtDefer { return Defer(this) }
+
+// Go constructs a `StmtGo` on `this` call.
+func (this *ExprCall) Go() StmtGo { return Go(this) }
+
+// C constructs an `ExprCall` of `n` exposed by `this` imported-package.
+func (this PkgName) C(n string, args ...ISyn) *ExprCall { return C.Dot(string(this), n, args...) }
 
 // Method constructs a `SynFunc` with the given `name` and `args` plus `this` as its method `Recv`.
 func (this NamedTyped) Method(name string, args ...NamedTyped) *SynFunc {
@@ -86,6 +91,8 @@ func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc {
 	return V.This.T(this).Method(name, args...)
 }
 
+// Conv constructs an `ExprCall` that represents a conversion of `expr` into `this` type.
+// (Go's conversion syntax, eg. `int(myexpr)`, is covered by `ExprCall` due to identical emitting logic.)
 func (this *TypeRef) Conv(expr ISyn) *ExprCall { return Call(this, expr) }
 
 // Args sets `this.Type.Func.Args` and returns `this`.
@@ -136,16 +143,19 @@ func (this *SynFunc) Sig(sig *TypeFunc) *SynFunc {
 	return this
 }
 
+// Case adds the given `case` branch to the `StmtSwitch.Cases` of `this`.
 func (this *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch {
 	this.Cases.Add(cond, thens...)
 	return this
 }
 
+// Case adds the given `case` branches to the `StmtSwitch.Cases` of `this`.
 func (this *StmtSwitch) CasesOf(conds ...SynCond) *StmtSwitch {
 	this.Cases = append(this.Cases, conds...)
 	return this
 }
 
+// DefaultCase sets the `default` branch of this `StmtSwitch`.
 func (this *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch {
 	this.Default.Body = stmts
 	return this

@@ -98,7 +98,7 @@ type TypeRef struct {
 	Interface *TypeInterface
 	Struct    *TypeStruct
 	Named     struct {
-		PkgName  string // "" if Go-native (built-in) or package-local (non-import) type
+		PkgName  string // empty ("") if Go-native (built-in) or package-local (non-import) type
 		TypeName string
 	}
 }
@@ -312,6 +312,9 @@ type OpMul struct{ Op }
 
 // OpDiv represents one or more `/` divisions.
 type OpDiv struct{ Op }
+
+// OpMod represents one or more `%` modulos.
+type OpMod struct{ Op }
 
 // OpIdx represents one or more `operand0[operand1][operand2]` indexers.
 type OpIdx struct{ Op }

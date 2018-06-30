@@ -20,6 +20,7 @@ func NTs(namesAndTypeRefs ...interface{}) (nts NamedsTypeds) {
 	return
 }
 
+// Names constructs an `OpComma` of `Named` operands.
 func Names(names ...string) OpComma {
 	operands := make(Syns, len(names))
 	for i := range names {
@@ -34,6 +35,7 @@ func Args(nts ...NamedTyped) NamedsTypeds { return nts }
 // L constructs an `ExprLit`.
 func L(lit interface{}) ExprLit { return ExprLit{Val: lit} }
 
+// Lits constructs an `OpComma` of `ExprLit` operands.
 func Lits(lits ...interface{}) OpComma {
 	operands := make(Syns, len(lits))
 	for i := range lits {
@@ -42,10 +44,12 @@ func Lits(lits ...interface{}) OpComma {
 	return Tup(operands...)
 }
 
+// Label constructs a `StmtLabel` with the given `name` and associated code `SynBlock`.
 func Label(name string, stmts ...ISyn) *StmtLabel {
 	return &StmtLabel{Named: Named{Name: name}, SynBlock: SynBlock{Body: stmts}}
 }
 
+// GoTo constructs a `StmtGoTo`.
 func GoTo(name string) StmtGoTo {
 	return StmtGoTo{Name: name}
 }
@@ -76,6 +80,9 @@ func Deref(operands ...ISyn) OpDeref { return OpDeref{Op: Op{Operands: operands}
 
 // Div constructs an `OpDiv`.
 func Div(operands ...ISyn) OpDiv { return OpDiv{Op: Op{Operands: operands}} }
+
+// Mod constructs an `OpMod`.
+func Mod(operands ...ISyn) OpMod { return OpMod{Op: Op{Operands: operands}} }
 
 // Eq constructs an `OpEq`.
 func Eq(operands ...ISyn) OpEq { return OpEq{Op: Op{Operands: operands}} }

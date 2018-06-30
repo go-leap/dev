@@ -449,6 +449,8 @@ func (this OpMul) emitTo(w *writer) { this.Op.emit(w, "*") }
 
 func (this OpDiv) emitTo(w *writer) { this.Op.emit(w, "/") }
 
+func (this OpMod) emitTo(w *writer) { this.Op.emit(w, "%") }
+
 func (this OpAddr) emitTo(w *writer) { this.Op.emit(w, "&") }
 
 func (this OpDeref) emitTo(w *writer) { this.Op.emit(w, "*") }
