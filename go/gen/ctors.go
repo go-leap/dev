@@ -20,7 +20,7 @@ func NTs(namesAndTypeRefs ...interface{}) (nts NamedsTypeds) {
 	return
 }
 
-func Idents(names ...string) OpComma {
+func Names(names ...string) OpComma {
 	operands := make(Syns, len(names))
 	for i := range names {
 		operands[i] = N(names[i])

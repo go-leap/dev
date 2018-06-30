@@ -3,9 +3,6 @@
 // designed to represent existing & parsed code, while the former is for on-the-fly
 // construction of newly-to-be-emitted code.
 //
-// Some language primitives I haven't needed to emit yet aren't covered yet, to be
-// added when they're first needed (such as fixed-size-array types or `chan`nels).
-//
 // As a noteworthy goodie, all `func`s that have named return values automatically get a final
 // `return` statement appended to their `Body` at code-gen time, if they don't already have one.
 package udevgogen
