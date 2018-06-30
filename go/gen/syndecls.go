@@ -19,12 +19,6 @@ type Named struct {
 	Name string
 }
 
-// T returns a `NamedTyped` with `this.Name` and `typeRef`.
-func (this Named) T(typeRef *TypeRef) (nt NamedTyped) {
-	nt.Named, nt.Type = this, typeRef
-	return
-}
-
 // NamedTyped details a `Name` and a `TypeRef`, such as
 // needed for func args, return values, struct fields etc.
 type NamedTyped struct {
@@ -38,28 +32,6 @@ type NamedsTypeds []NamedTyped
 // Add is a convenience short-hand for `append`.
 func (this *NamedsTypeds) Add(name string, typeRef *TypeRef) {
 	*this = append(*this, NamedTyped{Type: typeRef, Named: Named{Name: name}})
-}
-
-// AllNamed returns whether all `NamedTyped`s in `this` have a `Name` set.
-// If `this` is empty, `false` is returned.
-func (this NamedsTypeds) AllNamed() bool {
-	for i := range this {
-		if this[i].Name == "" {
-			return false
-		}
-	}
-	return len(this) > 0
-}
-
-// AllTyped returns whether all `NamedTyped`s in `this` have a `Type` set.
-// If `this` is empty, `false` is returned.
-func (this NamedsTypeds) AllTyped() bool {
-	for i := range this {
-		if this[i].Type == nil {
-			return false
-		}
-	}
-	return len(this) > 0
 }
 
 // TypeFunc represents a func signature.
@@ -129,50 +101,6 @@ type TypeRef struct {
 		PkgName  string // "" if Go-native (built-in) or package-local (non-import) type
 		TypeName string
 	}
-}
-
-// SafeBitSizeIfBuiltInNumberType returns 8 for `int8`, `byte`, `uint8`,
-// or 16, 32, 64, 128 as applicable, recognizing only direct `Named` refs
-// to Go' native `builtin` number types (no type-alias dereferencing yet).
-func (this *TypeRef) SafeBitSizeIfBuiltInNumberType() int {
-	if this.Named.PkgName == "" {
-		switch this.Named.TypeName {
-		case "int8", "uint8", "byte":
-			return 8
-		case "int16", "uint16":
-			return 16
-		case "int64", "uint64", "float64", "complex64":
-			return 64
-		case "complex128":
-			return 128
-		case "int32", "uint32", "float32", "rune", "int", "uint":
-			return 32
-		}
-	}
-	return 0
-}
-
-// IsBuiltinPrimType returns whether `this` refers to one of Go's
-// built-in primitive-types such as `bool`, `byte`, `uint`, `string` etc.
-// (If `orIsUnderlyingBuiltinPrimType`, it walks the `Slice` / `Ptr` / `Map` as applicable.)
-func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool {
-	switch this.Named {
-	case T.Bool.Named, T.Byte.Named, T.Complex128.Named, T.Complex64.Named, T.Float32.Named, T.Float64.Named, T.Int.Named, T.Int16.Named, T.Int32.Named, T.Int64.Named, T.Int8.Named, T.Rune.Named, T.String.Named, T.Uint.Named, T.Uint16.Named, T.Uint32.Named, T.Uint64.Named, T.Uint8.Named:
-		return true
-	}
-	if orIsUnderlyingBuiltinPrimType {
-		switch {
-		case this.ArrOrSliceOf.Val != nil:
-			return this.ArrOrSliceOf.Val.IsBuiltinPrimType(true)
-		case this.ChanOf.Val != nil:
-			return this.ChanOf.Val.IsBuiltinPrimType(true)
-		case this.PtrTo != nil:
-			return this.PtrTo.IsBuiltinPrimType(true)
-		case this.MapOf.Key != nil && this.MapOf.Val != nil:
-			return this.MapOf.Key.IsBuiltinPrimType(true) && this.MapOf.Val.IsBuiltinPrimType(true)
-		}
-	}
-	return false
 }
 
 // SynBlock represents a list of statements typically

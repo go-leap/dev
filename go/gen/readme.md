@@ -179,10 +179,10 @@ func L(lit interface{}) ExprLit
 ```
 L constructs an `ExprLit`.
 
-#### type IDotsAssignish
+#### type IExprAssignish
 
 ```go
-type IDotsAssignish interface {
+type IExprAssignish interface {
 	ISyn
 
 	SetTo(ISyn) OpSet
@@ -191,11 +191,11 @@ type IDotsAssignish interface {
 ```
 
 
-#### type IDotsBoolish
+#### type IExprBoolish
 
 ```go
-type IDotsBoolish interface {
-	IDotsEquality
+type IExprBoolish interface {
+	IExprEqualish
 
 	And(ISyn) OpAnd
 	Or(ISyn) OpOr
@@ -204,10 +204,10 @@ type IDotsBoolish interface {
 ```
 
 
-#### type IDotsCallish
+#### type IExprCallish
 
 ```go
-type IDotsCallish interface {
+type IExprCallish interface {
 	ISyn
 
 	Call(...ISyn) *ExprCall
@@ -215,10 +215,10 @@ type IDotsCallish interface {
 ```
 
 
-#### type IDotsEquality
+#### type IExprEqualish
 
 ```go
-type IDotsEquality interface {
+type IExprEqualish interface {
 	ISyn
 
 	Eq(ISyn) OpEq
@@ -227,11 +227,11 @@ type IDotsEquality interface {
 ```
 
 
-#### type IDotsNumerish
+#### type IExprNumerish
 
 ```go
-type IDotsNumerish interface {
-	IDotsEquality
+type IExprNumerish interface {
+	IExprEqualish
 
 	Geq(ISyn) OpGeq
 	Leq(ISyn) OpLeq
@@ -247,13 +247,13 @@ type IDotsNumerish interface {
 ```
 
 
-#### type IDotsVarish
+#### type IExprVarish
 
 ```go
-type IDotsVarish interface {
-	IDotsAssignish
+type IExprVarish interface {
+	IExprAssignish
 
-	Idx(ISyn) OpIdx
+	At(ISyn) OpIdx
 	Addr() OpAddr
 	Deref() OpDeref
 }
@@ -310,7 +310,7 @@ func (this Named) And(operand ISyn) OpAnd
 #### func (Named) At
 
 ```go
-func (this Named) At(idxs ...ISyn) OpIdx
+func (this Named) At(operand ISyn) OpIdx
 ```
 
 #### func (Named) Call
@@ -353,12 +353,6 @@ func (this Named) Geq(operand ISyn) OpGeq
 
 ```go
 func (this Named) Gt(operand ISyn) OpGt
-```
-
-#### func (Named) Idx
-
-```go
-func (this Named) Idx(operand ISyn) OpIdx
 ```
 
 #### func (Named) Leq

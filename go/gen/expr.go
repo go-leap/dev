@@ -1,112 +1,37 @@
 package udevgogen
 
-func (this Named) At(idxs ...ISyn) OpIdx                { return I(append(Syns{this}, idxs...)...) }
-func (this *ExprCall) Defer() StmtDefer                 { return Defer(this) }
-func (this *ExprCall) Go() StmtGo                       { return Go(this) }
-func (this PkgName) C(n string, args ...ISyn) *ExprCall { return C.D(string(this), n, args...) }
-
-// Method constructs a `SynFunc` with the given `name` and `args` plus `this` as its method `Recv`.
-func (this NamedTyped) Method(name string, args ...NamedTyped) *SynFunc {
-	return Fn(this, name, TdFunc(args))
-}
-
-// Method constructs a `SynFunc` with the given `name` and `args` plus a `this`-typed method `Recv` also named `"this"`.
-func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc {
-	return V.This.T(this).Method(name, args...)
-}
-
-func (this *TypeRef) Conv(expr ISyn) *ExprCall { return Call(this, expr) }
-
-// Args sets `this.Type.Func.Args` and returns `this`.
-func (this *SynFunc) Args(args ...NamedTyped) *SynFunc {
-	this.Type.Func.Args = args
-	return this
-}
-
-// Arg adds to `this.Type.Func.Args` and returns `this`.
-func (this *SynFunc) Arg(name string, typeRef *TypeRef) *SynFunc {
-	this.Type.Func.Args.Add(name, typeRef)
-	return this
-}
-
-// Code adds to `this.SynBlock.Body` and returns `this`.
-func (this *SynFunc) Code(stmts ...ISyn) *SynFunc {
-	this.Add(stmts...)
-	return this
-}
-
-// Doc adds to `this.Docs` and returns `this`.
-func (this *SynFunc) Doc(docCommentLines ...string) *SynFunc {
-	this.Docs.Add(docCommentLines...)
-	return this
-}
-
-// N sets `this.Named.Name` and returns `this`.
-func (this *SynFunc) N(name string) *SynFunc {
-	this.Named.Name = name
-	return this
-}
-
-// Rets sets `this.Type.Func.Rets` and returns `this`.
-func (this *SynFunc) Rets(rets ...NamedTyped) *SynFunc {
-	this.Type.Func.Rets = rets
-	return this
-}
-
-// Ret adds to `this.Type.Func.Rets` and returns `this`.
-func (this *SynFunc) Ret(name string, typeRef *TypeRef) *SynFunc {
-	this.Type.Func.Rets.Add(name, typeRef)
-	return this
-}
-
-// Sig sets `this.Type.Func` to `sig` and returns `this`.
-func (this *SynFunc) Sig(sig *TypeFunc) *SynFunc {
-	this.Type.Func = sig
-	return this
-}
-
-func (this *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch {
-	this.Cases.Add(cond, thens...)
-	return this
-}
-
-func (this *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch {
-	this.Default.Body = stmts
-	return this
-}
-
-type IDotsAssignish interface {
+type IExprAssignish interface {
 	ISyn
 
 	SetTo(ISyn) OpSet
 	Decl(ISyn) OpDecl
 }
 
-type IDotsVarish interface {
-	IDotsAssignish
+type IExprVarish interface {
+	IExprAssignish
 
-	Idx(ISyn) OpIdx
+	At(ISyn) OpIdx
 	Addr() OpAddr
 	Deref() OpDeref
 }
 
-type IDotsEquality interface {
+type IExprEqualish interface {
 	ISyn
 
 	Eq(ISyn) OpEq
 	Neq(ISyn) OpNeq
 }
 
-type IDotsBoolish interface {
-	IDotsEquality
+type IExprBoolish interface {
+	IExprEqualish
 
 	And(ISyn) OpAnd
 	Or(ISyn) OpOr
 	Not() OpNot
 }
 
-type IDotsNumerish interface {
-	IDotsEquality
+type IExprNumerish interface {
+	IExprEqualish
 
 	Geq(ISyn) OpGeq
 	Leq(ISyn) OpLeq
@@ -120,7 +45,7 @@ type IDotsNumerish interface {
 	Neg() OpSub
 }
 
-type IDotsCallish interface {
+type IExprCallish interface {
 	ISyn
 
 	Call(...ISyn) *ExprCall
@@ -140,7 +65,7 @@ func (this Named) Add(operand ISyn) OpAdd      { return Add(this, operand) }
 func (this Named) Sub(operand ISyn) OpSub      { return Sub(this, operand) }
 func (this Named) Mul(operand ISyn) OpMul      { return Mul(this, operand) }
 func (this Named) Div(operand ISyn) OpDiv      { return Div(this, operand) }
-func (this Named) Idx(operand ISyn) OpIdx      { return I(this, operand) }
+func (this Named) At(operand ISyn) OpIdx       { return I(this, operand) }
 func (this Named) Addr() OpAddr                { return Addr(this) }
 func (this Named) Deref() OpDeref              { return Deref(this) }
 func (this Named) Not() OpNot                  { return Not(this) }
