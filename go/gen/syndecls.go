@@ -148,7 +148,10 @@ type StmtUnary struct {
 }
 
 // StmtLabel represents a label that one can `goto` or `break` from.
-type StmtLabel Named
+type StmtLabel struct {
+	Named
+	SynBlock
+}
 
 // StmtBreak represents Go's `break` keyword.
 type StmtBreak Named
@@ -267,6 +270,9 @@ type OpDecl struct{ Op }
 
 // OpComma emits all its operands separated by `,` commas.
 type OpComma struct{ Op }
+
+// OpColon emits all its operands separated by `:` colons.
+type OpColon struct{ Op }
 
 // OpDot represents Go's `.` selector operator.
 type OpDot struct{ Op }

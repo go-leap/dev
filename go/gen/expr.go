@@ -53,6 +53,8 @@ type IExprCallish interface {
 
 func (this Named) SetTo(operand ISyn) OpSet    { return Set(this, operand) }
 func (this Named) Decl(operand ISyn) OpDecl    { return Decl(this, operand) }
+func (this Named) Addr() OpAddr                { return Addr(this) }
+func (this Named) Deref() OpDeref              { return Deref(this) }
 func (this Named) And(operand ISyn) OpAnd      { return And(this, operand) }
 func (this Named) Or(operand ISyn) OpOr        { return Or(this, operand) }
 func (this Named) Eq(operand ISyn) OpEq        { return Eq(this, operand) }
@@ -66,11 +68,27 @@ func (this Named) Sub(operand ISyn) OpSub      { return Sub(this, operand) }
 func (this Named) Mul(operand ISyn) OpMul      { return Mul(this, operand) }
 func (this Named) Div(operand ISyn) OpDiv      { return Div(this, operand) }
 func (this Named) At(operand ISyn) OpIdx       { return I(this, operand) }
-func (this Named) Addr() OpAddr                { return Addr(this) }
-func (this Named) Deref() OpDeref              { return Deref(this) }
 func (this Named) Not() OpNot                  { return Not(this) }
 func (this Named) Neg() OpSub                  { return Neg(this) }
 func (this Named) Call(args ...ISyn) *ExprCall { return Call(this, args...) }
+
+func (this *ExprCall) Deref() OpDeref              { return Deref(this) }
+func (this *ExprCall) And(operand ISyn) OpAnd      { return And(this, operand) }
+func (this *ExprCall) Or(operand ISyn) OpOr        { return Or(this, operand) }
+func (this *ExprCall) Eq(operand ISyn) OpEq        { return Eq(this, operand) }
+func (this *ExprCall) Neq(operand ISyn) OpNeq      { return Neq(this, operand) }
+func (this *ExprCall) Geq(operand ISyn) OpGeq      { return Geq(this, operand) }
+func (this *ExprCall) Gt(operand ISyn) OpGt        { return Gt(this, operand) }
+func (this *ExprCall) Leq(operand ISyn) OpLeq      { return Leq(this, operand) }
+func (this *ExprCall) Lt(operand ISyn) OpLt        { return Lt(this, operand) }
+func (this *ExprCall) Add(operand ISyn) OpAdd      { return Add(this, operand) }
+func (this *ExprCall) Sub(operand ISyn) OpSub      { return Sub(this, operand) }
+func (this *ExprCall) Mul(operand ISyn) OpMul      { return Mul(this, operand) }
+func (this *ExprCall) Div(operand ISyn) OpDiv      { return Div(this, operand) }
+func (this *ExprCall) At(operand ISyn) OpIdx       { return I(this, operand) }
+func (this *ExprCall) Not() OpNot                  { return Not(this) }
+func (this *ExprCall) Neg() OpSub                  { return Neg(this) }
+func (this *ExprCall) Call(args ...ISyn) *ExprCall { return Call(this, args...) }
 
 func (this OpGeq) Eq(operand ISyn) OpEq   { return Eq(this, operand) }
 func (this OpGeq) Neq(operand ISyn) OpNeq { return Neq(this, operand) }

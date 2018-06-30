@@ -414,6 +414,8 @@ func (this OpDecl) emitTo(w *writer) { this.Op.emit(w, ":=") }
 
 func (this OpComma) emitTo(w *writer) { this.Op.emit(w, ",") }
 
+func (this OpColon) emitTo(w *writer) { this.Op.emit(w, ":") }
+
 func (this OpDot) emitTo(w *writer) {
 	if pref := PkgImportNamePrefix; len(this.Operands) > 1 {
 		if n, ok := this.Operands[0].(Named); ok && len(n.Name) > len(pref) && (len(pref) == 0 || n.Name[:len(pref)] == string(pref)) {
@@ -527,6 +529,12 @@ func (this *ExprCall) emitTo(w *writer) {
 		w.WriteByte(',')
 	}
 	w.WriteByte(')')
+}
+
+func (this *StmtLabel) emitTo(w *writer) {
+	this.Named.emitTo(w)
+	w.WriteByte(':')
+	this.SynBlock.emit(w, false, ";", false)
 }
 
 func (this SynRaw) emitTo(w *writer) {

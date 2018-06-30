@@ -141,6 +141,11 @@ func (this *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch {
 	return this
 }
 
+func (this *StmtSwitch) CasesOf(conds ...SynCond) *StmtSwitch {
+	this.Cases = append(this.Cases, conds...)
+	return this
+}
+
 func (this *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch {
 	this.Default.Body = stmts
 	return this

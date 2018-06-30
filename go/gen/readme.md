@@ -66,25 +66,27 @@ var (
 
 	// singletons for common var names
 	V struct {
-		// `err`
+		// `"err"`
 		Err NamedTyped
-		// `this`
+		// `"this"`
 		This Named
-		// `self`
+		// `"self"`
 		Self Named
-		// `me`
+		// `"me"`
 		Me Named
-		// `ok`
+		// `"ok"`
 		Ok Named
-		// `r`
+		// `"r"`
 		R Named
-		// `i`
+		// `"s"`
+		S Named
+		// `"i"`
 		I Named
-		// `j`
+		// `"j"`
 		J Named
-		// `k`
+		// `"k"`
 		K Named
-		// `v`
+		// `"v"`
 		V Named
 	}
 
@@ -149,16 +151,118 @@ func Call(callee ISyn, args ...ISyn) *ExprCall
 ```
 Call constructs an `ExprCall`.
 
+#### func (*ExprCall) Add
+
+```go
+func (this *ExprCall) Add(operand ISyn) OpAdd
+```
+
+#### func (*ExprCall) And
+
+```go
+func (this *ExprCall) And(operand ISyn) OpAnd
+```
+
+#### func (*ExprCall) At
+
+```go
+func (this *ExprCall) At(operand ISyn) OpIdx
+```
+
+#### func (*ExprCall) Call
+
+```go
+func (this *ExprCall) Call(args ...ISyn) *ExprCall
+```
+
 #### func (*ExprCall) Defer
 
 ```go
 func (this *ExprCall) Defer() StmtDefer
 ```
 
+#### func (*ExprCall) Deref
+
+```go
+func (this *ExprCall) Deref() OpDeref
+```
+
+#### func (*ExprCall) Div
+
+```go
+func (this *ExprCall) Div(operand ISyn) OpDiv
+```
+
+#### func (*ExprCall) Eq
+
+```go
+func (this *ExprCall) Eq(operand ISyn) OpEq
+```
+
+#### func (*ExprCall) Geq
+
+```go
+func (this *ExprCall) Geq(operand ISyn) OpGeq
+```
+
 #### func (*ExprCall) Go
 
 ```go
 func (this *ExprCall) Go() StmtGo
+```
+
+#### func (*ExprCall) Gt
+
+```go
+func (this *ExprCall) Gt(operand ISyn) OpGt
+```
+
+#### func (*ExprCall) Leq
+
+```go
+func (this *ExprCall) Leq(operand ISyn) OpLeq
+```
+
+#### func (*ExprCall) Lt
+
+```go
+func (this *ExprCall) Lt(operand ISyn) OpLt
+```
+
+#### func (*ExprCall) Mul
+
+```go
+func (this *ExprCall) Mul(operand ISyn) OpMul
+```
+
+#### func (*ExprCall) Neg
+
+```go
+func (this *ExprCall) Neg() OpSub
+```
+
+#### func (*ExprCall) Neq
+
+```go
+func (this *ExprCall) Neq(operand ISyn) OpNeq
+```
+
+#### func (*ExprCall) Not
+
+```go
+func (this *ExprCall) Not() OpNot
+```
+
+#### func (*ExprCall) Or
+
+```go
+func (this *ExprCall) Or(operand ISyn) OpOr
+```
+
+#### func (*ExprCall) Sub
+
+```go
+func (this *ExprCall) Sub(operand ISyn) OpSub
 ```
 
 #### type ExprLit
@@ -577,6 +681,21 @@ func (this OpAnd) Not() OpNot
 ```go
 func (this OpAnd) Or(operand ISyn) OpOr
 ```
+
+#### type OpColon
+
+```go
+type OpColon struct{ Op }
+```
+
+OpColon emits all its operands separated by `:` colons.
+
+#### func  Sl
+
+```go
+func Sl(operands ...ISyn) OpColon
+```
+Sl constructs an `OpColon`.
 
 #### type OpComma
 
@@ -1318,6 +1437,12 @@ type StmtGoTo Named
 
 StmtGoTo represents Go's `goto` keyword.
 
+#### func  GoTo
+
+```go
+func GoTo(name string) StmtGoTo
+```
+
 #### type StmtIf
 
 ```go
@@ -1353,10 +1478,19 @@ IfThen constructs a simple `StmtIf` with a single condition and `then` branch
 #### type StmtLabel
 
 ```go
-type StmtLabel Named
+type StmtLabel struct {
+	Named
+	SynBlock
+}
 ```
 
 StmtLabel represents a label that one can `goto` or `break` from.
+
+#### func  Label
+
+```go
+func Label(name string, stmts ...ISyn) *StmtLabel
+```
 
 #### type StmtRet
 
@@ -1403,6 +1537,12 @@ Switch constructs a `StmtSwitch`.
 
 ```go
 func (this *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch
+```
+
+#### func (*StmtSwitch) CasesOf
+
+```go
+func (this *StmtSwitch) CasesOf(conds ...SynCond) *StmtSwitch
 ```
 
 #### func (*StmtSwitch) DefaultCase

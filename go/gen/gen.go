@@ -101,25 +101,27 @@ var (
 
 	// singletons for common var names
 	V struct {
-		// `err`
+		// `"err"`
 		Err NamedTyped
-		// `this`
+		// `"this"`
 		This Named
-		// `self`
+		// `"self"`
 		Self Named
-		// `me`
+		// `"me"`
 		Me Named
-		// `ok`
+		// `"ok"`
 		Ok Named
-		// `r`
+		// `"r"`
 		R Named
-		// `i`
+		// `"s"`
+		S Named
+		// `"i"`
 		I Named
-		// `j`
+		// `"j"`
 		J Named
-		// `k`
+		// `"k"`
 		K Named
-		// `v`
+		// `"v"`
 		V Named
 	}
 
@@ -165,7 +167,7 @@ var (
 )
 
 func init() {
-	V.Err.Name, V.Err.Type, V.R.Name, V.This.Name, V.Self.Name, V.Me.Name, V.I.Name, V.J.Name, V.K.Name, V.V.Name, V.Ok.Name = "err", TrNamed("", "error"), "r", "this", "self", "me", "i", "j", "k", "v", "ok"
+	V.Err.Name, V.Err.Type, V.R.Name, V.This.Name, V.Self.Name, V.Me.Name, V.I.Name, V.J.Name, V.K.Name, V.V.Name, V.Ok.Name, V.S.Name = "err", TrNamed("", "error"), "r", "this", "self", "me", "i", "j", "k", "v", "ok", "s"
 
 	B.Append.Name, B.Cap.Name, B.Close.Name, B.Complex.Name, B.Copy.Name, B.Delete.Name, B.Imag.Name, B.Len.Name, B.Make.Name, B.New.Name, B.Panic.Name, B.Print.Name, B.Println.Name, B.Real.Name, B.Recover.Name = "append", "cap", "close", "complex", "copy", "delete", "imag", "len", "make", "new", "panic", "print", "println", "real", "recover"
 	B.True, B.False = L(true), L(false)

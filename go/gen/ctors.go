@@ -42,6 +42,14 @@ func Lits(lits ...interface{}) OpComma {
 	return Tup(operands...)
 }
 
+func Label(name string, stmts ...ISyn) *StmtLabel {
+	return &StmtLabel{Named: Named{Name: name}, SynBlock: SynBlock{Body: stmts}}
+}
+
+func GoTo(name string) StmtGoTo {
+	return StmtGoTo{Name: name}
+}
+
 // Add constructs an `OpAdd`.
 func Add(operands ...ISyn) OpAdd { return OpAdd{Op: Op{Operands: operands}} }
 
@@ -53,6 +61,9 @@ func And(operands ...ISyn) OpAnd { return OpAnd{Op: Op{Operands: operands}} }
 
 // Tup constructs an `OpComma`.
 func Tup(operands ...ISyn) OpComma { return OpComma{Op: Op{Operands: operands}} }
+
+// Sl constructs an `OpColon`.
+func Sl(operands ...ISyn) OpColon { return OpColon{Op: Op{Operands: operands}} }
 
 // D constructs an `OpDot`.
 func D(operands ...ISyn) OpDot { return OpDot{Op: Op{Operands: operands}} }
