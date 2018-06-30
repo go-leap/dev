@@ -15,7 +15,6 @@ they don't already have one.
 
 ```go
 var (
-
 	// see `PkgImports.Ensure(string) string` for details
 	PkgImportNamePrefix PkgName = "pkg__"
 

@@ -8,7 +8,7 @@
 package udevgogen
 
 import (
-	"strings"
+	"github.com/go-leap/str"
 )
 
 // SourceFile is a simple collection of `ISyn`s
@@ -40,7 +40,7 @@ func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName) {
 		self = map[string]PkgName{}
 	}
 	if pkgImportName = self[pkgImportPath]; pkgImportName == "" {
-		pkgImportName = PkgImportNamePrefix + PkgName(pkgImportsStrReplSlashesToUnderscores.Replace(pkgImportPath))
+		pkgImportName = PkgImportNamePrefix + PkgName(ustr.ReplB(pkgImportPath, '/', '_'))
 		self[pkgImportPath] = pkgImportName
 	}
 	*this = self
@@ -50,8 +50,6 @@ func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName) {
 type builtinCall = func(...ISyn) *ExprCall
 
 var (
-	pkgImportsStrReplSlashesToUnderscores = strings.NewReplacer("/", "_")
-
 	// see `PkgImports.Ensure(string) string` for details
 	PkgImportNamePrefix PkgName = "pkg__"
 
