@@ -564,13 +564,10 @@ func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPaths
 	}
 	wmain.WriteString("\n\n")
 
-	pkgimports := pkgImportPathsToNames
-	if emitNoOpFuncBodies {
-		pkgimports = make(PkgImports, len(wdecls.pkgImportsActuallyEmitted))
-		for pkgpath, pkgname := range pkgImportPathsToNames {
-			if wdecls.pkgImportsActuallyEmitted[string(pkgname)] {
-				pkgimports[pkgpath] = pkgname
-			}
+	pkgimports := make(PkgImports, len(wdecls.pkgImportsActuallyEmitted))
+	for pkgpath, pkgname := range pkgImportPathsToNames {
+		if wdecls.pkgImportsActuallyEmitted[string(pkgname)] {
+			pkgimports[pkgpath] = pkgname
 		}
 	}
 	if len(pkgimports) > 0 {

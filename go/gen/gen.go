@@ -95,8 +95,8 @@ var (
 		Len    builtinCall
 		Make   builtinCall
 
-		D func(string, string, ...ISyn) *ExprCall
-		N func(string, ...ISyn) *ExprCall
+		D     func(string, string, ...ISyn) *ExprCall
+		Named func(string, ...ISyn) *ExprCall
 	}
 
 	// singletons for common var names
@@ -174,7 +174,7 @@ func init() {
 		return func(args ...ISyn) *ExprCall { return Call(n, args...) }
 	}
 	C.Append, C.Len, C.Make = c(B.Append), c(B.Len), c(B.Make)
-	C.N = func(name string, args ...ISyn) *ExprCall {
+	C.Named = func(name string, args ...ISyn) *ExprCall {
 		return Call(N(name), args...)
 	}
 	C.D = func(dotLeft string, dotRight string, args ...ISyn) *ExprCall {

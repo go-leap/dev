@@ -188,6 +188,18 @@ func Block(body ...ISyn) (this SynBlock) {
 	return
 }
 
+// Then constructs a `SynBlock`, exactly like `Block`, but reads better with `If`.
+func Then(body ...ISyn) (this SynBlock) {
+	this.Body = body
+	return
+}
+
+// Else constructs a `SynBlock`, exactly like `Block`, but reads better with `If`.
+func Else(body ...ISyn) (this SynBlock) {
+	this.Body = body
+	return
+}
+
 // Call constructs an `ExprCall`.
 func Call(callee ISyn, args ...ISyn) *ExprCall {
 	return &ExprCall{Callee: callee, Args: args}
@@ -241,18 +253,18 @@ func Go(call *ExprCall) (this StmtGo) {
 	return
 }
 
-// If constructs a simple `StmtIf` with a single condition
+// IfThen constructs a simple `StmtIf` with a single condition
 // and `then` branch (plus initially empty `else` branch).
-func If(cond ISyn, thens ...ISyn) *StmtIf {
+func IfThen(cond ISyn, thens ...ISyn) *StmtIf {
 	return &StmtIf{IfThens: SynConds{{Cond: cond, SynBlock: SynBlock{Body: thens}}}}
 }
 
-// Ifs constructs a more complex `StmtIf` than `If` does,
+// If constructs a more complex `StmtIf` than `IfThen` does,
 // with `ifThensAndMaybeAnElse` containing 0 or more alternating
 // pairs of `if` (or `else if`) conditions and corresponding
 // `then` branches (each a `SynBlock`), plus optionally a final
 // `else` branch (also a `SynBlock`).
-func Ifs(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
+func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
 	this = &StmtIf{}
 	if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
 		if block, ok := ifThensAndMaybeAnElse[l-1].(SynBlock); ok {

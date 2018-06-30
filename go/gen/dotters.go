@@ -75,27 +75,54 @@ func (this *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch {
 	return this
 }
 
-type ISynDot interface {
+type IDotsAssignish interface {
 	ISyn
+
+	SetTo(ISyn) OpSet
+	Decl(ISyn) OpDecl
+}
+
+type IDotsVarish interface {
+	IDotsAssignish
+
+	Idx(ISyn) OpIdx
+	Addr() OpAddr
+	Deref() OpDeref
+}
+
+type IDotsEquality interface {
+	ISyn
+
+	Eq(ISyn) OpEq
+	Neq(ISyn) OpNeq
+}
+
+type IDotsBoolish interface {
+	IDotsEquality
+
+	And(ISyn) OpAnd
+	Or(ISyn) OpOr
+	Not() OpNot
+}
+
+type IDotsNumerish interface {
+	IDotsEquality
+
 	Geq(ISyn) OpGeq
 	Leq(ISyn) OpLeq
 	Gt(ISyn) OpGt
 	Lt(ISyn) OpLt
-	SetTo(ISyn) OpSet
-	Decl(ISyn) OpDecl
-	And(ISyn) OpAnd
-	Or(ISyn) OpOr
-	Eq(ISyn) OpEq
-	Neq(ISyn) OpNeq
+
 	Add(ISyn) OpAdd
 	Sub(ISyn) OpSub
 	Mul(ISyn) OpMul
 	Div(ISyn) OpDiv
-	Idx(ISyn) OpIdx
-	Addr() OpAddr
-	Deref() OpDeref
-	Not() OpNot
 	Neg() OpSub
+}
+
+type IDotsCallish interface {
+	ISyn
+
 	Call(...ISyn) *ExprCall
 }
 
@@ -120,107 +147,59 @@ func (this Named) Not() OpNot                  { return Not(this) }
 func (this Named) Neg() OpSub                  { return Neg(this) }
 func (this Named) Call(args ...ISyn) *ExprCall { return Call(this, args...) }
 
-func (this OpGeq) SetTo(operand ISyn) OpSet    { return Set(this, operand) }
-func (this OpGeq) Decl(operand ISyn) OpDecl    { return Decl(this, operand) }
-func (this OpGeq) And(operand ISyn) OpAnd      { return And(this, operand) }
-func (this OpGeq) Or(operand ISyn) OpOr        { return Or(this, operand) }
-func (this OpGeq) Eq(operand ISyn) OpEq        { return Eq(this, operand) }
-func (this OpGeq) Neq(operand ISyn) OpNeq      { return Neq(this, operand) }
-func (this OpGeq) Geq(operand ISyn) OpGeq      { return Geq(this, operand) }
-func (this OpGeq) Gt(operand ISyn) OpGt        { return Gt(this, operand) }
-func (this OpGeq) Leq(operand ISyn) OpLeq      { return Leq(this, operand) }
-func (this OpGeq) Lt(operand ISyn) OpLt        { return Lt(this, operand) }
-func (this OpGeq) Add(operand ISyn) OpAdd      { return Add(this, operand) }
-func (this OpGeq) Sub(operand ISyn) OpSub      { return Sub(this, operand) }
-func (this OpGeq) Mul(operand ISyn) OpMul      { return Mul(this, operand) }
-func (this OpGeq) Div(operand ISyn) OpDiv      { return Div(this, operand) }
-func (this OpGeq) Idx(operand ISyn) OpIdx      { return I(this, operand) }
-func (this OpGeq) Addr() OpAddr                { return Addr(this) }
-func (this OpGeq) Deref() OpDeref              { return Deref(this) }
-func (this OpGeq) Not() OpNot                  { return Not(this) }
-func (this OpGeq) Neg() OpSub                  { return Neg(this) }
-func (this OpGeq) Call(args ...ISyn) *ExprCall { return Call(this, args...) }
+func (this OpGeq) Eq(operand ISyn) OpEq   { return Eq(this, operand) }
+func (this OpGeq) Neq(operand ISyn) OpNeq { return Neq(this, operand) }
+func (this OpGeq) And(operand ISyn) OpAnd { return And(this, operand) }
+func (this OpGeq) Or(operand ISyn) OpOr   { return Or(this, operand) }
+func (this OpGeq) Not() OpNot             { return Not(this) }
 
-func (this OpLeq) SetTo(operand ISyn) OpSet    { return Set(this, operand) }
-func (this OpLeq) Decl(operand ISyn) OpDecl    { return Decl(this, operand) }
-func (this OpLeq) And(operand ISyn) OpAnd      { return And(this, operand) }
-func (this OpLeq) Or(operand ISyn) OpOr        { return Or(this, operand) }
-func (this OpLeq) Eq(operand ISyn) OpEq        { return Eq(this, operand) }
-func (this OpLeq) Neq(operand ISyn) OpNeq      { return Neq(this, operand) }
-func (this OpLeq) Geq(operand ISyn) OpGeq      { return Geq(this, operand) }
-func (this OpLeq) Gt(operand ISyn) OpGt        { return Gt(this, operand) }
-func (this OpLeq) Leq(operand ISyn) OpLeq      { return Leq(this, operand) }
-func (this OpLeq) Lt(operand ISyn) OpLt        { return Lt(this, operand) }
-func (this OpLeq) Add(operand ISyn) OpAdd      { return Add(this, operand) }
-func (this OpLeq) Sub(operand ISyn) OpSub      { return Sub(this, operand) }
-func (this OpLeq) Mul(operand ISyn) OpMul      { return Mul(this, operand) }
-func (this OpLeq) Div(operand ISyn) OpDiv      { return Div(this, operand) }
-func (this OpLeq) Idx(operand ISyn) OpIdx      { return I(this, operand) }
-func (this OpLeq) Addr() OpAddr                { return Addr(this) }
-func (this OpLeq) Deref() OpDeref              { return Deref(this) }
-func (this OpLeq) Not() OpNot                  { return Not(this) }
-func (this OpLeq) Neg() OpSub                  { return Neg(this) }
-func (this OpLeq) Call(args ...ISyn) *ExprCall { return Call(this, args...) }
+func (this OpLeq) Eq(operand ISyn) OpEq   { return Eq(this, operand) }
+func (this OpLeq) Neq(operand ISyn) OpNeq { return Neq(this, operand) }
+func (this OpLeq) And(operand ISyn) OpAnd { return And(this, operand) }
+func (this OpLeq) Or(operand ISyn) OpOr   { return Or(this, operand) }
+func (this OpLeq) Not() OpNot             { return Not(this) }
 
-func (this OpGt) SetTo(operand ISyn) OpSet    { return Set(this, operand) }
-func (this OpGt) Decl(operand ISyn) OpDecl    { return Decl(this, operand) }
-func (this OpGt) And(operand ISyn) OpAnd      { return And(this, operand) }
-func (this OpGt) Or(operand ISyn) OpOr        { return Or(this, operand) }
-func (this OpGt) Eq(operand ISyn) OpEq        { return Eq(this, operand) }
-func (this OpGt) Neq(operand ISyn) OpNeq      { return Neq(this, operand) }
-func (this OpGt) Geq(operand ISyn) OpGeq      { return Geq(this, operand) }
-func (this OpGt) Gt(operand ISyn) OpGt        { return Gt(this, operand) }
-func (this OpGt) Leq(operand ISyn) OpLeq      { return Leq(this, operand) }
-func (this OpGt) Lt(operand ISyn) OpLt        { return Lt(this, operand) }
-func (this OpGt) Add(operand ISyn) OpAdd      { return Add(this, operand) }
-func (this OpGt) Sub(operand ISyn) OpSub      { return Sub(this, operand) }
-func (this OpGt) Mul(operand ISyn) OpMul      { return Mul(this, operand) }
-func (this OpGt) Div(operand ISyn) OpDiv      { return Div(this, operand) }
-func (this OpGt) Idx(operand ISyn) OpIdx      { return I(this, operand) }
-func (this OpGt) Addr() OpAddr                { return Addr(this) }
-func (this OpGt) Deref() OpDeref              { return Deref(this) }
-func (this OpGt) Not() OpNot                  { return Not(this) }
-func (this OpGt) Neg() OpSub                  { return Neg(this) }
-func (this OpGt) Call(args ...ISyn) *ExprCall { return Call(this, args...) }
+func (this OpGt) Eq(operand ISyn) OpEq   { return Eq(this, operand) }
+func (this OpGt) Neq(operand ISyn) OpNeq { return Neq(this, operand) }
+func (this OpGt) And(operand ISyn) OpAnd { return And(this, operand) }
+func (this OpGt) Or(operand ISyn) OpOr   { return Or(this, operand) }
+func (this OpGt) Not() OpNot             { return Not(this) }
 
-func (this OpLt) SetTo(operand ISyn) OpSet    { return Set(this, operand) }
-func (this OpLt) Decl(operand ISyn) OpDecl    { return Decl(this, operand) }
-func (this OpLt) And(operand ISyn) OpAnd      { return And(this, operand) }
-func (this OpLt) Or(operand ISyn) OpOr        { return Or(this, operand) }
-func (this OpLt) Eq(operand ISyn) OpEq        { return Eq(this, operand) }
-func (this OpLt) Neq(operand ISyn) OpNeq      { return Neq(this, operand) }
-func (this OpLt) Geq(operand ISyn) OpGeq      { return Geq(this, operand) }
-func (this OpLt) Gt(operand ISyn) OpGt        { return Gt(this, operand) }
-func (this OpLt) Leq(operand ISyn) OpLeq      { return Leq(this, operand) }
-func (this OpLt) Lt(operand ISyn) OpLt        { return Lt(this, operand) }
-func (this OpLt) Add(operand ISyn) OpAdd      { return Add(this, operand) }
-func (this OpLt) Sub(operand ISyn) OpSub      { return Sub(this, operand) }
-func (this OpLt) Mul(operand ISyn) OpMul      { return Mul(this, operand) }
-func (this OpLt) Div(operand ISyn) OpDiv      { return Div(this, operand) }
-func (this OpLt) Idx(operand ISyn) OpIdx      { return I(this, operand) }
-func (this OpLt) Addr() OpAddr                { return Addr(this) }
-func (this OpLt) Deref() OpDeref              { return Deref(this) }
-func (this OpLt) Not() OpNot                  { return Not(this) }
-func (this OpLt) Neg() OpSub                  { return Neg(this) }
-func (this OpLt) Call(args ...ISyn) *ExprCall { return Call(this, args...) }
+func (this OpLt) Eq(operand ISyn) OpEq   { return Eq(this, operand) }
+func (this OpLt) Neq(operand ISyn) OpNeq { return Neq(this, operand) }
+func (this OpLt) And(operand ISyn) OpAnd { return And(this, operand) }
+func (this OpLt) Or(operand ISyn) OpOr   { return Or(this, operand) }
+func (this OpLt) Not() OpNot             { return Not(this) }
 
-func (this OpComma) SetTo(operand ISyn) OpSet    { return Set(this, operand) }
-func (this OpComma) Decl(operand ISyn) OpDecl    { return Decl(this, operand) }
-func (this OpComma) And(operand ISyn) OpAnd      { return And(this, operand) }
-func (this OpComma) Or(operand ISyn) OpOr        { return Or(this, operand) }
-func (this OpComma) Eq(operand ISyn) OpEq        { return Eq(this, operand) }
-func (this OpComma) Neq(operand ISyn) OpNeq      { return Neq(this, operand) }
-func (this OpComma) Geq(operand ISyn) OpGeq      { return Geq(this, operand) }
-func (this OpComma) Gt(operand ISyn) OpGt        { return Gt(this, operand) }
-func (this OpComma) Leq(operand ISyn) OpLeq      { return Leq(this, operand) }
-func (this OpComma) Lt(operand ISyn) OpLt        { return Lt(this, operand) }
-func (this OpComma) Add(operand ISyn) OpAdd      { return Add(this, operand) }
-func (this OpComma) Sub(operand ISyn) OpSub      { return Sub(this, operand) }
-func (this OpComma) Mul(operand ISyn) OpMul      { return Mul(this, operand) }
-func (this OpComma) Div(operand ISyn) OpDiv      { return Div(this, operand) }
-func (this OpComma) Idx(operand ISyn) OpIdx      { return I(this, operand) }
-func (this OpComma) Addr() OpAddr                { return Addr(this) }
-func (this OpComma) Deref() OpDeref              { return Deref(this) }
-func (this OpComma) Not() OpNot                  { return Not(this) }
-func (this OpComma) Neg() OpSub                  { return Neg(this) }
-func (this OpComma) Call(args ...ISyn) *ExprCall { return Call(this, args...) }
+func (this OpEq) Eq(operand ISyn) OpEq   { return Eq(this, operand) }
+func (this OpEq) Neq(operand ISyn) OpNeq { return Neq(this, operand) }
+func (this OpEq) And(operand ISyn) OpAnd { return And(this, operand) }
+func (this OpEq) Or(operand ISyn) OpOr   { return Or(this, operand) }
+func (this OpEq) Not() OpNot             { return Not(this) }
+
+func (this OpNeq) Eq(operand ISyn) OpEq   { return Eq(this, operand) }
+func (this OpNeq) Neq(operand ISyn) OpNeq { return Neq(this, operand) }
+func (this OpNeq) And(operand ISyn) OpAnd { return And(this, operand) }
+func (this OpNeq) Or(operand ISyn) OpOr   { return Or(this, operand) }
+func (this OpNeq) Not() OpNot             { return Not(this) }
+
+func (this OpComma) SetTo(operand ISyn) OpSet { return Set(this, operand) }
+func (this OpComma) Decl(operand ISyn) OpDecl { return Decl(this, operand) }
+
+func (this OpOr) Eq(operand ISyn) OpEq   { return Eq(this, operand) }
+func (this OpOr) Neq(operand ISyn) OpNeq { return Neq(this, operand) }
+func (this OpOr) And(operand ISyn) OpAnd { return And(this, operand) }
+func (this OpOr) Or(operand ISyn) OpOr   { return Or(this, operand) }
+func (this OpOr) Not() OpNot             { return Not(this) }
+
+func (this OpAnd) Eq(operand ISyn) OpEq   { return Eq(this, operand) }
+func (this OpAnd) Neq(operand ISyn) OpNeq { return Neq(this, operand) }
+func (this OpAnd) And(operand ISyn) OpAnd { return And(this, operand) }
+func (this OpAnd) Or(operand ISyn) OpOr   { return Or(this, operand) }
+func (this OpAnd) Not() OpNot             { return Not(this) }
+
+func (this OpNot) Eq(operand ISyn) OpEq   { return Eq(this, operand) }
+func (this OpNot) Neq(operand ISyn) OpNeq { return Neq(this, operand) }
+func (this OpNot) And(operand ISyn) OpAnd { return And(this, operand) }
+func (this OpNot) Or(operand ISyn) OpOr   { return Or(this, operand) }
+func (this OpNot) Not() OpNot             { return Not(this) }
