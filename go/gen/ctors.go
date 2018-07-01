@@ -211,16 +211,14 @@ func Block(body ...ISyn) (this SynBlock) {
 	return
 }
 
-// Then constructs a `SynBlock`, exactly like `Block`, but reads better with `If`.
-func Then(body ...ISyn) (this SynBlock) {
-	this.Body = body
-	return
+// Then simply returns `body`, just like `Else` does: it's only readability sugar for `If` (or `GEN_IF`) calls.
+func Then(body ...ISyn) Syns {
+	return body
 }
 
-// Else constructs a `SynBlock`, exactly like `Block`, but reads better with `If`.
-func Else(body ...ISyn) (this SynBlock) {
-	this.Body = body
-	return
+// Else simply returns `body`, just like `Then` does: it's only readability sugar for `If` (or `GEN_IF`) calls.
+func Else(body ...ISyn) Syns {
+	return body
 }
 
 // Call constructs an `ExprCall`.
@@ -241,12 +239,45 @@ func Defer(call *ExprCall) (this StmtDefer) {
 	return
 }
 
-// OnlyIf returns `stmts` if `check` is `true`, else `nil`.
-func OnlyIf(check bool, stmts ...ISyn) (syns Syns) {
+// GEN_IF returns either none, all, or one of `stmts` depending on `check` as follows:
+//
+// - if there are 2 `stmts` and each is a `Syns`, they're then/else-like and one of them wins
+//
+// - otherwise: if `check` is `true`, all `stmts` are returned, else `nil` is returned
+func GEN_IF(check bool, stmts ...ISyn) (syns Syns) {
+	if len(stmts) == 2 {
+		if ifthen, okt := stmts[0].(Syns); okt {
+			if ifelse, oke := stmts[1].(Syns); oke {
+				return genIf(check, ifthen, ifelse)
+			}
+		}
+	}
 	if check {
 		syns = stmts
 	}
 	return
+}
+
+// DEFAULT serves as a codegen-time readability wrapper for `GEN_BYCASE` callers.
+type DEFAULT ISyn
+
+// UNLESS serves as a codegen-time readability wrapper for `GEN_BYCASE` callers.
+type UNLESS map[bool]ISyn
+
+// GEN_BYCASE returns `unless[true]` if present, else `byDefault`.
+// It's like a codegen-time `switch..case` construct (just with the `default` branch first).
+func GEN_BYCASE(byDefault DEFAULT, unless UNLESS) ISyn {
+	if then, ok := unless[true]; ok {
+		return then
+	}
+	return byDefault
+}
+
+func genIf(check bool, ifTrue Syns, ifFalse Syns) Syns {
+	if check {
+		return ifTrue
+	}
+	return ifFalse
 }
 
 // File constructs a `SourceFile`.
@@ -298,15 +329,19 @@ func IfThen(cond ISyn, thens ...ISyn) *StmtIf {
 func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
 	this = &StmtIf{}
 	if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
-		if block, ok := ifThensAndMaybeAnElse[l-1].(SynBlock); ok {
+		if block, okb := ifThensAndMaybeAnElse[l-1].(SynBlock); okb {
 			this.Else.Body = block.Body
+		} else if syns, oks := ifThensAndMaybeAnElse[l-1].(Syns); oks {
+			this.Else.Body = syns
 		}
 		ifThensAndMaybeAnElse = ifThensAndMaybeAnElse[:l-1]
 	}
 	for i := 1; i < len(ifThensAndMaybeAnElse); i += 2 {
 		var body Syns
-		if block, ok := ifThensAndMaybeAnElse[i].(SynBlock); ok {
+		if block, okb := ifThensAndMaybeAnElse[i].(SynBlock); okb {
 			body = block.Body
+		} else if syns, oks := ifThensAndMaybeAnElse[i].(Syns); oks {
+			body = syns
 		}
 		this.IfThens = append(this.IfThens, SynCond{Cond: ifThensAndMaybeAnElse[i-1], SynBlock: SynBlock{Body: body}})
 	}

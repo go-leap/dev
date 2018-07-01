@@ -132,6 +132,14 @@ var (
 )
 ```
 
+#### type DEFAULT
+
+```go
+type DEFAULT ISyn
+```
+
+DEFAULT serves as a codegen-time readability wrapper for `GEN_BYCASE` callers.
+
 #### type ExprCall
 
 ```go
@@ -424,6 +432,14 @@ type ISyn interface {
 
 ISyn implementations represent some discrete item in the Abstract Syntax Tree:
 literals, vars, consts, type-defs, type-refs, funcs, keywords, operators etc..
+
+#### func  GEN_BYCASE
+
+```go
+func GEN_BYCASE(byDefault DEFAULT, unless UNLESS) ISyn
+```
+GEN_BYCASE returns `unless[true]` if present, else `byDefault`. It's like a
+codegen-time `switch..case` construct (just with the `default` branch first).
 
 #### type Named
 
@@ -1891,20 +1907,6 @@ func Block(body ...ISyn) (this SynBlock)
 ```
 Block constructs a `SynBlock`.
 
-#### func  Else
-
-```go
-func Else(body ...ISyn) (this SynBlock)
-```
-Else constructs a `SynBlock`, exactly like `Block`, but reads better with `If`.
-
-#### func  Then
-
-```go
-func Then(body ...ISyn) (this SynBlock)
-```
-Then constructs a `SynBlock`, exactly like `Block`, but reads better with `If`.
-
 #### func (*SynBlock) Add
 
 ```go
@@ -2088,12 +2090,35 @@ func A(argsOrOperandsOrStmts ...ISyn) Syns
 A is merely a handy convenience short-hand to create a slice of `ISyn`s, as
 sometimes needed for listing arguments, operands, or statements.
 
-#### func  OnlyIf
+#### func  Else
 
 ```go
-func OnlyIf(check bool, stmts ...ISyn) (syns Syns)
+func Else(body ...ISyn) Syns
 ```
-OnlyIf returns `stmts` if `check` is `true`, else `nil`.
+Else simply returns `body`, just like `Then` does: it's only readability sugar
+for `If` (or `GEN_IF`) calls.
+
+#### func  GEN_IF
+
+```go
+func GEN_IF(check bool, stmts ...ISyn) (syns Syns)
+```
+GEN_IF returns either none, all, or one of `stmts` depending on `check` as
+follows:
+
+- if there are 2 `stmts` and each is a `Syns`, they're then/else-like and one of
+them wins
+
+- otherwise: if `check` is `true`, all `stmts` are returned, else `nil` is
+returned
+
+#### func  Then
+
+```go
+func Then(body ...ISyn) Syns
+```
+Then simply returns `body`, just like `Else` does: it's only readability sugar
+for `If` (or `GEN_IF`) calls.
 
 #### func (*Syns) Add
 
@@ -2351,3 +2376,11 @@ TypeStruct represents Go's `struct{..}` construct.
 func TdStruct(fields ...SynStructField) *TypeStruct
 ```
 TdStruct constructs a `TypeStruct`.
+
+#### type UNLESS
+
+```go
+type UNLESS map[bool]ISyn
+```
+
+UNLESS serves as a codegen-time readability wrapper for `GEN_BYCASE` callers.
