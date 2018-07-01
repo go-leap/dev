@@ -83,7 +83,7 @@ func (this PkgName) C(n string, args ...ISyn) *ExprCall { return C.Dot(string(th
 
 // Method constructs a `SynFunc` with the given `name` and `args` plus `this` as its method `Recv`.
 func (this NamedTyped) Method(name string, args ...NamedTyped) *SynFunc {
-	return Fn(this, name, TdFunc(args))
+	return Fn(this, name, TdFn(args))
 }
 
 // Method constructs a `SynFunc` with the given `name` and `args` plus a `this`-typed method `Recv` also named `"this"`.
@@ -94,6 +94,28 @@ func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc {
 // Conv constructs an `ExprCall` that represents a conversion of `expr` into `this` type.
 // (Go's conversion syntax, eg. `int(myexpr)`, is covered by `ExprCall` due to identical emitting logic.)
 func (this *TypeRef) Conv(expr ISyn) *ExprCall { return Call(this, expr) }
+
+// N constructs a `NamedTyped` with `name` and `this`.
+func (this *TypeRef) N(name string) NamedTyped {
+	return NamedTyped{Named: Named{Name: name}, Type: this}
+}
+
+// Ref constructs a `TypeRef` whose `Func` points to `this`.
+func (this *TypeFunc) Ref() *TypeRef {
+	return TrFunc(this)
+}
+
+// Arg adds to `this.Args` and returns `this`.
+func (this *TypeFunc) Arg(name string, typeRef *TypeRef) *TypeFunc {
+	this.Args.Add(name, typeRef)
+	return this
+}
+
+// Ret adds to `this.Rets` and returns `this`.
+func (this *TypeFunc) Ret(name string, typeRef *TypeRef) *TypeFunc {
+	this.Rets.Add(name, typeRef)
+	return this
+}
 
 // Args sets `this.Type.Func.Args` and returns `this`.
 func (this *SynFunc) Args(args ...NamedTyped) *SynFunc {

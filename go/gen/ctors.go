@@ -129,8 +129,13 @@ func TDecl(name string, typeRef *TypeRef, isAlias bool) (this TypeDecl) {
 	return
 }
 
-// TdFunc constructs a `TypeFunc`,
-func TdFunc(args NamedsTypeds, rets ...NamedTyped) *TypeFunc {
+// TdFunc constructs an initially-empty (arg-less and return-less) `TypeFunc`,
+func TdFunc() *TypeFunc {
+	return new(TypeFunc)
+}
+
+// TdFn constructs a `TypeFunc`,
+func TdFn(args NamedsTypeds, rets ...NamedTyped) *TypeFunc {
 	return &TypeFunc{Args: args, Rets: rets}
 }
 
@@ -233,6 +238,14 @@ func Const(name string, maybeType *TypeRef, exprLit ExprLit) (this *StmtConst) {
 // Defer constructs a `StmtDefer`.
 func Defer(call *ExprCall) (this StmtDefer) {
 	this.Expr = call
+	return
+}
+
+// OnlyIf returns `stmts` if `check` is `true`, else `nil`.
+func OnlyIf(check bool, stmts ...ISyn) (syns Syns) {
+	if check {
+		syns = stmts
+	}
 	return
 }
 
@@ -346,5 +359,5 @@ func Cond(cond ISyn, thens ...ISyn) (this SynCond) {
 
 // Func constructs a `SynFunc` with the given `name` and `args`.
 func Func(name string, args ...NamedTyped) *SynFunc {
-	return Fn(NoMethodRecv, name, TdFunc(args))
+	return Fn(NoMethodRecv, name, TdFn(args))
 }

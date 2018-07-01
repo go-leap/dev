@@ -261,6 +261,7 @@ Mul implements `IExprNumerish`.
 ```go
 func (this *ExprCall) Neg() OpSub
 ```
+Neg implements `IExprNumerish`.
 
 #### func (*ExprCall) Neq
 
@@ -552,6 +553,7 @@ Mul implements `IExprNumerish`.
 ```go
 func (this Named) Neg() OpSub
 ```
+Neg implements `IExprNumerish`.
 
 #### func (Named) Neq
 
@@ -1044,6 +1046,146 @@ OpIdx represents one or more `operand0[operand1][operand2]` indexers.
 func I(operands ...ISyn) OpIdx
 ```
 I constructs an `OpIdx`.
+
+#### func (OpIdx) Add
+
+```go
+func (this OpIdx) Add(operand ISyn) OpAdd
+```
+Add implements `IExprNumerish`.
+
+#### func (OpIdx) Addr
+
+```go
+func (this OpIdx) Addr() OpAddr
+```
+Addr implements `IExprVarish`.
+
+#### func (OpIdx) And
+
+```go
+func (this OpIdx) And(operand ISyn) OpAnd
+```
+And implements `IExprBoolish`.
+
+#### func (OpIdx) At
+
+```go
+func (this OpIdx) At(operand ISyn) OpIdx
+```
+At implements `IExprVarish`.
+
+#### func (OpIdx) Call
+
+```go
+func (this OpIdx) Call(args ...ISyn) *ExprCall
+```
+Call implements `IExprCallish`.
+
+#### func (OpIdx) Deref
+
+```go
+func (this OpIdx) Deref() OpDeref
+```
+Deref implements `IExprVarish`.
+
+#### func (OpIdx) Div
+
+```go
+func (this OpIdx) Div(operand ISyn) OpDiv
+```
+Div implements `IExprNumerish`.
+
+#### func (OpIdx) Eq
+
+```go
+func (this OpIdx) Eq(operand ISyn) OpEq
+```
+Eq implements `IExprEqualish`.
+
+#### func (OpIdx) Geq
+
+```go
+func (this OpIdx) Geq(operand ISyn) OpGeq
+```
+Geq implements `IExprOrdish`.
+
+#### func (OpIdx) Gt
+
+```go
+func (this OpIdx) Gt(operand ISyn) OpGt
+```
+Gt implements `IExprOrdish`.
+
+#### func (OpIdx) Leq
+
+```go
+func (this OpIdx) Leq(operand ISyn) OpLeq
+```
+Leq implements `IExprOrdish`.
+
+#### func (OpIdx) Lt
+
+```go
+func (this OpIdx) Lt(operand ISyn) OpLt
+```
+Lt implements `IExprOrdish`.
+
+#### func (OpIdx) Mod
+
+```go
+func (this OpIdx) Mod(operand ISyn) OpMod
+```
+Mod implements `IExprNumerish`.
+
+#### func (OpIdx) Mul
+
+```go
+func (this OpIdx) Mul(operand ISyn) OpMul
+```
+Mul implements `IExprNumerish`.
+
+#### func (OpIdx) Neg
+
+```go
+func (this OpIdx) Neg() OpSub
+```
+Neg implements `IExprNumerish`.
+
+#### func (OpIdx) Neq
+
+```go
+func (this OpIdx) Neq(operand ISyn) OpNeq
+```
+Neq implements `IExprEqualish`.
+
+#### func (OpIdx) Not
+
+```go
+func (this OpIdx) Not() OpNot
+```
+Not implements `IExprBoolish`.
+
+#### func (OpIdx) Or
+
+```go
+func (this OpIdx) Or(operand ISyn) OpOr
+```
+Or implements `IExprBoolish`.
+
+#### func (OpIdx) SetTo
+
+```go
+func (this OpIdx) SetTo(operand ISyn) OpSet
+```
+SetTo implements `IExprAssignish`
+
+#### func (OpIdx) Sub
+
+```go
+func (this OpIdx) Sub(operand ISyn) OpSub
+```
+Sub implements `IExprNumerish`.
 
 #### type OpLeq
 
@@ -1946,6 +2088,13 @@ func A(argsOrOperandsOrStmts ...ISyn) Syns
 A is merely a handy convenience short-hand to create a slice of `ISyn`s, as
 sometimes needed for listing arguments, operands, or statements.
 
+#### func  OnlyIf
+
+```go
+func OnlyIf(check bool, stmts ...ISyn) (syns Syns)
+```
+OnlyIf returns `stmts` if `check` is `true`, else `nil`.
+
 #### func (*Syns) Add
 
 ```go
@@ -1986,12 +2135,40 @@ type TypeFunc struct {
 
 TypeFunc represents a func signature.
 
+#### func  TdFn
+
+```go
+func TdFn(args NamedsTypeds, rets ...NamedTyped) *TypeFunc
+```
+TdFn constructs a `TypeFunc`,
+
 #### func  TdFunc
 
 ```go
-func TdFunc(args NamedsTypeds, rets ...NamedTyped) *TypeFunc
+func TdFunc() *TypeFunc
 ```
-TdFunc constructs a `TypeFunc`,
+TdFunc constructs an initially-empty (arg-less and return-less) `TypeFunc`,
+
+#### func (*TypeFunc) Arg
+
+```go
+func (this *TypeFunc) Arg(name string, typeRef *TypeRef) *TypeFunc
+```
+Arg adds to `this.Args` and returns `this`.
+
+#### func (*TypeFunc) Ref
+
+```go
+func (this *TypeFunc) Ref() *TypeRef
+```
+Ref constructs a `TypeRef` whose `Func` points to `this`.
+
+#### func (*TypeFunc) Ret
+
+```go
+func (this *TypeFunc) Ret(name string, typeRef *TypeRef) *TypeFunc
+```
+Ret adds to `this.Rets` and returns `this`.
 
 #### type TypeInterface
 
@@ -2140,6 +2317,13 @@ func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc
 ```
 Method constructs a `SynFunc` with the given `name` and `args` plus a
 `this`-typed method `Recv` also named `"this"`.
+
+#### func (*TypeRef) N
+
+```go
+func (this *TypeRef) N(name string) NamedTyped
+```
+N constructs a `NamedTyped` with `name` and `this`.
 
 #### func (*TypeRef) SafeBitSizeIfBuiltInNumberType
 

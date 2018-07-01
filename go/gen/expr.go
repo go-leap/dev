@@ -126,6 +126,8 @@ func (this Named) At(operand ISyn) OpIdx { return I(this, operand) }
 
 // Not implements `IExprBoolish`.
 func (this Named) Not() OpNot { return Not(this) }
+
+// Neg implements `IExprNumerish`.
 func (this Named) Neg() OpSub { return Neg(this) }
 
 // Call implements `IExprCallish`.
@@ -178,6 +180,8 @@ func (this *ExprCall) At(operand ISyn) OpIdx { return I(this, operand) }
 
 // Not implements `IExprBoolish`.
 func (this *ExprCall) Not() OpNot { return Not(this) }
+
+// Neg implements `IExprNumerish`.
 func (this *ExprCall) Neg() OpSub { return Neg(this) }
 
 // Call implements `IExprCallish`.
@@ -323,3 +327,63 @@ func (this OpNot) Or(operand ISyn) OpOr { return Or(this, operand) }
 
 // Not implements `IExprBoolish`.
 func (this OpNot) Not() OpNot { return Not(this) }
+
+// SetTo implements `IExprAssignish`
+func (this OpIdx) SetTo(operand ISyn) OpSet { return Set(this, operand) }
+
+// Addr implements `IExprVarish`.
+func (this OpIdx) Addr() OpAddr { return Addr(this) }
+
+// Deref implements `IExprVarish`.
+func (this OpIdx) Deref() OpDeref { return Deref(this) }
+
+// And implements `IExprBoolish`.
+func (this OpIdx) And(operand ISyn) OpAnd { return And(this, operand) }
+
+// Or implements `IExprBoolish`.
+func (this OpIdx) Or(operand ISyn) OpOr { return Or(this, operand) }
+
+// Eq implements `IExprEqualish`.
+func (this OpIdx) Eq(operand ISyn) OpEq { return Eq(this, operand) }
+
+// Neq implements `IExprEqualish`.
+func (this OpIdx) Neq(operand ISyn) OpNeq { return Neq(this, operand) }
+
+// Geq implements `IExprOrdish`.
+func (this OpIdx) Geq(operand ISyn) OpGeq { return Geq(this, operand) }
+
+// Gt implements `IExprOrdish`.
+func (this OpIdx) Gt(operand ISyn) OpGt { return Gt(this, operand) }
+
+// Leq implements `IExprOrdish`.
+func (this OpIdx) Leq(operand ISyn) OpLeq { return Leq(this, operand) }
+
+// Lt implements `IExprOrdish`.
+func (this OpIdx) Lt(operand ISyn) OpLt { return Lt(this, operand) }
+
+// Add implements `IExprNumerish`.
+func (this OpIdx) Add(operand ISyn) OpAdd { return Add(this, operand) }
+
+// Sub implements `IExprNumerish`.
+func (this OpIdx) Sub(operand ISyn) OpSub { return Sub(this, operand) }
+
+// Mul implements `IExprNumerish`.
+func (this OpIdx) Mul(operand ISyn) OpMul { return Mul(this, operand) }
+
+// Div implements `IExprNumerish`.
+func (this OpIdx) Div(operand ISyn) OpDiv { return Div(this, operand) }
+
+// Mod implements `IExprNumerish`.
+func (this OpIdx) Mod(operand ISyn) OpMod { return Mod(this, operand) }
+
+// At implements `IExprVarish`.
+func (this OpIdx) At(operand ISyn) OpIdx { return I(this, operand) }
+
+// Not implements `IExprBoolish`.
+func (this OpIdx) Not() OpNot { return Not(this) }
+
+// Neg implements `IExprNumerish`.
+func (this OpIdx) Neg() OpSub { return Neg(this) }
+
+// Call implements `IExprCallish`.
+func (this OpIdx) Call(args ...ISyn) *ExprCall { return Call(this, args...) }
