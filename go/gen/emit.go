@@ -186,7 +186,7 @@ func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep byte, addFinalR
 		w.WriteByte(sep)
 	}
 	if addFinalRet {
-		K.Ret.emitTo(w)
+		K.Return.emitTo(w)
 	}
 	if wrapInCurlyBraces {
 		w.WriteByte('}')
@@ -227,7 +227,7 @@ func (this *SynFunc) emitTo(w *writer) {
 		this.SynBlock.emit(w, true, ';', hasnamedrets && !hasfinalret)
 	} else {
 		w.WriteByte('{')
-		K.Ret.emitTo(w)
+		K.Return.emitTo(w)
 		w.WriteByte('}')
 	}
 	if this.Name != "" {

@@ -28,7 +28,7 @@ var (
 	K struct {
 		Break    StmtBreak
 		Continue StmtContinue
-		Ret      StmtRet
+		Return   StmtRet
 	}
 
 	// singletons for stdlib-builtins
@@ -65,7 +65,7 @@ var (
 	}
 
 	// singletons for common var names
-	V struct {
+	Vars struct {
 		// `"err"`
 		Err NamedTyped
 		// `"this"`

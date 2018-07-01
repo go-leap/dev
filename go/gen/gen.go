@@ -64,7 +64,7 @@ var (
 	K struct {
 		Break    StmtBreak
 		Continue StmtContinue
-		Ret      StmtRet
+		Return   StmtRet
 	}
 
 	// singletons for stdlib-builtins
@@ -101,7 +101,7 @@ var (
 	}
 
 	// singletons for common var names
-	V struct {
+	Vars struct {
 		// `"err"`
 		Err NamedTyped
 		// `"this"`
@@ -168,7 +168,7 @@ var (
 )
 
 func init() {
-	V.Err.Name, V.Err.Type, V.R.Name, V.This.Name, V.Self.Name, V.Me.Name, V.I.Name, V.J.Name, V.K.Name, V.V.Name, V.Ok.Name, V.S.Name = "err", TrNamed("", "error"), "r", "this", "self", "me", "i", "j", "k", "v", "ok", "s"
+	Vars.Err.Name, Vars.Err.Type, Vars.R.Name, Vars.This.Name, Vars.Self.Name, Vars.Me.Name, Vars.I.Name, Vars.J.Name, Vars.K.Name, Vars.V.Name, Vars.Ok.Name, Vars.S.Name = "err", TrNamed("", "error"), "r", "this", "self", "me", "i", "j", "k", "v", "ok", "s"
 
 	B.Append.Name, B.Cap.Name, B.Close.Name, B.Complex.Name, B.Copy.Name, B.Delete.Name, B.Imag.Name, B.Len.Name, B.Make.Name, B.New.Name, B.Panic.Name, B.Print.Name, B.Println.Name, B.Real.Name, B.Recover.Name = "append", "cap", "close", "complex", "copy", "delete", "imag", "len", "make", "new", "panic", "print", "println", "real", "recover"
 	B.True, B.False = L(true), L(false)
@@ -187,5 +187,5 @@ func init() {
 	T.Interface = TrInterface(TdInterface(nil))
 	T.Sl.Ints, T.Sl.Strings = TrSlice(T.Int), TrSlice(T.String)
 
-	Sigs.NoneToBool.Rets, Sigs.NoneToString.Rets = NamedsTypeds{V.R.T(T.Bool)}, NamedsTypeds{V.R.T(T.String)}
+	Sigs.NoneToBool.Rets, Sigs.NoneToString.Rets = NamedsTypeds{Vars.R.T(T.Bool)}, NamedsTypeds{Vars.R.T(T.String)}
 }

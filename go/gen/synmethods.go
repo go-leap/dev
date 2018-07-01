@@ -88,7 +88,7 @@ func (this NamedTyped) Method(name string, args ...NamedTyped) *SynFunc {
 
 // Method constructs a `SynFunc` with the given `name` and `args` plus a `this`-typed method `Recv` also named `"this"`.
 func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc {
-	return V.This.T(this).Method(name, args...)
+	return Vars.This.T(this).Method(name, args...)
 }
 
 // Conv constructs an `ExprCall` that represents a conversion of `expr` into `this` type.
