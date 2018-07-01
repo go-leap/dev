@@ -318,7 +318,7 @@ func (this *StmtSwitch) emitTo(w *writer) {
 }
 
 func (this *StmtFor) emitTo(w *writer) {
-	if this.Range.Iteree != nil {
+	if this.Range.Over != nil {
 		this.emitRange(w)
 	} else {
 		this.emitLoop(w)
@@ -327,11 +327,11 @@ func (this *StmtFor) emitTo(w *writer) {
 
 func (this *StmtFor) emitRange(w *writer) {
 	w.WriteString("for ")
-	if this.Range.Idx.Name != "" || this.Range.Val.Name != "" {
-		if this.Range.Idx.Name == "" {
+	if this.Range.Key.Name != "" || this.Range.Val.Name != "" {
+		if this.Range.Key.Name == "" {
 			w.WriteByte('_')
 		} else {
-			this.Range.Idx.emitTo(w)
+			this.Range.Key.emitTo(w)
 		}
 		if this.Range.Val.Name != "" {
 			w.WriteByte(',')
@@ -340,10 +340,9 @@ func (this *StmtFor) emitRange(w *writer) {
 		w.WriteString(" := ")
 	}
 	w.WriteString("range ")
-	this.Range.Iteree.emitTo(w)
+	this.Range.Over.emitTo(w)
 	this.emit(w, true, ';', false)
 }
-
 func (this *StmtFor) emitLoop(w *writer) {
 	w.WriteString("for ")
 	if this.Loop.Init != nil {
@@ -354,8 +353,8 @@ func (this *StmtFor) emitLoop(w *writer) {
 		this.Loop.Cond.emitTo(w)
 	}
 	w.WriteByte(';')
-	if this.Loop.Each != nil {
-		this.Loop.Each.emitTo(w)
+	if this.Loop.Step != nil {
+		this.Loop.Step.emitTo(w)
 	}
 	this.emit(w, true, ';', false)
 }

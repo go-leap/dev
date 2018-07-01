@@ -288,17 +288,17 @@ func File(pkgName string, allocBodyCap int, topLevelDecls ...ISyn) *SourceFile {
 	return &SourceFile{PkgName: pkgName, SynBlock: SynBlock{Body: append(make(Syns, 0, allocBodyCap), topLevelDecls...)}}
 }
 
-// ForLoop constructs a `StmtFor` that emits a classical `for` (not `range`) loop.
-func ForLoop(maybeInit ISyn, maybeCond ISyn, maybeEach ISyn, body ...ISyn) (this *StmtFor) {
+// For constructs a `StmtFor` that emits a classical `for` (not `range`) loop.
+func For(maybeInit ISyn, maybeCond ISyn, maybeStep ISyn, body ...ISyn) (this *StmtFor) {
 	this = &StmtFor{}
-	this.Body, this.Loop.Init, this.Loop.Cond, this.Loop.Each = body, maybeInit, maybeCond, maybeEach
+	this.Body, this.Loop.Init, this.Loop.Cond, this.Loop.Step = body, maybeInit, maybeCond, maybeStep
 	return
 }
 
-// ForRange constructs a `StmtFor` that emits a `for .. range` loop.
-func ForRange(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (this *StmtFor) {
+// ForEach constructs a `StmtFor` that emits a `for .. range` loop.
+func ForEach(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (this *StmtFor) {
 	this = &StmtFor{}
-	this.Body, this.Range.Idx, this.Range.Val, this.Range.Iteree = body, maybeIdx, maybeVal, iteree
+	this.Body, this.Range.Key, this.Range.Val, this.Range.Over = body, maybeIdx, maybeVal, iteree
 	return
 }
 
@@ -327,22 +327,13 @@ func IfThen(cond ISyn, thens ...ISyn) *StmtIf {
 // `then` branches (each a `SynBlock`), plus optionally a final
 // `else` branch (also a `SynBlock`).
 func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
-	this = &StmtIf{}
+	this = &StmtIf{IfThens: make(SynConds, 0, len(ifThensAndMaybeAnElse)/2)}
 	if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
-		if block, okb := ifThensAndMaybeAnElse[l-1].(SynBlock); okb {
-			this.Else.Body = block.Body
-		} else if syns, oks := ifThensAndMaybeAnElse[l-1].(Syns); oks {
-			this.Else.Body = syns
-		}
+		this.Else.Body = synsFrom(ifThensAndMaybeAnElse[l-1])
 		ifThensAndMaybeAnElse = ifThensAndMaybeAnElse[:l-1]
 	}
 	for i := 1; i < len(ifThensAndMaybeAnElse); i += 2 {
-		var body Syns
-		if block, okb := ifThensAndMaybeAnElse[i].(SynBlock); okb {
-			body = block.Body
-		} else if syns, oks := ifThensAndMaybeAnElse[i].(Syns); oks {
-			body = syns
-		}
+		body := synsFrom(ifThensAndMaybeAnElse[i])
 		this.IfThens = append(this.IfThens, SynCond{Cond: ifThensAndMaybeAnElse[i-1], SynBlock: SynBlock{Body: body}})
 	}
 	return
@@ -350,7 +341,7 @@ func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
 
 // Ret constructs a `StmtRet`.
 // To have it generate `return nil`, your `retExpr` should equal
-// `B.Nil` (aka. an `ExprLit` with no `Val` set). If `nil` is passed
+// `B.Nil` (ie. an `ExprLit` with no `Val` set). If `nil` is passed
 // for `retExpr`, this generates an empty `return;` statement.
 func Ret(retExpr ISyn) (this StmtRet) {
 	this.Expr = retExpr
@@ -364,16 +355,11 @@ func Switch(maybeScrutinee ISyn, casesCap int, caseCondsAndBlocksPlusMaybeDefaul
 	}
 	this = &StmtSwitch{Scrutinee: maybeScrutinee, Cases: make(SynConds, 0, casesCap)}
 	if l := len(caseCondsAndBlocksPlusMaybeDefaultBlock); l%2 != 0 {
-		if block, ok := caseCondsAndBlocksPlusMaybeDefaultBlock[l-1].(SynBlock); ok {
-			this.Default.Body = block.Body
-		}
+		this.Default.Body = synsFrom(caseCondsAndBlocksPlusMaybeDefaultBlock[l-1])
 		caseCondsAndBlocksPlusMaybeDefaultBlock = caseCondsAndBlocksPlusMaybeDefaultBlock[:l-1]
 	}
 	for i := 1; i < len(caseCondsAndBlocksPlusMaybeDefaultBlock); i += 2 {
-		var body Syns
-		if block, ok := caseCondsAndBlocksPlusMaybeDefaultBlock[i].(SynBlock); ok {
-			body = block.Body
-		}
+		body := synsFrom(caseCondsAndBlocksPlusMaybeDefaultBlock[i])
 		this.Cases = append(this.Cases, SynCond{Cond: caseCondsAndBlocksPlusMaybeDefaultBlock[i-1], SynBlock: SynBlock{Body: body}})
 	}
 	return
@@ -395,4 +381,13 @@ func Cond(cond ISyn, thens ...ISyn) (this SynCond) {
 // Func constructs a `SynFunc` with the given `name` and `args`.
 func Func(name string, args ...NamedTyped) *SynFunc {
 	return Fn(NoMethodRecv, name, TdFn(args))
+}
+
+func synsFrom(syn ISyn) Syns {
+	if block, okb := syn.(SynBlock); okb {
+		return block.Body
+	} else if syns, oks := syn.(Syns); oks {
+		return syns
+	}
+	return Syns{syn}
 }

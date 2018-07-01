@@ -238,11 +238,11 @@ type StmtFor struct {
 	// `for .. range`: used if at least `Iteree` set
 	Range struct {
 		// left-hand (key / index) var
-		Idx Named
+		Key Named
 		// right-hand (value) var
 		Val Named
 		// what to `range` over
-		Iteree ISyn
+		Over ISyn
 	}
 	// classical `for` loop: used if no `range`
 	Loop struct {
@@ -251,7 +251,7 @@ type StmtFor struct {
 		// pre-iteration condition-check predicate
 		Cond ISyn
 		// post-iteration statement
-		Each ISyn
+		Step ISyn
 	}
 }
 

@@ -159,13 +159,6 @@ func Call(callee ISyn, args ...ISyn) *ExprCall
 ```
 Call constructs an `ExprCall`.
 
-#### func (*ExprCall) Add
-
-```go
-func (this *ExprCall) Add(operand ISyn) OpAdd
-```
-Add implements `IExprNumerish`.
-
 #### func (*ExprCall) And
 
 ```go
@@ -250,19 +243,19 @@ func (this *ExprCall) Lt(operand ISyn) OpLt
 ```
 Lt implements `IExprOrdish`.
 
+#### func (*ExprCall) Minus
+
+```go
+func (this *ExprCall) Minus(operand ISyn) OpSub
+```
+Minus implements `IExprNumerish`.
+
 #### func (*ExprCall) Mod
 
 ```go
 func (this *ExprCall) Mod(operand ISyn) OpMod
 ```
 Mod implements `IExprNumerish`.
-
-#### func (*ExprCall) Mul
-
-```go
-func (this *ExprCall) Mul(operand ISyn) OpMul
-```
-Mul implements `IExprNumerish`.
 
 #### func (*ExprCall) Neg
 
@@ -292,12 +285,19 @@ func (this *ExprCall) Or(operand ISyn) OpOr
 ```
 Or implements `IExprBoolish`.
 
-#### func (*ExprCall) Sub
+#### func (*ExprCall) Plus
 
 ```go
-func (this *ExprCall) Sub(operand ISyn) OpSub
+func (this *ExprCall) Plus(operand ISyn) OpAdd
 ```
-Sub implements `IExprNumerish`.
+Plus implements `IExprNumerish`.
+
+#### func (*ExprCall) Times
+
+```go
+func (this *ExprCall) Times(operand ISyn) OpMul
+```
+Times implements `IExprNumerish`.
 
 #### type ExprLit
 
@@ -379,9 +379,9 @@ syntax over the `Eq` and `Neq` constructors.
 type IExprNumerish interface {
 	IExprOrdish
 
-	Add(ISyn) OpAdd
-	Sub(ISyn) OpSub
-	Mul(ISyn) OpMul
+	Plus(ISyn) OpAdd
+	Minus(ISyn) OpSub
+	Times(ISyn) OpMul
 	Div(ISyn) OpDiv
 	Mod(ISyn) OpMod
 	Neg() OpSub
@@ -458,13 +458,6 @@ referring to named vars, consts, types, funcs etc.
 func N(name string) Named
 ```
 N constructs a `Named`.
-
-#### func (Named) Add
-
-```go
-func (this Named) Add(operand ISyn) OpAdd
-```
-Add implements `IExprNumerish`.
 
 #### func (Named) Addr
 
@@ -550,19 +543,19 @@ func (this Named) Lt(operand ISyn) OpLt
 ```
 Lt implements `IExprOrdish`.
 
+#### func (Named) Minus
+
+```go
+func (this Named) Minus(operand ISyn) OpSub
+```
+Minus implements `IExprNumerish`.
+
 #### func (Named) Mod
 
 ```go
 func (this Named) Mod(operand ISyn) OpMod
 ```
 Mod implements `IExprNumerish`.
-
-#### func (Named) Mul
-
-```go
-func (this Named) Mul(operand ISyn) OpMul
-```
-Mul implements `IExprNumerish`.
 
 #### func (Named) Neg
 
@@ -592,6 +585,13 @@ func (this Named) Or(operand ISyn) OpOr
 ```
 Or implements `IExprBoolish`.
 
+#### func (Named) Plus
+
+```go
+func (this Named) Plus(operand ISyn) OpAdd
+```
+Plus implements `IExprNumerish`.
+
 #### func (Named) SetTo
 
 ```go
@@ -599,19 +599,19 @@ func (this Named) SetTo(operand ISyn) OpSet
 ```
 SetTo implements `IExprAssignish`
 
-#### func (Named) Sub
-
-```go
-func (this Named) Sub(operand ISyn) OpSub
-```
-Sub implements `IExprNumerish`.
-
 #### func (Named) T
 
 ```go
 func (this Named) T(typeRef *TypeRef) (nt NamedTyped)
 ```
 T returns a `NamedTyped` with `this.Name` and `typeRef`.
+
+#### func (Named) Times
+
+```go
+func (this Named) Times(operand ISyn) OpMul
+```
+Times implements `IExprNumerish`.
 
 #### type NamedTyped
 
@@ -1063,13 +1063,6 @@ func I(operands ...ISyn) OpIdx
 ```
 I constructs an `OpIdx`.
 
-#### func (OpIdx) Add
-
-```go
-func (this OpIdx) Add(operand ISyn) OpAdd
-```
-Add implements `IExprNumerish`.
-
 #### func (OpIdx) Addr
 
 ```go
@@ -1147,19 +1140,19 @@ func (this OpIdx) Lt(operand ISyn) OpLt
 ```
 Lt implements `IExprOrdish`.
 
+#### func (OpIdx) Minus
+
+```go
+func (this OpIdx) Minus(operand ISyn) OpSub
+```
+Minus implements `IExprNumerish`.
+
 #### func (OpIdx) Mod
 
 ```go
 func (this OpIdx) Mod(operand ISyn) OpMod
 ```
 Mod implements `IExprNumerish`.
-
-#### func (OpIdx) Mul
-
-```go
-func (this OpIdx) Mul(operand ISyn) OpMul
-```
-Mul implements `IExprNumerish`.
 
 #### func (OpIdx) Neg
 
@@ -1189,6 +1182,13 @@ func (this OpIdx) Or(operand ISyn) OpOr
 ```
 Or implements `IExprBoolish`.
 
+#### func (OpIdx) Plus
+
+```go
+func (this OpIdx) Plus(operand ISyn) OpAdd
+```
+Plus implements `IExprNumerish`.
+
 #### func (OpIdx) SetTo
 
 ```go
@@ -1196,12 +1196,12 @@ func (this OpIdx) SetTo(operand ISyn) OpSet
 ```
 SetTo implements `IExprAssignish`
 
-#### func (OpIdx) Sub
+#### func (OpIdx) Times
 
 ```go
-func (this OpIdx) Sub(operand ISyn) OpSub
+func (this OpIdx) Times(operand ISyn) OpMul
 ```
-Sub implements `IExprNumerish`.
+Times implements `IExprNumerish`.
 
 #### type OpLeq
 
@@ -1676,11 +1676,11 @@ type StmtFor struct {
 	// `for .. range`: used if at least `Iteree` set
 	Range struct {
 		// left-hand (key / index) var
-		Idx Named
+		Key Named
 		// right-hand (value) var
 		Val Named
 		// what to `range` over
-		Iteree ISyn
+		Over ISyn
 	}
 	// classical `for` loop: used if no `range`
 	Loop struct {
@@ -1689,7 +1689,7 @@ type StmtFor struct {
 		// pre-iteration condition-check predicate
 		Cond ISyn
 		// post-iteration statement
-		Each ISyn
+		Step ISyn
 	}
 }
 ```
@@ -1697,19 +1697,19 @@ type StmtFor struct {
 StmtFor represents either a `for .. range` loop or a classical `for` (not
 `range`) one.
 
-#### func  ForLoop
+#### func  For
 
 ```go
-func ForLoop(maybeInit ISyn, maybeCond ISyn, maybeEach ISyn, body ...ISyn) (this *StmtFor)
+func For(maybeInit ISyn, maybeCond ISyn, maybeStep ISyn, body ...ISyn) (this *StmtFor)
 ```
-ForLoop constructs a `StmtFor` that emits a classical `for` (not `range`) loop.
+For constructs a `StmtFor` that emits a classical `for` (not `range`) loop.
 
-#### func  ForRange
+#### func  ForEach
 
 ```go
-func ForRange(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (this *StmtFor)
+func ForEach(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (this *StmtFor)
 ```
-ForRange constructs a `StmtFor` that emits a `for .. range` loop.
+ForEach constructs a `StmtFor` that emits a `for .. range` loop.
 
 #### type StmtGo
 
@@ -1810,7 +1810,7 @@ StmtRet represents Go's `return` keyword.
 func Ret(retExpr ISyn) (this StmtRet)
 ```
 Ret constructs a `StmtRet`. To have it generate `return nil`, your `retExpr`
-should equal `B.Nil` (aka. an `ExprLit` with no `Val` set). If `nil` is passed
+should equal `B.Nil` (ie. an `ExprLit` with no `Val` set). If `nil` is passed
 for `retExpr`, this generates an empty `return;` statement.
 
 #### type StmtSwitch

@@ -54,9 +54,9 @@ type IExprOrdish interface {
 type IExprNumerish interface {
 	IExprOrdish
 
-	Add(ISyn) OpAdd
-	Sub(ISyn) OpSub
-	Mul(ISyn) OpMul
+	Plus(ISyn) OpAdd
+	Minus(ISyn) OpSub
+	Times(ISyn) OpMul
 	Div(ISyn) OpDiv
 	Mod(ISyn) OpMod
 	Neg() OpSub
@@ -106,14 +106,14 @@ func (this Named) Leq(operand ISyn) OpLeq { return Leq(this, operand) }
 // Lt implements `IExprOrdish`.
 func (this Named) Lt(operand ISyn) OpLt { return Lt(this, operand) }
 
-// Add implements `IExprNumerish`.
-func (this Named) Add(operand ISyn) OpAdd { return Add(this, operand) }
+// Plus implements `IExprNumerish`.
+func (this Named) Plus(operand ISyn) OpAdd { return Add(this, operand) }
 
-// Sub implements `IExprNumerish`.
-func (this Named) Sub(operand ISyn) OpSub { return Sub(this, operand) }
+// Minus implements `IExprNumerish`.
+func (this Named) Minus(operand ISyn) OpSub { return Sub(this, operand) }
 
-// Mul implements `IExprNumerish`.
-func (this Named) Mul(operand ISyn) OpMul { return Mul(this, operand) }
+// Times implements `IExprNumerish`.
+func (this Named) Times(operand ISyn) OpMul { return Mul(this, operand) }
 
 // Div implements `IExprNumerish`.
 func (this Named) Div(operand ISyn) OpDiv { return Div(this, operand) }
@@ -160,14 +160,14 @@ func (this *ExprCall) Leq(operand ISyn) OpLeq { return Leq(this, operand) }
 // Lt implements `IExprOrdish`.
 func (this *ExprCall) Lt(operand ISyn) OpLt { return Lt(this, operand) }
 
-// Add implements `IExprNumerish`.
-func (this *ExprCall) Add(operand ISyn) OpAdd { return Add(this, operand) }
+// Plus implements `IExprNumerish`.
+func (this *ExprCall) Plus(operand ISyn) OpAdd { return Add(this, operand) }
 
-// Sub implements `IExprNumerish`.
-func (this *ExprCall) Sub(operand ISyn) OpSub { return Sub(this, operand) }
+// Minus implements `IExprNumerish`.
+func (this *ExprCall) Minus(operand ISyn) OpSub { return Sub(this, operand) }
 
-// Mul implements `IExprNumerish`.
-func (this *ExprCall) Mul(operand ISyn) OpMul { return Mul(this, operand) }
+// Times implements `IExprNumerish`.
+func (this *ExprCall) Times(operand ISyn) OpMul { return Mul(this, operand) }
 
 // Div implements `IExprNumerish`.
 func (this *ExprCall) Div(operand ISyn) OpDiv { return Div(this, operand) }
@@ -361,14 +361,14 @@ func (this OpIdx) Leq(operand ISyn) OpLeq { return Leq(this, operand) }
 // Lt implements `IExprOrdish`.
 func (this OpIdx) Lt(operand ISyn) OpLt { return Lt(this, operand) }
 
-// Add implements `IExprNumerish`.
-func (this OpIdx) Add(operand ISyn) OpAdd { return Add(this, operand) }
+// Plus implements `IExprNumerish`.
+func (this OpIdx) Plus(operand ISyn) OpAdd { return Add(this, operand) }
 
-// Sub implements `IExprNumerish`.
-func (this OpIdx) Sub(operand ISyn) OpSub { return Sub(this, operand) }
+// Minus implements `IExprNumerish`.
+func (this OpIdx) Minus(operand ISyn) OpSub { return Sub(this, operand) }
 
-// Mul implements `IExprNumerish`.
-func (this OpIdx) Mul(operand ISyn) OpMul { return Mul(this, operand) }
+// Times implements `IExprNumerish`.
+func (this OpIdx) Times(operand ISyn) OpMul { return Mul(this, operand) }
 
 // Div implements `IExprNumerish`.
 func (this OpIdx) Div(operand ISyn) OpDiv { return Div(this, operand) }
