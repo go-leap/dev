@@ -24,13 +24,10 @@ func NTs(namesAndTypeRefs ...interface{}) (nts NamedsTypeds) {
 func Names(names ...string) OpComma {
 	operands := make(Syns, len(names))
 	for i := range names {
-		operands[i] = N(names[i])
+		operands[i] = Named{Name: names[i]}
 	}
-	return Tup(operands...)
+	return OpComma{Op: Op{Operands: operands}}
 }
-
-// Args is merely a handy convenience short-hand to create a slice of `NamedTyped`s.
-func Args(nts ...NamedTyped) NamedsTypeds { return nts }
 
 // L constructs an `ExprLit`.
 func L(lit interface{}) ExprLit { return ExprLit{Val: lit} }
@@ -39,9 +36,9 @@ func L(lit interface{}) ExprLit { return ExprLit{Val: lit} }
 func Lits(lits ...interface{}) OpComma {
 	operands := make(Syns, len(lits))
 	for i := range lits {
-		operands[i] = L(lits[i])
+		operands[i] = ExprLit{Val: lits[i]}
 	}
-	return Tup(operands...)
+	return OpComma{Op: Op{Operands: operands}}
 }
 
 // Label constructs a `StmtLabel` with the given `name` and associated code `SynBlock`.
@@ -244,40 +241,36 @@ func Defer(call *ExprCall) (this StmtDefer) {
 // - if there are 2 `stmts` and each is a `Syns`, they're then/else-like and one of them wins
 //
 // - otherwise: if `check` is `true`, all `stmts` are returned, else `nil` is returned
-func GEN_IF(check bool, stmts ...ISyn) (syns Syns) {
+func GEN_IF(check bool, stmts ...ISyn) Syns {
 	if len(stmts) == 2 {
-		if ifthen, okt := stmts[0].(Syns); okt {
-			if ifelse, oke := stmts[1].(Syns); oke {
-				return genIf(check, ifthen, ifelse)
+		if otherwise, okelse := stmts[1].(Syns); okelse {
+			if then, okthen := stmts[0].(Syns); okthen {
+				if check {
+					return then
+				}
+				return otherwise
 			}
 		}
 	}
 	if check {
-		syns = stmts
+		return stmts
 	}
-	return
+	return nil
 }
 
-// DEFAULT serves as a codegen-time readability wrapper for `GEN_BYCASE` callers.
-type DEFAULT ISyn
+// USUALLY serves as a codegen-time readability wrapper for `GEN_BYCASE` callers.
+type USUALLY ISyn
 
 // UNLESS serves as a codegen-time readability wrapper for `GEN_BYCASE` callers.
 type UNLESS map[bool]ISyn
 
-// GEN_BYCASE returns `unless[true]` if present, else `byDefault`.
-// It's like a codegen-time `switch..case` construct (just with the `default` branch first).
-func GEN_BYCASE(byDefault DEFAULT, unless UNLESS) ISyn {
+// GEN_BYCASE is like a codegen-time `switch..case` construct:
+// it returns `unless[true]` if present, else `byDefault`.
+func GEN_BYCASE(byDefault USUALLY, unless UNLESS) ISyn {
 	if then, ok := unless[true]; ok {
 		return then
 	}
 	return byDefault
-}
-
-func genIf(check bool, ifTrue Syns, ifFalse Syns) Syns {
-	if check {
-		return ifTrue
-	}
-	return ifFalse
 }
 
 // File constructs a `SourceFile`.
@@ -302,13 +295,6 @@ func ForEach(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (this *S
 	return
 }
 
-// Fn constructs a `SynFunc`. If `maybeRecv` is given, it will represent a method of that type.
-func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *SynFunc) {
-	this = &SynFunc{Recv: maybeRecv}
-	this.Body, this.Named.Name, this.Type = body, name, TrFunc(sig)
-	return
-}
-
 // Go constructs a `StmtGo`.
 func Go(call *ExprCall) (this StmtGo) {
 	this.Expr = call
@@ -324,8 +310,7 @@ func IfThen(cond ISyn, thens ...ISyn) *StmtIf {
 // If constructs a more complex `StmtIf` than `IfThen` does,
 // with `ifThensAndMaybeAnElse` containing 0 or more alternating
 // pairs of `if` (or `else if`) conditions and corresponding
-// `then` branches (each a `SynBlock`), plus optionally a final
-// `else` branch (also a `SynBlock`).
+// `then` branches, plus optionally a final `else` branch.
 func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
 	this = &StmtIf{IfThens: make(SynConds, 0, len(ifThensAndMaybeAnElse)/2)}
 	if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
@@ -378,16 +363,42 @@ func Cond(cond ISyn, thens ...ISyn) (this SynCond) {
 	return
 }
 
-// Func constructs a `SynFunc` with the given `name` and `args`.
-func Func(name string, args ...NamedTyped) *SynFunc {
-	return Fn(NoMethodRecv, name, TdFn(args))
+// Fn constructs a `SynFunc`. If `maybeRecv` has a `Type` set, `this` represents a method of that type.
+func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *SynFunc) {
+	this = &SynFunc{Recv: maybeRecv}
+	this.Body, this.Named.Name, this.Type = body, name, TrFunc(sig)
+	return
 }
 
-func synsFrom(syn ISyn) Syns {
-	if block, okb := syn.(SynBlock); okb {
-		return block.Body
-	} else if syns, oks := syn.(Syns); oks {
+// Func constructs a `SynFunc` with the given `name` and `args`.
+func Func(name string, args ...NamedTyped) *SynFunc {
+	return &SynFunc{NamedTyped: NamedTyped{Named: Named{Name: name}, Type: TrFunc(TdFn(args))}}
+}
+
+func synFrom(any interface{}) ISyn {
+	if syn, ok := any.(ISyn); ok {
+		return syn
+	}
+	return ExprLit{Val: any}
+}
+
+func synsFrom(eitherSyn ISyn, orThings ...interface{}) Syns {
+	if eitherSyn == nil {
+		syns := make(Syns, len(orThings))
+		for i, any := range orThings {
+			if syn, ok := any.(ISyn); ok {
+				syns[i] = syn
+			} else {
+				syns[i] = ExprLit{Val: any}
+			}
+		}
 		return syns
 	}
-	return Syns{syn}
+	if block, ok := eitherSyn.(SynBlock); ok {
+		return block.Body
+	}
+	if syns, ok := eitherSyn.(Syns); ok {
+		return syns
+	}
+	return Syns{eitherSyn}
 }

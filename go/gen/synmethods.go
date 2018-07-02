@@ -73,27 +73,40 @@ func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool 
 }
 
 // Defer constructs a `StmtDefer` of `this` call.
-func (this *ExprCall) Defer() StmtDefer { return Defer(this) }
+func (this *ExprCall) Defer() StmtDefer {
+	return StmtDefer{StmtUnary: StmtUnary{Expr: this}}
+}
 
 // Go constructs a `StmtGo` on `this` call.
-func (this *ExprCall) Go() StmtGo { return Go(this) }
+func (this *ExprCall) Go() StmtGo {
+	return StmtGo{StmtUnary: StmtUnary{Expr: this}}
+}
 
-// C constructs an `ExprCall` of `n` exposed by `this` imported-package.
-func (this PkgName) C(n string, args ...ISyn) *ExprCall { return C.Dot(string(this), n, args...) }
+// C constructs an `ExprCall` of `name` exposed by `this` imported-package.
+func (this PkgName) C(name string, args ...ISyn) *ExprCall {
+	return &ExprCall{
+		Callee: OpDot{Op: Op{Operands: Syns{Named{Name: string(this)}, Named{Name: name}}}},
+		Args:   args,
+	}
+}
 
 // Method constructs a `SynFunc` with the given `name` and `args` plus `this` as its method `Recv`.
 func (this NamedTyped) Method(name string, args ...NamedTyped) *SynFunc {
-	return Fn(this, name, TdFn(args))
+	fn := &SynFunc{Recv: this}
+	fn.Name, fn.Type = name, &TypeRef{Func: &TypeFunc{Args: args}}
+	return fn
 }
 
 // Method constructs a `SynFunc` with the given `name` and `args` plus a `this`-typed method `Recv` also named `"this"`.
 func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc {
-	return Vars.This.T(this).Method(name, args...)
+	fn := &SynFunc{Recv: NamedTyped{Named: Vars.This, Type: this}}
+	fn.Name, fn.Type = name, &TypeRef{Func: &TypeFunc{Args: args}}
+	return fn
 }
 
 // Conv constructs an `ExprCall` that represents a conversion of `expr` into `this` type.
 // (Go's conversion syntax, eg. `int(myexpr)`, is covered by `ExprCall` due to identical emitting logic.)
-func (this *TypeRef) Conv(expr ISyn) *ExprCall { return Call(this, expr) }
+func (this *TypeRef) Conv(expr ISyn) *ExprCall { return &ExprCall{Callee: this, Args: Syns{expr}} }
 
 // N constructs a `NamedTyped` with `name` and `this`.
 func (this *TypeRef) N(name string) NamedTyped {
@@ -102,18 +115,18 @@ func (this *TypeRef) N(name string) NamedTyped {
 
 // Ref constructs a `TypeRef` whose `Func` points to `this`.
 func (this *TypeFunc) Ref() *TypeRef {
-	return TrFunc(this)
+	return &TypeRef{Func: this}
 }
 
 // Arg adds to `this.Args` and returns `this`.
 func (this *TypeFunc) Arg(name string, typeRef *TypeRef) *TypeFunc {
-	this.Args.Add(name, typeRef)
+	this.Args = append(this.Args, NamedTyped{Named: Named{Name: name}, Type: typeRef})
 	return this
 }
 
 // Ret adds to `this.Rets` and returns `this`.
 func (this *TypeFunc) Ret(name string, typeRef *TypeRef) *TypeFunc {
-	this.Rets.Add(name, typeRef)
+	this.Rets = append(this.Rets, NamedTyped{Named: Named{Name: name}, Type: typeRef})
 	return this
 }
 
@@ -125,19 +138,19 @@ func (this *SynFunc) Args(args ...NamedTyped) *SynFunc {
 
 // Arg adds to `this.Type.Func.Args` and returns `this`.
 func (this *SynFunc) Arg(name string, typeRef *TypeRef) *SynFunc {
-	this.Type.Func.Args.Add(name, typeRef)
+	this.Type.Func.Args = append(this.Type.Func.Args, NamedTyped{Named: Named{Name: name}, Type: typeRef})
 	return this
 }
 
 // Code adds to `this.SynBlock.Body` and returns `this`.
 func (this *SynFunc) Code(stmts ...ISyn) *SynFunc {
-	this.Add(stmts...)
+	this.Body = append(this.Body, stmts...)
 	return this
 }
 
 // Doc adds to `this.Docs` and returns `this`.
 func (this *SynFunc) Doc(docCommentLines ...string) *SynFunc {
-	this.Docs.Add(docCommentLines...)
+	this.Docs = append(this.Docs, docCommentLines...)
 	return this
 }
 
@@ -155,7 +168,7 @@ func (this *SynFunc) Rets(rets ...NamedTyped) *SynFunc {
 
 // Ret adds to `this.Type.Func.Rets` and returns `this`.
 func (this *SynFunc) Ret(name string, typeRef *TypeRef) *SynFunc {
-	this.Type.Func.Rets.Add(name, typeRef)
+	this.Type.Func.Rets = append(this.Type.Func.Rets, NamedTyped{Named: Named{Name: name}, Type: typeRef})
 	return this
 }
 
@@ -167,7 +180,7 @@ func (this *SynFunc) Sig(sig *TypeFunc) *SynFunc {
 
 // Case adds the given `case` branch to the `StmtSwitch.Cases` of `this`.
 func (this *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch {
-	this.Cases.Add(cond, thens...)
+	this.Cases = append(this.Cases, SynCond{Cond: cond, SynBlock: SynBlock{Body: thens}})
 	return this
 }
 

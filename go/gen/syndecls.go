@@ -1,7 +1,7 @@
 package udevgogen
 
-// ISyn implementations represent some discrete item in the Abstract Syntax Tree:
-// literals, vars, consts, type-defs, type-refs, funcs, keywords, operators etc..
+// ISyn implementations represent some (atomic or compound) syntactic entity in the Abstract Syntax
+// Tree (AST), eg.: literals, vars, consts, type-defs, type-refs, funcs, calls, keywords, operators, ...
 type ISyn interface {
 	// generates the code represented by this `ISyn`
 	emitTo(*writer)
@@ -271,7 +271,7 @@ type OpDecl struct{ Op }
 // OpComma emits all its operands separated by `,` commas.
 type OpComma struct{ Op }
 
-// OpColon emits all its operands separated by `:` colons.
+// OpColon emits all its operands separated by `:` colons (for sub-slicing).
 type OpColon struct{ Op }
 
 // OpDot represents Go's `.` selector operator.

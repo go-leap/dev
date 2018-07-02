@@ -48,8 +48,6 @@ func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName) {
 	return
 }
 
-type builtinCall = func(...ISyn) *ExprCall
-
 var (
 	// see `PkgImports.Ensure(string) string` for details
 	PkgImportNamePrefix PkgName = "pkg__"
@@ -67,7 +65,7 @@ var (
 		Return   StmtRet
 	}
 
-	// singletons for stdlib-builtins
+	// singletons for Go's built-in reserved-identifiers
 	B struct {
 		Nil   ExprLit
 		True  ExprLit
@@ -92,9 +90,9 @@ var (
 
 	// common Call constructors
 	C struct {
-		Append builtinCall
-		Len    builtinCall
-		Make   builtinCall
+		Append func(...ISyn) *ExprCall
+		Len    func(...ISyn) *ExprCall
+		Make   func(...ISyn) *ExprCall
 
 		Dot   func(string, string, ...ISyn) *ExprCall
 		Named func(string, ...ISyn) *ExprCall
@@ -104,25 +102,25 @@ var (
 	Vars struct {
 		// `"err"`
 		Err NamedTyped
-		// `"this"`
+		// `"this"`, suits method-receivers (Go style dogma hates it though)
 		This Named
-		// `"self"`
+		// `"self"`, Pythonic flavour of `this`
 		Self Named
-		// `"me"`
+		// `"me"`, VB6-inspired `this` or `self` that won't trigger golint
 		Me Named
-		// `"ok"`
+		// `"ok"`, common for type-asserts / lookups / predicates
 		Ok Named
-		// `"r"`
+		// `"r"`, common for a func's `return` value
 		R Named
-		// `"s"`
+		// `"s"`, common for a func's `string` arg
 		S Named
-		// `"i"`
+		// `"i"`, common for iterations
 		I Named
-		// `"j"`
+		// `"j"`, common for sub-iterations
 		J Named
-		// `"k"`
+		// `"k"`, common for the key in for..range iterations
 		K Named
-		// `"v"`
+		// `"v"`, for func args (`v interface{}`) or key-value pairs
 		V Named
 	}
 
@@ -173,7 +171,7 @@ func init() {
 	B.Append.Name, B.Cap.Name, B.Close.Name, B.Complex.Name, B.Copy.Name, B.Delete.Name, B.Imag.Name, B.Len.Name, B.Make.Name, B.New.Name, B.Panic.Name, B.Print.Name, B.Println.Name, B.Real.Name, B.Recover.Name = "append", "cap", "close", "complex", "copy", "delete", "imag", "len", "make", "new", "panic", "print", "println", "real", "recover"
 	B.True, B.False = L(true), L(false)
 
-	c := func(n Named) builtinCall {
+	c := func(n Named) func(...ISyn) *ExprCall {
 		return func(args ...ISyn) *ExprCall { return Call(n, args...) }
 	}
 	C.Append, C.Len, C.Make = c(B.Append), c(B.Len), c(B.Make)

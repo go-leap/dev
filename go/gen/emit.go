@@ -166,9 +166,13 @@ func (this TypeDecl) emitTo(w *writer) {
 }
 
 func (this Syns) emitTo(w *writer) {
-	for i := range this {
-		this[i].emitTo(w)
-		w.WriteByte(';')
+	if len(this) == 1 {
+		this[0].emitTo(w)
+	} else {
+		for i := range this {
+			this[i].emitTo(w)
+			w.WriteByte(';')
+		}
 	}
 }
 
