@@ -121,25 +121,25 @@ func (this *TypeRef) emitTo(w *writer) {
 
 func (this *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
 	switch {
-	case this.PtrTo != nil:
+	case this.Pointer.Of != nil:
 		w.WriteByte('*')
-		this.PtrTo.emitTo(w)
-	case this.ArrOrSliceOf.Val != nil:
-		if this.ArrOrSliceOf.IsEllipsis {
+		this.Pointer.Of.emitTo(w)
+	case this.ArrOrSlice.Of != nil:
+		if this.ArrOrSlice.IsEllipsis {
 			w.WriteString("...")
 		} else {
 			w.WriteByte('[')
-			if this.ArrOrSliceOf.IsFixedLen != nil {
-				w.WriteString(strconv.FormatUint(*this.ArrOrSliceOf.IsFixedLen, 10))
+			if this.ArrOrSlice.IsFixedLen != nil {
+				w.WriteString(strconv.FormatUint(*this.ArrOrSlice.IsFixedLen, 10))
 			}
 			w.WriteByte(']')
 		}
-		this.ArrOrSliceOf.Val.emitTo(w)
-	case this.MapOf.Key != nil:
+		this.ArrOrSlice.Of.emitTo(w)
+	case this.Map.OfKey != nil:
 		w.WriteString("map[")
-		this.MapOf.Key.emitTo(w)
+		this.Map.OfKey.emitTo(w)
 		w.WriteByte(']')
-		this.MapOf.Val.emitTo(w)
+		this.Map.ToVal.emitTo(w)
 	case this.Named.TypeName != "":
 		if this.Named.PkgName != "" {
 			w.pkgImportsActuallyEmitted[this.Named.PkgName] = true

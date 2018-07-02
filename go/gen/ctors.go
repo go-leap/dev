@@ -1,24 +1,7 @@
 package udevgogen
 
-// A is merely a handy convenience short-hand to create a slice of `ISyn`s,
-// as sometimes needed for listing arguments, operands, or statements.
-func A(argsOrOperandsOrStmts ...ISyn) Syns { return argsOrOperandsOrStmts }
-
 // N constructs a `Named`.
 func N(name string) Named { return Named{Name: name} }
-
-// NT constructs a `NamedTyped`.
-func NT(name string, t *TypeRef) NamedTyped { return NamedTyped{Type: t, Named: Named{Name: name}} }
-
-// NTs is merely a handy convenience short-hand to create a slice of `NamedTyped`s.
-// `namesAndTypeRefs` must be alternating: `string`, `*TypeRef`, `string`, `*TypeRef`, etc.
-func NTs(namesAndTypeRefs ...interface{}) (nts NamedsTypeds) {
-	nts = make(NamedsTypeds, len(namesAndTypeRefs)/2)
-	for i := range nts {
-		nts[i].Name, nts[i].Type = namesAndTypeRefs[i*2].(string), namesAndTypeRefs[i*2+1].(*TypeRef)
-	}
-	return
-}
 
 // Names constructs an `OpComma` of `Named` operands.
 func Names(names ...string) OpComma {
@@ -162,29 +145,30 @@ func TrInterface(typeIface *TypeInterface) *TypeRef { return &TypeRef{Interface:
 func TrStruct(typeStruct *TypeStruct) *TypeRef { return &TypeRef{Struct: typeStruct} }
 
 // TrPtr constructs a `TypeRef` referring to a pointer to the specified type.
-func TrPtr(typeRef *TypeRef) *TypeRef { return &TypeRef{PtrTo: typeRef} }
+func TrPtr(typeRef *TypeRef) *TypeRef {
+	var tref TypeRef
+	tref.Pointer.Of = typeRef
+	return &tref
+}
 
 // TrArray constructs a `TypeRef` referring to an array of the specified type.
 func TrArray(numElems uint64, typeRef *TypeRef) *TypeRef {
 	var tref TypeRef
-	tref.ArrOrSliceOf.Val, tref.ArrOrSliceOf.IsFixedLen = typeRef, &numElems
+	tref.ArrOrSlice.Of, tref.ArrOrSlice.IsFixedLen = typeRef, &numElems
 	return &tref
 }
 
 // TrChan constructs a `TypeRef` referring to the specified channel. TODO: TypeRef.emitTo implementation!
-func TrChan(dirRecv bool, dirSend bool, val *TypeRef) *TypeRef {
+func TrChan(of *TypeRef, dirRecv bool, dirSend bool) *TypeRef {
 	var tref TypeRef
-	if !(dirRecv || dirSend) {
-		dirRecv, dirSend = true, true
-	}
-	tref.ChanOf.DirRecv, tref.ChanOf.DirSend, tref.ChanOf.Val = dirRecv, dirSend, val
+	tref.Chan.Of, tref.Chan.DirRecv, tref.Chan.DirSend = of, dirRecv, dirSend
 	return &tref
 }
 
 // TrSlice constructs a `TypeRef` referring to a slice of the specified type.
 func TrSlice(typeRef *TypeRef) *TypeRef {
 	var tref TypeRef
-	tref.ArrOrSliceOf.Val = typeRef
+	tref.ArrOrSlice.Of = typeRef
 	return &tref
 }
 
@@ -196,9 +180,9 @@ func TrNamed(pkgName string, typeName string) (this *TypeRef) {
 }
 
 // TrMap constructs a `TypeRef` referring to a map with the specified key and value types.
-func TrMap(keyType *TypeRef, valType *TypeRef) (this *TypeRef) {
+func TrMap(ofKey *TypeRef, toVal *TypeRef) (this *TypeRef) {
 	this = &TypeRef{}
-	this.MapOf.Key, this.MapOf.Val = keyType, valType
+	this.Map.OfKey, this.Map.ToVal = ofKey, toVal
 	return
 }
 
@@ -238,7 +222,7 @@ func Defer(call *ExprCall) (this StmtDefer) {
 
 // GEN_IF returns either none, all, or one of `stmts` depending on `check` as follows:
 //
-// - if there are 2 `stmts` and each is a `Syns`, they're then/else-like and one of them wins
+// - if there are 2 `stmts` and each is a `Syns`, they're **then/else**-like and one of them returns
 //
 // - otherwise: if `check` is `true`, all `stmts` are returned, else `nil` is returned
 func GEN_IF(check bool, stmts ...ISyn) Syns {
@@ -301,18 +285,11 @@ func Go(call *ExprCall) (this StmtGo) {
 	return
 }
 
-// IfThen constructs a simple `StmtIf` with a single condition
-// and `then` branch (plus initially empty `else` branch).
-func IfThen(cond ISyn, thens ...ISyn) *StmtIf {
-	return &StmtIf{IfThens: SynConds{{Cond: cond, SynBlock: SynBlock{Body: thens}}}}
-}
-
-// If constructs a more complex `StmtIf` than `IfThen` does,
-// with `ifThensAndMaybeAnElse` containing 0 or more alternating
-// pairs of `if` (or `else if`) conditions and corresponding
+// If constructs a `StmtIf` with `ifThensAndMaybeAnElse` containing
+// 0 or more alternating-pairs of `if` conditions and corresponding
 // `then` branches, plus optionally a final `else` branch.
 func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
-	this = &StmtIf{IfThens: make(SynConds, 0, len(ifThensAndMaybeAnElse)/2)}
+	this = &StmtIf{IfThens: make(SynConds, 0, 1+len(ifThensAndMaybeAnElse)/2)}
 	if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
 		this.Else.Body = synsFrom(ifThensAndMaybeAnElse[l-1])
 		ifThensAndMaybeAnElse = ifThensAndMaybeAnElse[:l-1]
@@ -383,7 +360,7 @@ func synFrom(any interface{}) ISyn {
 }
 
 func synsFrom(eitherSyn ISyn, orThings ...interface{}) Syns {
-	if eitherSyn == nil {
+	if eitherSyn == nil && len(orThings) > 0 {
 		syns := make(Syns, len(orThings))
 		for i, any := range orThings {
 			if syn, ok := any.(ISyn); ok {
@@ -399,6 +376,9 @@ func synsFrom(eitherSyn ISyn, orThings ...interface{}) Syns {
 	}
 	if syns, ok := eitherSyn.(Syns); ok {
 		return syns
+	}
+	if eitherSyn == nil {
+		return nil
 	}
 	return Syns{eitherSyn}
 }

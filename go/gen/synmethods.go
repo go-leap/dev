@@ -49,9 +49,8 @@ func (this *TypeRef) SafeBitSizeIfBuiltInNumberType() int {
 	return 0
 }
 
-// IsBuiltinPrimType returns whether `this` refers to one of Go's
-// built-in primitive-types such as `bool`, `byte`, `uint`, `string` etc.
-// (If `orIsUnderlyingBuiltinPrimType`, it walks the `Slice` / `Ptr` / `Map` as applicable.)
+// IsBuiltinPrimType returns whether `this` refers to one of Go's built-in primitive-types such as `bool`, `string` etc.
+// (If `orIsUnderlyingBuiltinPrimType`, it walks the `ArrOrSlice` / `Pointer` / `Map` / `Chan` as applicable.)
 func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool {
 	switch this.Named {
 	case T.Bool.Named, T.Byte.Named, T.Complex128.Named, T.Complex64.Named, T.Float32.Named, T.Float64.Named, T.Int.Named, T.Int16.Named, T.Int32.Named, T.Int64.Named, T.Int8.Named, T.Rune.Named, T.String.Named, T.Uint.Named, T.Uint16.Named, T.Uint32.Named, T.Uint64.Named, T.Uint8.Named:
@@ -59,14 +58,14 @@ func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool 
 	}
 	if orIsUnderlyingBuiltinPrimType {
 		switch {
-		case this.ArrOrSliceOf.Val != nil:
-			return this.ArrOrSliceOf.Val.IsBuiltinPrimType(true)
-		case this.ChanOf.Val != nil:
-			return this.ChanOf.Val.IsBuiltinPrimType(true)
-		case this.PtrTo != nil:
-			return this.PtrTo.IsBuiltinPrimType(true)
-		case this.MapOf.Key != nil && this.MapOf.Val != nil:
-			return this.MapOf.Key.IsBuiltinPrimType(true) && this.MapOf.Val.IsBuiltinPrimType(true)
+		case this.ArrOrSlice.Of != nil:
+			return this.ArrOrSlice.Of.IsBuiltinPrimType(true)
+		case this.Chan.Of != nil:
+			return this.Chan.Of.IsBuiltinPrimType(true)
+		case this.Pointer.Of != nil:
+			return this.Pointer.Of.IsBuiltinPrimType(true)
+		case this.Map.OfKey != nil && this.Map.ToVal != nil:
+			return this.Map.OfKey.IsBuiltinPrimType(true) && this.Map.ToVal.IsBuiltinPrimType(true)
 		}
 	}
 	return false
@@ -108,7 +107,7 @@ func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc {
 // (Go's conversion syntax, eg. `int(myexpr)`, is covered by `ExprCall` due to identical emitting logic.)
 func (this *TypeRef) Conv(expr ISyn) *ExprCall { return &ExprCall{Callee: this, Args: Syns{expr}} }
 
-// N constructs a `NamedTyped` with `name` and `this`.
+// N constructs a `NamedTyped` based on `name` and `this` type.
 func (this *TypeRef) N(name string) NamedTyped {
 	return NamedTyped{Named: Named{Name: name}, Type: this}
 }
@@ -151,12 +150,6 @@ func (this *SynFunc) Code(stmts ...ISyn) *SynFunc {
 // Doc adds to `this.Docs` and returns `this`.
 func (this *SynFunc) Doc(docCommentLines ...string) *SynFunc {
 	this.Docs = append(this.Docs, docCommentLines...)
-	return this
-}
-
-// N sets `this.Named.Name` and returns `this`.
-func (this *SynFunc) N(name string) *SynFunc {
-	this.Named.Name = name
 	return this
 }
 

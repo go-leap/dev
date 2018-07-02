@@ -2,14 +2,34 @@
 --
     import "github.com/go-leap/dev/go/gen"
 
-Package github.com/go-leap/dev/go/gen provides AST constructs for generating Go
-code. These are by design much simpler and leaner than `go/ast`, given that the
-latter is designed to represent existing & parsed code, while the former is for
-on-the-fly construction of newly-to-be-emitted code.
+Package `github.com/go-leap/dev/go/gen` provides AST nodes for generating Go
+code. These are by design simpler and more lightweight than `go/ast`, given that
+the latter is designed to represent existing-and-parsed code (keeping track of
+much housekeeping), while this package only focuses on ad-hoc assemblage of
+newly-to-be-emitted Go sources.
 
 As a noteworthy goodie, all `func`s that have named return values automatically
 get a final `return` statement appended to their `Body` at code-gen time, if
 they don't already have one.
+
+A small handful of `udevgogen` exports have entirely upper-case names such as
+`GEN_IF`, `GEN_BYCASE` and so on. All these offer _codegen-time_ control flow
+and their usage is showcased throughout the numerous
+`github.com/metaleap/go-gent/gents/...` packages. They do incur a slight
+overhead (vs. using Go-native control-flows) for the neat readability sugar they
+offer. The upper-case names do stand out appropriately in real-world multi-line
+AST constructions and this eases differentiating between say branches or loops
+at code-gen time vs. to-be-emitted branches or loops belonging to the currently
+generated AST nodes.
+
+Likewise, there are numerous interfaces with `IExpr`-prefixed names such as
+`IExprBoolish`, `IExprNumerish`, etc (implemented by the various `ISyn` AST-node
+implementations provided), and those interfaces offer handy dot-accessor-style
+methods over standard constructor funcs --- by way of an illustrative example,
+think: `foo.Eq(bar).And(baz.Minus(2).Gt(0))` instead of `And(Eq(foo, bar),
+Gt(Sub(baz, L(2)), L(0)))`. All `IExpr‹Foo›ish` implementations are just such
+translations under the hood, implying some miniscule (or perhaps sub-nanoscule)
+cost there.
 
 ## Usage
 
@@ -68,15 +88,15 @@ var (
 	Vars struct {
 		// `"err"`
 		Err NamedTyped
-		// `"this"`, suits method-receivers (Go style dogma hates it though)
+		// `"this"`, suits method-receivers (Go style fetishists hate it though)
 		This Named
-		// `"self"`, Pythonic flavour of `this`
+		// `"self"`, Pythonic flavour of `this` (just as pretty and as disliked)
 		Self Named
-		// `"me"`, VB6-inspired `this` or `self` that won't trigger golint
+		// `"me"`, VB6-style `this`/`self` alternative that won't trigger golint
 		Me Named
 		// `"ok"`, common for type-asserts / lookups / predicates
 		Ok Named
-		// `"r"`, common for a func's `return` value
+		// `"r"`, common for a func's primary named `return` value
 		R Named
 		// `"s"`, common for a func's `string` arg
 		S Named
@@ -84,9 +104,9 @@ var (
 		I Named
 		// `"j"`, common for sub-iterations
 		J Named
-		// `"k"`, common for the key in for..range iterations
+		// `"k"`, common for key-value pairs, eg. in for..range iterations
 		K Named
-		// `"v"`, for func args (`v interface{}`) or key-value pairs
+		// `"v"`, for key-value pairs or func args (eg. `v interface{}`)
 		V Named
 	}
 
@@ -465,8 +485,8 @@ type Named struct {
 }
 ```
 
-Named `Emit`s its `Name` during code-generation as-is, hence useful for
-referring to named vars, consts, types, funcs etc.
+Named emits its `Name` during code-generation as-is, hence used for referring to
+named vars, consts, types, funcs etc.
 
 #### func  N
 
@@ -655,13 +675,6 @@ type NamedTyped struct {
 NamedTyped details a `Name` and a `TypeRef`, such as needed for func args,
 return values, struct fields etc.
 
-#### func  NT
-
-```go
-func NT(name string, t *TypeRef) NamedTyped
-```
-NT constructs a `NamedTyped`.
-
 #### func (NamedTyped) Method
 
 ```go
@@ -677,15 +690,6 @@ type NamedsTypeds []NamedTyped
 ```
 
 NamedsTypeds is a slice of 0-or-more `NamedTyped`s.
-
-#### func  NTs
-
-```go
-func NTs(namesAndTypeRefs ...interface{}) (nts NamedsTypeds)
-```
-NTs is merely a handy convenience short-hand to create a slice of `NamedTyped`s.
-`namesAndTypeRefs` must be alternating: `string`, `*TypeRef`, `string`,
-`*TypeRef`, etc.
 
 #### func (*NamedsTypeds) Add
 
@@ -1597,7 +1601,7 @@ type SingleLineDocCommentParagraphs []string
 ```
 
 SingleLineDocCommentParagraphs prepends doc-comments to a top-level `SynFunc`
-being `Emit`ted. Each represents a "single-line-paragraph" that in the generated
+being emitted. Each represents a "single-line-paragraph" that in the generated
 output will be separated from the next via an empty `// ` line.
 
 #### func (*SingleLineDocCommentParagraphs) Add
@@ -1798,18 +1802,9 @@ StmtIf represents Go's `if .. else` construct.
 ```go
 func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf)
 ```
-If constructs a more complex `StmtIf` than `IfThen` does, with
-`ifThensAndMaybeAnElse` containing 0 or more alternating pairs of `if` (or `else
-if`) conditions and corresponding `then` branches, plus optionally a final
-`else` branch.
-
-#### func  IfThen
-
-```go
-func IfThen(cond ISyn, thens ...ISyn) *StmtIf
-```
-IfThen constructs a simple `StmtIf` with a single condition and `then` branch
-(plus initially empty `else` branch).
+If constructs a `StmtIf` with `ifThensAndMaybeAnElse` containing 0 or more
+alternating-pairs of `if` conditions and corresponding `then` branches, plus
+optionally a final `else` branch.
 
 #### type StmtLabel
 
@@ -2052,13 +2047,6 @@ func (this *SynFunc) Doc(docCommentLines ...string) *SynFunc
 ```
 Doc adds to `this.Docs` and returns `this`.
 
-#### func (*SynFunc) N
-
-```go
-func (this *SynFunc) N(name string) *SynFunc
-```
-N sets `this.Named.Name` and returns `this`.
-
 #### func (*SynFunc) Ret
 
 ```go
@@ -2087,8 +2075,7 @@ type SynRaw []byte
 ```
 
 SynRaw is an `ISyn` that at codegen time simply emits its self-contained raw Go
-source-code (perhaps hardcoded or generated via templates or other means)
-directly.
+source-code (perhaps hardcoded or via `text/template`s or other means) directly.
 
 #### type SynStructField
 
@@ -2118,14 +2105,6 @@ type Syns []ISyn
 
 Syns is a slice of `ISyn`s.
 
-#### func  A
-
-```go
-func A(argsOrOperandsOrStmts ...ISyn) Syns
-```
-A is merely a handy convenience short-hand to create a slice of `ISyn`s, as
-sometimes needed for listing arguments, operands, or statements.
-
 #### func  Else
 
 ```go
@@ -2142,8 +2121,8 @@ func GEN_IF(check bool, stmts ...ISyn) Syns
 GEN_IF returns either none, all, or one of `stmts` depending on `check` as
 follows:
 
-- if there are 2 `stmts` and each is a `Syns`, they're then/else-like and one of
-them wins
+- if there are 2 `stmts` and each is a `Syns`, they're **then/else**-like and
+one of them returns
 
 - otherwise: if `check` is `true`, all `stmts` are returned, else `nil` is
 returned
@@ -2257,18 +2236,20 @@ TdInterface constructs a `TypeInterface`.
 
 ```go
 type TypeRef struct {
-	PtrTo        *TypeRef // pointer-to-foo
-	ArrOrSliceOf struct {
-		Val        *TypeRef
+	Pointer struct {
+		Of *TypeRef
+	}
+	ArrOrSlice struct {
+		Of         *TypeRef
 		IsFixedLen *uint64
 		IsEllipsis bool
 	}
-	MapOf struct {
-		Key *TypeRef
-		Val *TypeRef
+	Map struct {
+		OfKey *TypeRef
+		ToVal *TypeRef
 	}
-	ChanOf struct {
-		Val     *TypeRef
+	Chan struct {
+		Of      *TypeRef
 		DirRecv bool
 		DirSend bool
 	}
@@ -2295,7 +2276,7 @@ TrArray constructs a `TypeRef` referring to an array of the specified type.
 #### func  TrChan
 
 ```go
-func TrChan(dirRecv bool, dirSend bool, val *TypeRef) *TypeRef
+func TrChan(of *TypeRef, dirRecv bool, dirSend bool) *TypeRef
 ```
 TrChan constructs a `TypeRef` referring to the specified channel. TODO:
 TypeRef.emitTo implementation!
@@ -2319,7 +2300,7 @@ TrInterface constructs a `TypeRef` referring to the specified unnamed
 #### func  TrMap
 
 ```go
-func TrMap(keyType *TypeRef, valType *TypeRef) (this *TypeRef)
+func TrMap(ofKey *TypeRef, toVal *TypeRef) (this *TypeRef)
 ```
 TrMap constructs a `TypeRef` referring to a map with the specified key and value
 types.
@@ -2367,9 +2348,9 @@ to identical emitting logic.)
 func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool
 ```
 IsBuiltinPrimType returns whether `this` refers to one of Go's built-in
-primitive-types such as `bool`, `byte`, `uint`, `string` etc. (If
-`orIsUnderlyingBuiltinPrimType`, it walks the `Slice` / `Ptr` / `Map` as
-applicable.)
+primitive-types such as `bool`, `string` etc. (If
+`orIsUnderlyingBuiltinPrimType`, it walks the `ArrOrSlice` / `Pointer` / `Map` /
+`Chan` as applicable.)
 
 #### func (*TypeRef) Method
 
@@ -2384,7 +2365,7 @@ Method constructs a `SynFunc` with the given `name` and `args` plus a
 ```go
 func (this *TypeRef) N(name string) NamedTyped
 ```
-N constructs a `NamedTyped` with `name` and `this`.
+N constructs a `NamedTyped` based on `name` and `this` type.
 
 #### func (*TypeRef) SafeBitSizeIfBuiltInNumberType
 

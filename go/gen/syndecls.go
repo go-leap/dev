@@ -13,8 +13,8 @@ type Syns []ISyn
 // Add is a convenience short-hand for `append`.
 func (this *Syns) Add(syns ...ISyn) { *this = append(*this, syns...) }
 
-// Named `Emit`s its `Name` during code-generation as-is, hence
-// useful for referring to named vars, consts, types, funcs etc.
+// Named emits its `Name` during code-generation as-is, hence
+// used for referring to named vars, consts, types, funcs etc.
 type Named struct {
 	Name string
 }
@@ -79,18 +79,20 @@ type TypeDecl struct {
 // such as used for func arguments' or struct
 // fields' explicit type annotations.
 type TypeRef struct {
-	PtrTo        *TypeRef // pointer-to-foo
-	ArrOrSliceOf struct {
-		Val        *TypeRef
+	Pointer struct {
+		Of *TypeRef
+	}
+	ArrOrSlice struct {
+		Of         *TypeRef
 		IsFixedLen *uint64
 		IsEllipsis bool
 	}
-	MapOf struct { // etc...
-		Key *TypeRef
-		Val *TypeRef
+	Map struct { // etc...
+		OfKey *TypeRef
+		ToVal *TypeRef
 	}
-	ChanOf struct {
-		Val     *TypeRef
+	Chan struct {
+		Of      *TypeRef
 		DirRecv bool
 		DirSend bool
 	}
@@ -130,8 +132,8 @@ type SynFunc struct {
 	Docs SingleLineDocCommentParagraphs
 }
 
-// SingleLineDocCommentParagraphs prepends doc-comments to a top-level `SynFunc` being `Emit`ted. Each represents
-// a "single-line-paragraph" that in the generated output will be separated from the next via an empty `// ` line.
+// SingleLineDocCommentParagraphs prepends doc-comments to a top-level `SynFunc` being emitted. Each represents a
+// "single-line-paragraph" that in the generated output will be separated from the next via an empty `// ` line.
 type SingleLineDocCommentParagraphs []string
 
 // Add is a convenience short-hand for `append`.
@@ -342,5 +344,5 @@ type ExprCall struct {
 }
 
 // SynRaw is an `ISyn` that at codegen time simply emits its self-contained raw Go
-// source-code (perhaps hardcoded or generated via templates or other means) directly.
+// source-code (perhaps hardcoded or via `text/template`s or other means) directly.
 type SynRaw []byte

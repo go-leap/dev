@@ -1,10 +1,25 @@
-// Package github.com/go-leap/dev/go/gen provides AST constructs for generating Go code.
-// These are by design much simpler and leaner than `go/ast`, given that the latter is
-// designed to represent existing & parsed code, while the former is for on-the-fly
-// construction of newly-to-be-emitted code.
+// Package `github.com/go-leap/dev/go/gen` provides AST nodes for generating Go code.
+// These are by design simpler and more lightweight than `go/ast`, given that the latter
+// is designed to represent existing-and-parsed code (keeping track of much housekeeping),
+// while this package only focuses on ad-hoc assemblage of newly-to-be-emitted Go sources.
 //
 // As a noteworthy goodie, all `func`s that have named return values automatically get a final
 // `return` statement appended to their `Body` at code-gen time, if they don't already have one.
+//
+// A small handful of `udevgogen` exports have entirely upper-case names such as `GEN_IF`,
+// `GEN_BYCASE` and so on. All these offer _codegen-time_ control flow and their usage is
+// showcased throughout the numerous `github.com/metaleap/go-gent/gents/...` packages. They
+// do incur a slight overhead (vs. using Go-native control-flows) for the neat readability
+// sugar they offer. The upper-case names do stand out appropriately in real-world multi-line
+// AST constructions and this eases differentiating between say branches or loops at code-gen
+// time vs. to-be-emitted branches or loops belonging to the currently generated AST nodes.
+//
+// Likewise, there are numerous interfaces with `IExpr`-prefixed names such as `IExprBoolish`,
+// `IExprNumerish`, etc (implemented by the various `ISyn` AST-node implementations provided),
+// and those interfaces offer handy dot-accessor-style methods over standard constructor funcs
+// --- by way of an illustrative example, think: `foo.Eq(bar).And(baz.Minus(2).Gt(0))` instead
+// of `And(Eq(foo, bar), Gt(Sub(baz, L(2)), L(0)))`. All `IExpr‹Foo›ish` implementations are just
+// such translations under the hood, implying some miniscule (or perhaps sub-nanoscule) cost there.
 package udevgogen
 
 import (
@@ -102,15 +117,15 @@ var (
 	Vars struct {
 		// `"err"`
 		Err NamedTyped
-		// `"this"`, suits method-receivers (Go style dogma hates it though)
+		// `"this"`, suits method-receivers (Go style fetishists hate it though)
 		This Named
-		// `"self"`, Pythonic flavour of `this`
+		// `"self"`, Pythonic flavour of `this` (just as pretty and as disliked)
 		Self Named
-		// `"me"`, VB6-inspired `this` or `self` that won't trigger golint
+		// `"me"`, VB6-style `this`/`self` alternative that won't trigger golint
 		Me Named
 		// `"ok"`, common for type-asserts / lookups / predicates
 		Ok Named
-		// `"r"`, common for a func's `return` value
+		// `"r"`, common for a func's primary named `return` value
 		R Named
 		// `"s"`, common for a func's `string` arg
 		S Named
@@ -118,9 +133,9 @@ var (
 		I Named
 		// `"j"`, common for sub-iterations
 		J Named
-		// `"k"`, common for the key in for..range iterations
+		// `"k"`, common for key-value pairs, eg. in for..range iterations
 		K Named
-		// `"v"`, for func args (`v interface{}`) or key-value pairs
+		// `"v"`, for key-value pairs or func args (eg. `v interface{}`)
 		V Named
 	}
 
