@@ -1,7 +1,7 @@
 package udevgogen
 
-// T returns a `NamedTyped` with `this.Name` and `typeRef`.
-func (this Named) T(typeRef *TypeRef) (nt NamedTyped) {
+// OfType returns a `NamedTyped` with `this.Name` and `typeRef`.
+func (this Named) OfType(typeRef *TypeRef) (nt NamedTyped) {
 	nt.Named, nt.Type = this, typeRef
 	return
 }
@@ -28,22 +28,22 @@ func (this NamedsTypeds) AllTyped() bool {
 	return len(this) > 0
 }
 
-// SafeBitSizeIfBuiltInNumberType returns 8 for `int8`, `byte`, `uint8`,
+// BitSizeIfBuiltInNumberType returns 8 for `int8`, `byte`, `uint8`,
 // or 16, 32, 64, 128 as applicable, recognizing only direct `Named` refs
 // to Go' native `builtin` number types (no type-alias dereferencing yet).
-func (this *TypeRef) SafeBitSizeIfBuiltInNumberType() int {
+func (this *TypeRef) BitSizeIfBuiltInNumberType() int {
 	if this.Named.PkgName == "" {
 		switch this.Named.TypeName {
 		case "int8", "uint8", "byte":
 			return 8
 		case "int16", "uint16":
 			return 16
+		case "int32", "uint32", "float32", "rune", "int", "uint":
+			return 32
 		case "int64", "uint64", "float64", "complex64":
 			return 64
 		case "complex128":
 			return 128
-		case "int32", "uint32", "float32", "rune", "int", "uint":
-			return 32
 		}
 	}
 	return 0

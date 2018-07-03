@@ -112,9 +112,6 @@ var (
 
 	// singletons for common type-refs
 	T struct {
-		// empty interface{}
-		Interface *TypeRef
-
 		Bool       *TypeRef
 		Byte       *TypeRef
 		Complex64  *TypeRef
@@ -138,6 +135,11 @@ var (
 		Sl struct {
 			Ints    *TypeRef
 			Strings *TypeRef
+		}
+
+		Empty struct {
+			Interface *TypeRef
+			Struct    *TypeRef
 		}
 	}
 
@@ -304,6 +306,13 @@ func (this *ExprCall) Plus(operand interface{}) OpAdd
 ```
 Plus implements `IExprNumerish`.
 
+#### func (*ExprCall) Sl
+
+```go
+func (this *ExprCall) Sl(startIndex interface{}, stopIndex interface{}) OpIdx
+```
+Sl implements `IExprContainish`.
+
 #### func (*ExprCall) Times
 
 ```go
@@ -371,6 +380,7 @@ type IExprContainish interface {
 
 	At(interface{}) OpIdx
 	Deref() OpDeref
+	Sl(interface{}, interface{}) OpIdx
 }
 ```
 
@@ -628,6 +638,13 @@ func (this Named) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
+#### func (Named) OfType
+
+```go
+func (this Named) OfType(typeRef *TypeRef) (nt NamedTyped)
+```
+OfType returns a `NamedTyped` with `this.Name` and `typeRef`.
+
 #### func (Named) Or
 
 ```go
@@ -649,12 +666,12 @@ func (this Named) Set(operand interface{}) OpSet
 ```
 Set implements `IExprVar`.
 
-#### func (Named) T
+#### func (Named) Sl
 
 ```go
-func (this Named) T(typeRef *TypeRef) (nt NamedTyped)
+func (this Named) Sl(startIndex interface{}, stopIndex interface{}) OpIdx
 ```
-T returns a `NamedTyped` with `this.Name` and `typeRef`.
+Sl implements `IExprContainish`.
 
 #### func (Named) Times
 
@@ -1235,6 +1252,13 @@ Plus implements `IExprNumerish`.
 func (this OpIdx) Set(operand interface{}) OpSet
 ```
 Set implements `IExprVar`.
+
+#### func (OpIdx) Sl
+
+```go
+func (this OpIdx) Sl(startIndex interface{}, stopIndex interface{}) OpIdx
+```
+Sl implements `IExprContainish`.
 
 #### func (OpIdx) Times
 
@@ -2118,11 +2142,11 @@ for `If` (or `GEN_IF`) calls.
 ```go
 func GEN_IF(check bool, stmts ...ISyn) Syns
 ```
-GEN_IF returns either none, all, or one of `stmts` depending on `check` as
+GEN_IF returns either none, all, or one of `stmts` depending on `check` and as
 follows:
 
-- if there are 2 `stmts` and each is a `Syns`, they're **then/else**-like and
-one of them returns
+- if there are 2 `stmts` and _each one_ is a `Syns`, they're **then/else**-like
+and one returns
 
 - otherwise: if `check` is `true`, all `stmts` are returned, else `nil` is
 returned
@@ -2333,6 +2357,15 @@ func TrStruct(typeStruct *TypeStruct) *TypeRef
 ```
 TrStruct constructs a `TypeRef` referring to the specified unnamed `struct{..}`.
 
+#### func (*TypeRef) BitSizeIfBuiltInNumberType
+
+```go
+func (this *TypeRef) BitSizeIfBuiltInNumberType() int
+```
+BitSizeIfBuiltInNumberType returns 8 for `int8`, `byte`, `uint8`, or 16, 32, 64,
+128 as applicable, recognizing only direct `Named` refs to Go' native `builtin`
+number types (no type-alias dereferencing yet).
+
 #### func (*TypeRef) Conv
 
 ```go
@@ -2366,15 +2399,6 @@ Method constructs a `SynFunc` with the given `name` and `args` plus a
 func (this *TypeRef) N(name string) NamedTyped
 ```
 N constructs a `NamedTyped` based on `name` and `this` type.
-
-#### func (*TypeRef) SafeBitSizeIfBuiltInNumberType
-
-```go
-func (this *TypeRef) SafeBitSizeIfBuiltInNumberType() int
-```
-SafeBitSizeIfBuiltInNumberType returns 8 for `int8`, `byte`, `uint8`, or 16, 32,
-64, 128 as applicable, recognizing only direct `Named` refs to Go' native
-`builtin` number types (no type-alias dereferencing yet).
 
 #### type TypeStruct
 

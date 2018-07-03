@@ -220,9 +220,9 @@ func Defer(call *ExprCall) (this StmtDefer) {
 	return
 }
 
-// GEN_IF returns either none, all, or one of `stmts` depending on `check` as follows:
+// GEN_IF returns either none, all, or one of `stmts` depending on `check` and as follows:
 //
-// - if there are 2 `stmts` and each is a `Syns`, they're **then/else**-like and one of them returns
+// - if there are 2 `stmts` and _each one_ is a `Syns`, they're **then/else**-like and one returns
 //
 // - otherwise: if `check` is `true`, all `stmts` are returned, else `nil` is returned
 func GEN_IF(check bool, stmts ...ISyn) Syns {

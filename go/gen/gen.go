@@ -141,9 +141,6 @@ var (
 
 	// singletons for common type-refs
 	T struct {
-		// empty interface{}
-		Interface *TypeRef
-
 		Bool       *TypeRef
 		Byte       *TypeRef
 		Complex64  *TypeRef
@@ -167,6 +164,11 @@ var (
 		Sl struct {
 			Ints    *TypeRef
 			Strings *TypeRef
+		}
+
+		Empty struct {
+			Interface *TypeRef
+			Struct    *TypeRef
 		}
 	}
 
@@ -197,8 +199,8 @@ func init() {
 		return Call(D(N(dotLeft), N(dotRight)), args...)
 	}
 	T.Bool, T.Byte, T.Complex128, T.Complex64, T.Float32, T.Float64, T.Int, T.Int16, T.Int32, T.Int64, T.Int8, T.Rune, T.String, T.Uint, T.Uint16, T.Uint32, T.Uint64, T.Uint8 = TrNamed("", "bool"), TrNamed("", "byte"), TrNamed("", "complex128"), TrNamed("", "complex64"), TrNamed("", "float32"), TrNamed("", "float64"), TrNamed("", "int"), TrNamed("", "int16"), TrNamed("", "int32"), TrNamed("", "int64"), TrNamed("", "int8"), TrNamed("", "rune"), TrNamed("", "string"), TrNamed("", "uint"), TrNamed("", "uint16"), TrNamed("", "uint32"), TrNamed("", "uint64"), TrNamed("", "uint8")
-	T.Interface = TrInterface(TdInterface(nil))
+	T.Empty.Interface, T.Empty.Struct = TrInterface(TdInterface(nil)), TrStruct(TdStruct())
 	T.Sl.Ints, T.Sl.Strings = TrSlice(T.Int), TrSlice(T.String)
 
-	Sigs.NoneToBool.Rets, Sigs.NoneToString.Rets = NamedsTypeds{Vars.R.T(T.Bool)}, NamedsTypeds{Vars.R.T(T.String)}
+	Sigs.NoneToBool.Rets, Sigs.NoneToString.Rets = NamedsTypeds{Vars.R.OfType(T.Bool)}, NamedsTypeds{Vars.R.OfType(T.String)}
 }

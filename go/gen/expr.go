@@ -22,6 +22,7 @@ type IExprContainish interface {
 
 	At(interface{}) OpIdx
 	Deref() OpDeref
+	Sl(interface{}, interface{}) OpIdx
 }
 
 // IExprEqualish is implemented by `ISyn`s that also wish to offer
@@ -153,6 +154,11 @@ func (this Named) Mod(operand interface{}) OpMod { return Mod(this, synFrom(oper
 // At implements `IExprContainish`.
 func (this Named) At(operand interface{}) OpIdx { return I(this, synFrom(operand)) }
 
+// Sl implements `IExprContainish`.
+func (this Named) Sl(startIndex interface{}, stopIndex interface{}) OpIdx {
+	return I(this, Sl(synFrom(startIndex), synFrom(stopIndex)))
+}
+
 // Not implements `IExprBoolish`.
 func (this Named) Not() OpNot { return Not(this) }
 
@@ -206,6 +212,11 @@ func (this *ExprCall) Mod(operand interface{}) OpMod { return Mod(this, synFrom(
 
 // At implements `IExprContainish`.
 func (this *ExprCall) At(operand interface{}) OpIdx { return I(this, synFrom(operand)) }
+
+// Sl implements `IExprContainish`.
+func (this *ExprCall) Sl(startIndex interface{}, stopIndex interface{}) OpIdx {
+	return I(this, Sl(synFrom(startIndex), synFrom(stopIndex)))
+}
 
 // Not implements `IExprBoolish`.
 func (this *ExprCall) Not() OpNot { return Not(this) }
@@ -415,6 +426,11 @@ func (this OpIdx) Mod(operand interface{}) OpMod { return Mod(this, synFrom(oper
 
 // At implements `IExprContainish`.
 func (this OpIdx) At(operand interface{}) OpIdx { return I(this, synFrom(operand)) }
+
+// Sl implements `IExprContainish`.
+func (this OpIdx) Sl(startIndex interface{}, stopIndex interface{}) OpIdx {
+	return I(this, Sl(synFrom(startIndex), synFrom(stopIndex)))
+}
 
 // Not implements `IExprBoolish`.
 func (this OpIdx) Not() OpNot { return Not(this) }
