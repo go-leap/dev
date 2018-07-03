@@ -6,6 +6,14 @@ type USUALLY ISyn
 // UNLESS serves as a codegen-time readability wrapper for `GEN_BYCASE` callers.
 type UNLESS map[bool]ISyn
 
+// GEN_EITHER returns `then` if `check`, else `otherwise`.
+func GEN_EITHER(check bool, then ISyn, otherwise ISyn) ISyn {
+	if check {
+		return then
+	}
+	return otherwise
+}
+
 // GEN_IF returns either none, all, or one of `stmts` depending on `check` and as follows:
 //
 // - if there are 2 `stmts` and _each one_ is a `Syns`, they're **then/else**-like and one returns

@@ -492,6 +492,13 @@ func GEN_BYCASE(byDefault USUALLY, unless UNLESS) ISyn
 GEN_BYCASE is like a codegen-time `switch..case` construct: it returns
 `unless[true]` if present, else `byDefault`.
 
+#### func  GEN_EITHER
+
+```go
+func GEN_EITHER(check bool, then ISyn, otherwise ISyn) ISyn
+```
+GEN_EITHER returns `then` if `check`, else `otherwise`.
+
 #### type Named
 
 ```go
@@ -1619,7 +1626,7 @@ PkgName offers some handy methods on package import names.
 #### func (PkgName) C
 
 ```go
-func (this PkgName) C(funcName string, args ...ISyn) *ExprCall
+func (this PkgName) C(funcName string, args ...Any) *ExprCall
 ```
 C constructs an `ExprCall` of the `funcName` exported by `this`
 imported-package.
