@@ -6,13 +6,12 @@
 // As a noteworthy goodie, all `func`s that have named return values automatically get a final
 // `return` statement appended to their `Body` at code-gen time, if they don't already have one.
 //
-// A small handful of `udevgogen` exports have entirely upper-case names such as `GEN_IF`,
-// `GEN_BYCASE` and so on. All these offer _codegen-time_ control flow and their usage is
-// showcased throughout the numerous `github.com/metaleap/go-gent/gents/...` packages. They
-// do incur a slight overhead (vs. using Go-native control-flows) for the neat readability
-// sugar they offer. The upper-case names do stand out appropriately in real-world multi-line
-// AST constructions and this eases differentiating between say branches or loops at code-gen
-// time vs. to-be-emitted branches or loops belonging to the currently generated AST nodes.
+// A small handful of `udevgogen` exports have entirely upper-case names (such as `GEN_IF`, `GEN_BYCASE`,
+// `GEN_FOR`, `UNLESS`, etc.) All these offer _codegen-time_ control flow and their usage is showcased
+// throughout the numerous `github.com/metaleap/go-gent/gents/...` packages. They do incur a slight overhead (vs.
+// using Go-native control-flows) for the neat readability sugar they offer. The upper-case names do stand out
+// in real-world multi-line AST constructions, letting the reader differentiate between say branches / loops
+// to-be-evaluated at code-gen time vs. to-be-emitted branches/loops belonging to the currently generated AST nodes.
 //
 // Likewise, there are numerous interfaces with `IExpr`-prefixed names such as `IExprBoolish`,
 // `IExprNumerish`, etc (implemented by the various `ISyn` AST-node implementations provided),
@@ -25,6 +24,9 @@ package udevgogen
 import (
 	"github.com/go-leap/str"
 )
+
+// Any is opinionated brevity-readability-delight.
+type Any = interface{}
 
 // SourceFile is a simple collection of `ISyn`s
 // representing top-level definition declarations
@@ -80,7 +82,7 @@ var (
 		Return   StmtRet
 	}
 
-	// singletons for Go's built-in reserved-identifiers
+	// singletons for Go's `builtin` reserved-identifiers
 	B struct {
 		Nil   ExprLit
 		True  ExprLit
@@ -101,16 +103,6 @@ var (
 		Println Named
 		Real    Named
 		Recover Named
-	}
-
-	// common Call constructors
-	C struct {
-		Append func(...ISyn) *ExprCall
-		Len    func(...ISyn) *ExprCall
-		Make   func(...ISyn) *ExprCall
-
-		Dot   func(string, string, ...ISyn) *ExprCall
-		Named func(string, ...ISyn) *ExprCall
 	}
 
 	// singletons for common var names
@@ -166,6 +158,7 @@ var (
 			Strings *TypeRef
 		}
 
+		// singletons for empty anonymous-types
 		Empty struct {
 			Interface *TypeRef
 			Struct    *TypeRef
@@ -188,16 +181,6 @@ func init() {
 	B.Append.Name, B.Cap.Name, B.Close.Name, B.Complex.Name, B.Copy.Name, B.Delete.Name, B.Imag.Name, B.Len.Name, B.Make.Name, B.New.Name, B.Panic.Name, B.Print.Name, B.Println.Name, B.Real.Name, B.Recover.Name = "append", "cap", "close", "complex", "copy", "delete", "imag", "len", "make", "new", "panic", "print", "println", "real", "recover"
 	B.True, B.False = L(true), L(false)
 
-	c := func(n Named) func(...ISyn) *ExprCall {
-		return func(args ...ISyn) *ExprCall { return Call(n, args...) }
-	}
-	C.Append, C.Len, C.Make = c(B.Append), c(B.Len), c(B.Make)
-	C.Named = func(name string, args ...ISyn) *ExprCall {
-		return Call(N(name), args...)
-	}
-	C.Dot = func(dotLeft string, dotRight string, args ...ISyn) *ExprCall {
-		return Call(D(N(dotLeft), N(dotRight)), args...)
-	}
 	T.Bool, T.Byte, T.Complex128, T.Complex64, T.Float32, T.Float64, T.Int, T.Int16, T.Int32, T.Int64, T.Int8, T.Rune, T.String, T.Uint, T.Uint16, T.Uint32, T.Uint64, T.Uint8 = TrNamed("", "bool"), TrNamed("", "byte"), TrNamed("", "complex128"), TrNamed("", "complex64"), TrNamed("", "float32"), TrNamed("", "float64"), TrNamed("", "int"), TrNamed("", "int16"), TrNamed("", "int32"), TrNamed("", "int64"), TrNamed("", "int8"), TrNamed("", "rune"), TrNamed("", "string"), TrNamed("", "uint"), TrNamed("", "uint16"), TrNamed("", "uint32"), TrNamed("", "uint64"), TrNamed("", "uint8")
 	T.Empty.Interface, T.Empty.Struct = TrInterface(TdInterface(nil)), TrStruct(TdStruct())
 	T.Sl.Ints, T.Sl.Strings = TrSlice(T.Int), TrSlice(T.String)

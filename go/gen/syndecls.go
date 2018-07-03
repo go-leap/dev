@@ -199,22 +199,22 @@ type StmtVar struct {
 type StmtIf struct {
 	// one or more `if` or `else if` conditions
 	// with their associated branches
-	IfThens SynConds
+	IfThens SynCases
 	// optional final `else` branch
 	Else SynBlock
 }
 
-// SynConds is a slice of `SynCond`s.
-type SynConds []SynCond
+// SynCases is a slice of `SynCase`s.
+type SynCases []SynCase
 
 // Add is a convenience short-hand for `append`.
-func (this *SynConds) Add(cond ISyn, thens ...ISyn) {
-	*this = append(*this, Cond(cond, thens...))
+func (this *SynCases) Add(cond ISyn, thens ...ISyn) {
+	*this = append(*this, SynCase{Cond: cond, SynBlock: SynBlock{Body: thens}})
 }
 
-// SynCond represents a condition expression together with a block
+// SynCase represents a condition expression together with a block
 // of statements, used for both `StmtIf`s and `StmtSwitch`es.
-type SynCond struct {
+type SynCase struct {
 	// some condition expression
 	Cond ISyn
 	// associated-branch statements
@@ -226,7 +226,7 @@ type StmtSwitch struct {
 	// optional scrutinee
 	Scrutinee ISyn
 	// 0 or more `case` branches
-	Cases SynConds
+	Cases SynCases
 	// optional `default` branch
 	Default SynBlock
 }
@@ -333,7 +333,7 @@ type OpNot struct{ Op }
 // ExprLit represents any literal constant value,
 // such as a string, rune, number or boolean.
 type ExprLit struct {
-	Val interface{}
+	Val Any
 }
 
 // ExprCall represents a call to any callable `Callee`, or a

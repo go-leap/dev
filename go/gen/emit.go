@@ -292,7 +292,7 @@ func (this *StmtIf) emitTo(w *writer) {
 	for i := range this.IfThens {
 		w.WriteString("if ")
 		this.IfThens[i].Cond.emitTo(w)
-		this.IfThens[i].emit(w, true, ';', false)
+		this.IfThens[i].SynBlock.emit(w, true, ';', false)
 		if i != finali || finalelse {
 			w.WriteString(" else ")
 		}
@@ -302,6 +302,13 @@ func (this *StmtIf) emitTo(w *writer) {
 	}
 }
 
+func (this *SynCase) emitTo(w *writer) {
+	w.WriteString("case ")
+	this.Cond.emitTo(w)
+	w.WriteByte(':')
+	this.SynBlock.emit(w, false, ';', false)
+}
+
 func (this *StmtSwitch) emitTo(w *writer) {
 	w.WriteString("switch ")
 	if this.Scrutinee != nil {
@@ -309,10 +316,7 @@ func (this *StmtSwitch) emitTo(w *writer) {
 	}
 	w.WriteByte('{')
 	for i := range this.Cases {
-		w.WriteString("case ")
-		this.Cases[i].Cond.emitTo(w)
-		w.WriteByte(':')
-		this.Cases[i].emit(w, false, ';', false)
+		this.Cases[i].emitTo(w)
 	}
 	if len(this.Default.Body) > 0 {
 		w.WriteString("default: ")
@@ -483,7 +487,7 @@ func (this ExprLit) emitTo(w *writer) {
 	this.emit(w, this.Val)
 }
 
-func (this ExprLit) emit(w *writer, val interface{}) {
+func (this ExprLit) emit(w *writer, val Any) {
 	if val == nil {
 		w.WriteString("nil")
 		return

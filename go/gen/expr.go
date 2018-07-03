@@ -3,50 +3,50 @@ package udevgogen
 // IExprVarish is implemented by `ISyn`s that also wish to offer
 // dot-accessor syntax over the `Addr`, `Set`, `Decl` constructors.
 //
-// All `ISyn`s among the `interface{}`-typed operand arguments
+// All `ISyn`s among the `Any`-typed operand arguments
 // are used directly, any others are converted into `ExprLit`s.
 type IExprVarish interface {
 	IExprContainish
 
 	Addr() OpAddr
-	Set(interface{}) OpSet
-	Let(interface{}) OpDecl
+	Set(Any) OpSet
+	Let(Any) OpDecl
 	Incr1() OpSet
 	Decr1() OpSet
 }
 
 // IExprContainish is implemented by `ISyn`s that also wish to
-// offer dot-accessor syntax over the `I` and `Deref` constructors.
+// offer dot-accessor syntax over the `At` and `Deref` constructors.
 type IExprContainish interface {
 	ISyn
 
-	At(interface{}) OpIdx
+	At(Any) OpIdx
 	Deref() OpDeref
-	Sl(interface{}, interface{}) OpIdx
+	Sl(Any, Any) OpIdx
 }
 
 // IExprEqualish is implemented by `ISyn`s that also wish to offer
 // dot-accessor syntax over the `Eq` and `Neq` constructors.
 //
-// All `ISyn`s among the `interface{}`-typed operand arguments
+// All `ISyn`s among the `Any`-typed operand arguments
 // are used directly, any others are converted into `ExprLit`s.
 type IExprEqualish interface {
 	ISyn
 
-	Eq(interface{}) OpEq
-	Neq(interface{}) OpNeq
+	Eq(Any) OpEq
+	Neq(Any) OpNeq
 }
 
 // IExprBoolish is implemented by `ISyn`s that also wish to offer
 // dot-accessor syntax over the `And`, `Or`, `Not` constructors.
 //
-// All `ISyn`s among the `interface{}`-typed operand arguments
+// All `ISyn`s among the `Any`-typed operand arguments
 // are used directly, any others are converted into `ExprLit`s.
 type IExprBoolish interface {
 	IExprEqualish
 
-	And(interface{}) OpAnd
-	Or(interface{}) OpOr
+	And(Any) OpAnd
+	Or(Any) OpOr
 	Not() OpNot
 }
 
@@ -56,49 +56,49 @@ type IExprBoolish interface {
 // All methods return the appropriate operator types at all times,
 // ie. `Geq` always returns an `OpGeq`, `Lt` always an `OpLt` etc.
 //
-// All `ISyn`s among the `interface{}`-typed operand arguments
+// All `ISyn`s among the `Any`-typed operand arguments
 // are used directly, any others are converted into `ExprLit`s.
 type IExprOrdish interface {
 	IExprEqualish
 
-	Geq(interface{}) IExprBoolish
-	Leq(interface{}) IExprBoolish
-	Gt(interface{}) IExprBoolish
-	Lt(interface{}) IExprBoolish
+	Geq(Any) IExprBoolish
+	Leq(Any) IExprBoolish
+	Gt(Any) IExprBoolish
+	Lt(Any) IExprBoolish
 }
 
 // IExprOrdish is implemented by `ISyn`s that also wish to offer dot-accessor
 // syntax over the `Add`, `Sub`, `Mul`, `Div`, `Mod`, `Neg` constructors.
 //
-// All `ISyn`s among the `interface{}`-typed operand arguments
+// All `ISyn`s among the `Any`-typed operand arguments
 // are used directly, any others are converted into `ExprLit`s.
 type IExprNumerish interface {
 	IExprOrdish
 
-	Plus(interface{}) OpAdd
-	Minus(interface{}) OpSub
-	Times(interface{}) OpMul
-	Div(interface{}) OpDiv
-	Mod(interface{}) OpMod
+	Plus(Any) OpAdd
+	Minus(Any) OpSub
+	Times(Any) OpMul
+	Div(Any) OpDiv
+	Mod(Any) OpMod
 	Neg() OpSub
 }
 
 // IExprCallish is implemented by `ISyn`s that also wish to
 // offer dot-accessor syntax over the `Call` constructor.
 //
-// All `ISyn`s among the `interface{}`-typed operand arguments
+// All `ISyn`s among the `Any`-typed operand arguments
 // are used directly, any others are converted into `ExprLit`s.
 type IExprCallish interface {
 	ISyn
 
-	Call(...interface{}) *ExprCall
+	C(...Any) *ExprCall
 }
 
 // Set implements `IExprVar`.
-func (this Named) Set(operand interface{}) OpSet { return Set(this, synFrom(operand)) }
+func (this Named) Set(operand Any) OpSet { return Set(this, synFrom(operand)) }
 
 // Let implements `IExprVar`.
-func (this Named) Let(operand interface{}) OpDecl { return Decl(this, synFrom(operand)) }
+func (this Named) Let(operand Any) OpDecl { return Decl(this, synFrom(operand)) }
 
 // Addr implements `IExprVarish`.
 func (this Named) Addr() OpAddr { return Addr(this) }
@@ -107,34 +107,34 @@ func (this Named) Addr() OpAddr { return Addr(this) }
 func (this Named) Deref() OpDeref { return Deref(this) }
 
 // And implements `IExprBoolish`.
-func (this Named) And(operand interface{}) OpAnd { return And(this, synFrom(operand)) }
+func (this Named) And(operand Any) OpAnd { return And(this, synFrom(operand)) }
 
 // Or implements `IExprBoolish`.
-func (this Named) Or(operand interface{}) OpOr { return Or(this, synFrom(operand)) }
+func (this Named) Or(operand Any) OpOr { return Or(this, synFrom(operand)) }
 
 // Eq implements `IExprEqualish`.
-func (this Named) Eq(operand interface{}) OpEq { return Eq(this, synFrom(operand)) }
+func (this Named) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
 
 // Neq implements `IExprEqualish`.
-func (this Named) Neq(operand interface{}) OpNeq { return Neq(this, synFrom(operand)) }
+func (this Named) Neq(operand Any) OpNeq { return Neq(this, synFrom(operand)) }
 
 // Geq implements `IExprOrdish`.
-func (this Named) Geq(operand interface{}) IExprBoolish { return Geq(this, synFrom(operand)) }
+func (this Named) Geq(operand Any) IExprBoolish { return Geq(this, synFrom(operand)) }
 
 // Gt implements `IExprOrdish`.
-func (this Named) Gt(operand interface{}) IExprBoolish { return Gt(this, synFrom(operand)) }
+func (this Named) Gt(operand Any) IExprBoolish { return Gt(this, synFrom(operand)) }
 
 // Leq implements `IExprOrdish`.
-func (this Named) Leq(operand interface{}) IExprBoolish { return Leq(this, synFrom(operand)) }
+func (this Named) Leq(operand Any) IExprBoolish { return Leq(this, synFrom(operand)) }
 
 // Lt implements `IExprOrdish`.
-func (this Named) Lt(operand interface{}) IExprBoolish { return Lt(this, synFrom(operand)) }
+func (this Named) Lt(operand Any) IExprBoolish { return Lt(this, synFrom(operand)) }
 
 // Plus implements `IExprNumerish`.
-func (this Named) Plus(operand interface{}) OpAdd { return Add(this, synFrom(operand)) }
+func (this Named) Plus(operand Any) OpAdd { return Add(this, synFrom(operand)) }
 
 // Minus implements `IExprNumerish`.
-func (this Named) Minus(operand interface{}) OpSub { return Sub(this, synFrom(operand)) }
+func (this Named) Minus(operand Any) OpSub { return Sub(this, synFrom(operand)) }
 
 // Decr1 implements `IExprVarish`.
 func (this Named) Decr1() OpSet { return Set(this, Sub(this, L(1))) }
@@ -143,20 +143,20 @@ func (this Named) Decr1() OpSet { return Set(this, Sub(this, L(1))) }
 func (this Named) Incr1() OpSet { return Set(this, Add(this, L(1))) }
 
 // Times implements `IExprNumerish`.
-func (this Named) Times(operand interface{}) OpMul { return Mul(this, synFrom(operand)) }
+func (this Named) Times(operand Any) OpMul { return Mul(this, synFrom(operand)) }
 
 // Div implements `IExprNumerish`.
-func (this Named) Div(operand interface{}) OpDiv { return Div(this, synFrom(operand)) }
+func (this Named) Div(operand Any) OpDiv { return Div(this, synFrom(operand)) }
 
 // Mod implements `IExprNumerish`.
-func (this Named) Mod(operand interface{}) OpMod { return Mod(this, synFrom(operand)) }
+func (this Named) Mod(operand Any) OpMod { return Mod(this, synFrom(operand)) }
 
 // At implements `IExprContainish`.
-func (this Named) At(operand interface{}) OpIdx { return I(this, synFrom(operand)) }
+func (this Named) At(operand Any) OpIdx { return At(this, synFrom(operand)) }
 
 // Sl implements `IExprContainish`.
-func (this Named) Sl(startIndex interface{}, stopIndex interface{}) OpIdx {
-	return I(this, Sl(synFrom(startIndex), synFrom(stopIndex)))
+func (this Named) Sl(startIndex Any, stopIndex Any) OpIdx {
+	return At(this, Sl(synFrom(startIndex), synFrom(stopIndex)))
 }
 
 // Not implements `IExprBoolish`.
@@ -165,57 +165,57 @@ func (this Named) Not() OpNot { return Not(this) }
 // Neg implements `IExprNumerish`.
 func (this Named) Neg() OpSub { return Neg(this) }
 
-// Call implements `IExprCallish`.
-func (this Named) Call(args ...interface{}) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
+// C implements `IExprCallish`.
+func (this Named) C(args ...Any) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
 
 // Deref implements `IExprContainish`.
 func (this *ExprCall) Deref() OpDeref { return Deref(this) }
 
 // And implements `IExprBoolish`.
-func (this *ExprCall) And(operand interface{}) OpAnd { return And(this, synFrom(operand)) }
+func (this *ExprCall) And(operand Any) OpAnd { return And(this, synFrom(operand)) }
 
 // Or implements `IExprBoolish`.
-func (this *ExprCall) Or(operand interface{}) OpOr { return Or(this, synFrom(operand)) }
+func (this *ExprCall) Or(operand Any) OpOr { return Or(this, synFrom(operand)) }
 
 // Eq implements `IExprEqualish`.
-func (this *ExprCall) Eq(operand interface{}) OpEq { return Eq(this, synFrom(operand)) }
+func (this *ExprCall) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
 
 // Neq implements `IExprEqualish`.
-func (this *ExprCall) Neq(operand interface{}) OpNeq { return Neq(this, synFrom(operand)) }
+func (this *ExprCall) Neq(operand Any) OpNeq { return Neq(this, synFrom(operand)) }
 
 // Geq implements `IExprOrdish`.
-func (this *ExprCall) Geq(operand interface{}) IExprBoolish { return Geq(this, synFrom(operand)) }
+func (this *ExprCall) Geq(operand Any) IExprBoolish { return Geq(this, synFrom(operand)) }
 
 // Gt implements `IExprOrdish`.
-func (this *ExprCall) Gt(operand interface{}) IExprBoolish { return Gt(this, synFrom(operand)) }
+func (this *ExprCall) Gt(operand Any) IExprBoolish { return Gt(this, synFrom(operand)) }
 
 // Leq implements `IExprOrdish`.
-func (this *ExprCall) Leq(operand interface{}) IExprBoolish { return Leq(this, synFrom(operand)) }
+func (this *ExprCall) Leq(operand Any) IExprBoolish { return Leq(this, synFrom(operand)) }
 
 // Lt implements `IExprOrdish`.
-func (this *ExprCall) Lt(operand interface{}) IExprBoolish { return Lt(this, synFrom(operand)) }
+func (this *ExprCall) Lt(operand Any) IExprBoolish { return Lt(this, synFrom(operand)) }
 
 // Plus implements `IExprNumerish`.
-func (this *ExprCall) Plus(operand interface{}) OpAdd { return Add(this, synFrom(operand)) }
+func (this *ExprCall) Plus(operand Any) OpAdd { return Add(this, synFrom(operand)) }
 
 // Minus implements `IExprNumerish`.
-func (this *ExprCall) Minus(operand interface{}) OpSub { return Sub(this, synFrom(operand)) }
+func (this *ExprCall) Minus(operand Any) OpSub { return Sub(this, synFrom(operand)) }
 
 // Times implements `IExprNumerish`.
-func (this *ExprCall) Times(operand interface{}) OpMul { return Mul(this, synFrom(operand)) }
+func (this *ExprCall) Times(operand Any) OpMul { return Mul(this, synFrom(operand)) }
 
 // Div implements `IExprNumerish`.
-func (this *ExprCall) Div(operand interface{}) OpDiv { return Div(this, synFrom(operand)) }
+func (this *ExprCall) Div(operand Any) OpDiv { return Div(this, synFrom(operand)) }
 
 // Mod implements `IExprNumerish`.
-func (this *ExprCall) Mod(operand interface{}) OpMod { return Mod(this, synFrom(operand)) }
+func (this *ExprCall) Mod(operand Any) OpMod { return Mod(this, synFrom(operand)) }
 
 // At implements `IExprContainish`.
-func (this *ExprCall) At(operand interface{}) OpIdx { return I(this, synFrom(operand)) }
+func (this *ExprCall) At(operand Any) OpIdx { return At(this, synFrom(operand)) }
 
 // Sl implements `IExprContainish`.
-func (this *ExprCall) Sl(startIndex interface{}, stopIndex interface{}) OpIdx {
-	return I(this, Sl(synFrom(startIndex), synFrom(stopIndex)))
+func (this *ExprCall) Sl(startIndex Any, stopIndex Any) OpIdx {
+	return At(this, Sl(synFrom(startIndex), synFrom(stopIndex)))
 }
 
 // Not implements `IExprBoolish`.
@@ -224,154 +224,154 @@ func (this *ExprCall) Not() OpNot { return Not(this) }
 // Neg implements `IExprNumerish`.
 func (this *ExprCall) Neg() OpSub { return Neg(this) }
 
-// Call implements `IExprCallish`.
-func (this *ExprCall) Call(args ...interface{}) *ExprCall {
+// C implements `IExprCallish`.
+func (this *ExprCall) C(args ...Any) *ExprCall {
 	return Call(this, synsFrom(nil, args...)...)
 }
 
 // Eq implements `IExprEqualish`.
-func (this OpGeq) Eq(operand interface{}) OpEq { return Eq(this, synFrom(operand)) }
+func (this OpGeq) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
 
 // Neq implements `IExprEqualish`.
-func (this OpGeq) Neq(operand interface{}) OpNeq { return Neq(this, synFrom(operand)) }
+func (this OpGeq) Neq(operand Any) OpNeq { return Neq(this, synFrom(operand)) }
 
 // And implements `IExprBoolish`.
-func (this OpGeq) And(operand interface{}) OpAnd { return And(this, synFrom(operand)) }
+func (this OpGeq) And(operand Any) OpAnd { return And(this, synFrom(operand)) }
 
 // Or implements `IExprBoolish`.
-func (this OpGeq) Or(operand interface{}) OpOr { return Or(this, synFrom(operand)) }
+func (this OpGeq) Or(operand Any) OpOr { return Or(this, synFrom(operand)) }
 
 // Not implements `IExprBoolish`.
 func (this OpGeq) Not() OpNot { return Not(this) }
 
 // Eq implements `IExprEqualish`.
-func (this OpLeq) Eq(operand interface{}) OpEq { return Eq(this, synFrom(operand)) }
+func (this OpLeq) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
 
 // Neq implements `IExprEqualish`.
-func (this OpLeq) Neq(operand interface{}) OpNeq { return Neq(this, synFrom(operand)) }
+func (this OpLeq) Neq(operand Any) OpNeq { return Neq(this, synFrom(operand)) }
 
 // And implements `IExprBoolish`.
-func (this OpLeq) And(operand interface{}) OpAnd { return And(this, synFrom(operand)) }
+func (this OpLeq) And(operand Any) OpAnd { return And(this, synFrom(operand)) }
 
 // Or implements `IExprBoolish`.
-func (this OpLeq) Or(operand interface{}) OpOr { return Or(this, synFrom(operand)) }
+func (this OpLeq) Or(operand Any) OpOr { return Or(this, synFrom(operand)) }
 
 // Not implements `IExprBoolish`.
 func (this OpLeq) Not() OpNot { return Not(this) }
 
 // Eq implements `IExprEqualish`.
-func (this OpGt) Eq(operand interface{}) OpEq { return Eq(this, synFrom(operand)) }
+func (this OpGt) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
 
 // Neq implements `IExprEqualish`.
-func (this OpGt) Neq(operand interface{}) OpNeq { return Neq(this, synFrom(operand)) }
+func (this OpGt) Neq(operand Any) OpNeq { return Neq(this, synFrom(operand)) }
 
 // And implements `IExprBoolish`.
-func (this OpGt) And(operand interface{}) OpAnd { return And(this, synFrom(operand)) }
+func (this OpGt) And(operand Any) OpAnd { return And(this, synFrom(operand)) }
 
 // Or implements `IExprBoolish`.
-func (this OpGt) Or(operand interface{}) OpOr { return Or(this, synFrom(operand)) }
+func (this OpGt) Or(operand Any) OpOr { return Or(this, synFrom(operand)) }
 
 // Not implements `IExprBoolish`.
 func (this OpGt) Not() OpNot { return Not(this) }
 
 // Eq implements `IExprEqualish`.
-func (this OpLt) Eq(operand interface{}) OpEq { return Eq(this, synFrom(operand)) }
+func (this OpLt) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
 
 // Neq implements `IExprEqualish`.
-func (this OpLt) Neq(operand interface{}) OpNeq { return Neq(this, synFrom(operand)) }
+func (this OpLt) Neq(operand Any) OpNeq { return Neq(this, synFrom(operand)) }
 
 // And implements `IExprBoolish`.
-func (this OpLt) And(operand interface{}) OpAnd { return And(this, synFrom(operand)) }
+func (this OpLt) And(operand Any) OpAnd { return And(this, synFrom(operand)) }
 
 // Or implements `IExprBoolish`.
-func (this OpLt) Or(operand interface{}) OpOr { return Or(this, synFrom(operand)) }
+func (this OpLt) Or(operand Any) OpOr { return Or(this, synFrom(operand)) }
 
 // Not implements `IExprBoolish`.
 func (this OpLt) Not() OpNot { return Not(this) }
 
 // Eq implements `IExprEqualish`.
-func (this OpEq) Eq(operand interface{}) OpEq { return Eq(this, synFrom(operand)) }
+func (this OpEq) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
 
 // Neq implements `IExprEqualish`.
-func (this OpEq) Neq(operand interface{}) OpNeq { return Neq(this, synFrom(operand)) }
+func (this OpEq) Neq(operand Any) OpNeq { return Neq(this, synFrom(operand)) }
 
 // And implements `IExprBoolish`.
-func (this OpEq) And(operand interface{}) OpAnd { return And(this, synFrom(operand)) }
+func (this OpEq) And(operand Any) OpAnd { return And(this, synFrom(operand)) }
 
 // Or implements `IExprBoolish`.
-func (this OpEq) Or(operand interface{}) OpOr { return Or(this, synFrom(operand)) }
+func (this OpEq) Or(operand Any) OpOr { return Or(this, synFrom(operand)) }
 
 // Not implements `IExprBoolish`.
 func (this OpEq) Not() OpNot { return Not(this) }
 
 // Eq implements `IExprEqualish`.
-func (this OpNeq) Eq(operand interface{}) OpEq { return Eq(this, synFrom(operand)) }
+func (this OpNeq) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
 
 // Neq implements `IExprEqualish`.
-func (this OpNeq) Neq(operand interface{}) OpNeq { return Neq(this, synFrom(operand)) }
+func (this OpNeq) Neq(operand Any) OpNeq { return Neq(this, synFrom(operand)) }
 
 // And implements `IExprBoolish`.
-func (this OpNeq) And(operand interface{}) OpAnd { return And(this, synFrom(operand)) }
+func (this OpNeq) And(operand Any) OpAnd { return And(this, synFrom(operand)) }
 
 // Or implements `IExprBoolish`.
-func (this OpNeq) Or(operand interface{}) OpOr { return Or(this, synFrom(operand)) }
+func (this OpNeq) Or(operand Any) OpOr { return Or(this, synFrom(operand)) }
 
 // Not implements `IExprBoolish`.
 func (this OpNeq) Not() OpNot { return Not(this) }
 
 // Set implements `IExprVar`.
-func (this OpComma) Set(operand interface{}) OpSet { return Set(this, synFrom(operand)) }
+func (this OpComma) Set(operand Any) OpSet { return Set(this, synFrom(operand)) }
 
 // Let implements `IExprVar`.
-func (this OpComma) Let(operand interface{}) OpDecl { return Decl(this, synFrom(operand)) }
+func (this OpComma) Let(operand Any) OpDecl { return Decl(this, synFrom(operand)) }
 
 // Eq implements `IExprEqualish`.
-func (this OpOr) Eq(operand interface{}) OpEq { return Eq(this, synFrom(operand)) }
+func (this OpOr) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
 
 // Neq implements `IExprEqualish`.
-func (this OpOr) Neq(operand interface{}) OpNeq { return Neq(this, synFrom(operand)) }
+func (this OpOr) Neq(operand Any) OpNeq { return Neq(this, synFrom(operand)) }
 
 // And implements `IExprBoolish`.
-func (this OpOr) And(operand interface{}) OpAnd { return And(this, synFrom(operand)) }
+func (this OpOr) And(operand Any) OpAnd { return And(this, synFrom(operand)) }
 
 // Or implements `IExprBoolish`.
-func (this OpOr) Or(operand interface{}) OpOr { return Or(this, synFrom(operand)) }
+func (this OpOr) Or(operand Any) OpOr { return Or(this, synFrom(operand)) }
 
 // Not implements `IExprBoolish`.
 func (this OpOr) Not() OpNot { return Not(this) }
 
 // Eq implements `IExprEqualish`.
-func (this OpAnd) Eq(operand interface{}) OpEq { return Eq(this, synFrom(operand)) }
+func (this OpAnd) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
 
 // Neq implements `IExprEqualish`.
-func (this OpAnd) Neq(operand interface{}) OpNeq { return Neq(this, synFrom(operand)) }
+func (this OpAnd) Neq(operand Any) OpNeq { return Neq(this, synFrom(operand)) }
 
 // And implements `IExprBoolish`.
-func (this OpAnd) And(operand interface{}) OpAnd { return And(this, synFrom(operand)) }
+func (this OpAnd) And(operand Any) OpAnd { return And(this, synFrom(operand)) }
 
 // Or implements `IExprBoolish`.
-func (this OpAnd) Or(operand interface{}) OpOr { return Or(this, synFrom(operand)) }
+func (this OpAnd) Or(operand Any) OpOr { return Or(this, synFrom(operand)) }
 
 // Not implements `IExprBoolish`.
 func (this OpAnd) Not() OpNot { return Not(this) }
 
 // Eq implements `IExprEqualish`.
-func (this OpNot) Eq(operand interface{}) OpEq { return Eq(this, synFrom(operand)) }
+func (this OpNot) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
 
 // Neq implements `IExprEqualish`.
-func (this OpNot) Neq(operand interface{}) OpNeq { return Neq(this, synFrom(operand)) }
+func (this OpNot) Neq(operand Any) OpNeq { return Neq(this, synFrom(operand)) }
 
 // And implements `IExprBoolish`.
-func (this OpNot) And(operand interface{}) OpAnd { return And(this, synFrom(operand)) }
+func (this OpNot) And(operand Any) OpAnd { return And(this, synFrom(operand)) }
 
 // Or implements `IExprBoolish`.
-func (this OpNot) Or(operand interface{}) OpOr { return Or(this, synFrom(operand)) }
+func (this OpNot) Or(operand Any) OpOr { return Or(this, synFrom(operand)) }
 
 // Not implements `IExprBoolish`.
 func (this OpNot) Not() OpNot { return Not(this) }
 
 // Set implements `IExprVar`.
-func (this OpIdx) Set(operand interface{}) OpSet { return Set(this, synFrom(operand)) }
+func (this OpIdx) Set(operand Any) OpSet { return Set(this, synFrom(operand)) }
 
 // Addr implements `IExprVarish`.
 func (this OpIdx) Addr() OpAddr { return Addr(this) }
@@ -380,34 +380,34 @@ func (this OpIdx) Addr() OpAddr { return Addr(this) }
 func (this OpIdx) Deref() OpDeref { return Deref(this) }
 
 // And implements `IExprBoolish`.
-func (this OpIdx) And(operand interface{}) OpAnd { return And(this, synFrom(operand)) }
+func (this OpIdx) And(operand Any) OpAnd { return And(this, synFrom(operand)) }
 
 // Or implements `IExprBoolish`.
-func (this OpIdx) Or(operand interface{}) OpOr { return Or(this, synFrom(operand)) }
+func (this OpIdx) Or(operand Any) OpOr { return Or(this, synFrom(operand)) }
 
 // Eq implements `IExprEqualish`.
-func (this OpIdx) Eq(operand interface{}) OpEq { return Eq(this, synFrom(operand)) }
+func (this OpIdx) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
 
 // Neq implements `IExprEqualish`.
-func (this OpIdx) Neq(operand interface{}) OpNeq { return Neq(this, synFrom(operand)) }
+func (this OpIdx) Neq(operand Any) OpNeq { return Neq(this, synFrom(operand)) }
 
 // Geq implements `IExprOrdish`.
-func (this OpIdx) Geq(operand interface{}) IExprBoolish { return Geq(this, synFrom(operand)) }
+func (this OpIdx) Geq(operand Any) IExprBoolish { return Geq(this, synFrom(operand)) }
 
 // Gt implements `IExprOrdish`.
-func (this OpIdx) Gt(operand interface{}) IExprBoolish { return Gt(this, synFrom(operand)) }
+func (this OpIdx) Gt(operand Any) IExprBoolish { return Gt(this, synFrom(operand)) }
 
 // Leq implements `IExprOrdish`.
-func (this OpIdx) Leq(operand interface{}) IExprBoolish { return Leq(this, synFrom(operand)) }
+func (this OpIdx) Leq(operand Any) IExprBoolish { return Leq(this, synFrom(operand)) }
 
 // Lt implements `IExprOrdish`.
-func (this OpIdx) Lt(operand interface{}) IExprBoolish { return Lt(this, synFrom(operand)) }
+func (this OpIdx) Lt(operand Any) IExprBoolish { return Lt(this, synFrom(operand)) }
 
 // Plus implements `IExprNumerish`.
-func (this OpIdx) Plus(operand interface{}) OpAdd { return Add(this, synFrom(operand)) }
+func (this OpIdx) Plus(operand Any) OpAdd { return Add(this, synFrom(operand)) }
 
 // Minus implements `IExprNumerish`.
-func (this OpIdx) Minus(operand interface{}) OpSub { return Sub(this, synFrom(operand)) }
+func (this OpIdx) Minus(operand Any) OpSub { return Sub(this, synFrom(operand)) }
 
 // Decr1 implements `IExprVarish`.
 func (this OpIdx) Decr1() OpSet { return Set(this, Sub(this, L(1))) }
@@ -416,20 +416,20 @@ func (this OpIdx) Decr1() OpSet { return Set(this, Sub(this, L(1))) }
 func (this OpIdx) Incr1() OpSet { return Set(this, Add(this, L(1))) }
 
 // Times implements `IExprNumerish`.
-func (this OpIdx) Times(operand interface{}) OpMul { return Mul(this, synFrom(operand)) }
+func (this OpIdx) Times(operand Any) OpMul { return Mul(this, synFrom(operand)) }
 
 // Div implements `IExprNumerish`.
-func (this OpIdx) Div(operand interface{}) OpDiv { return Div(this, synFrom(operand)) }
+func (this OpIdx) Div(operand Any) OpDiv { return Div(this, synFrom(operand)) }
 
 // Mod implements `IExprNumerish`.
-func (this OpIdx) Mod(operand interface{}) OpMod { return Mod(this, synFrom(operand)) }
+func (this OpIdx) Mod(operand Any) OpMod { return Mod(this, synFrom(operand)) }
 
 // At implements `IExprContainish`.
-func (this OpIdx) At(operand interface{}) OpIdx { return I(this, synFrom(operand)) }
+func (this OpIdx) At(operand Any) OpIdx { return At(this, synFrom(operand)) }
 
 // Sl implements `IExprContainish`.
-func (this OpIdx) Sl(startIndex interface{}, stopIndex interface{}) OpIdx {
-	return I(this, Sl(synFrom(startIndex), synFrom(stopIndex)))
+func (this OpIdx) Sl(startIndex Any, stopIndex Any) OpIdx {
+	return At(this, Sl(synFrom(startIndex), synFrom(stopIndex)))
 }
 
 // Not implements `IExprBoolish`.
@@ -438,5 +438,5 @@ func (this OpIdx) Not() OpNot { return Not(this) }
 // Neg implements `IExprNumerish`.
 func (this OpIdx) Neg() OpSub { return Neg(this) }
 
-// Call implements `IExprCallish`.
-func (this OpIdx) Call(args ...interface{}) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
+// C implements `IExprCallish`.
+func (this OpIdx) C(args ...Any) *ExprCall { return Call(this, synsFrom(nil, args...)...) }

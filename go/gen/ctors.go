@@ -13,10 +13,10 @@ func Names(names ...string) OpComma {
 }
 
 // L constructs an `ExprLit`.
-func L(lit interface{}) ExprLit { return ExprLit{Val: lit} }
+func L(lit Any) ExprLit { return ExprLit{Val: lit} }
 
 // Lits constructs an `OpComma` of `ExprLit` operands.
-func Lits(lits ...interface{}) OpComma {
+func Lits(lits ...Any) OpComma {
 	operands := make(Syns, len(lits))
 	for i := range lits {
 		operands[i] = ExprLit{Val: lits[i]}
@@ -73,8 +73,8 @@ func Geq(operands ...ISyn) OpGeq { return OpGeq{Op: Op{Operands: operands}} }
 // Gt constructs an `OpGt`.
 func Gt(operands ...ISyn) OpGt { return OpGt{Op: Op{Operands: operands}} }
 
-// I constructs an `OpIdx`.
-func I(operands ...ISyn) OpIdx { return OpIdx{Op: Op{Operands: operands}} }
+// At constructs an `OpIdx`.
+func At(operands ...ISyn) OpIdx { return OpIdx{Op: Op{Operands: operands}} }
 
 // Leq constructs an `OpLeq`.
 func Leq(operands ...ISyn) OpLeq { return OpLeq{Op: Op{Operands: operands}} }
@@ -192,12 +192,12 @@ func Block(body ...ISyn) (this SynBlock) {
 	return
 }
 
-// Then simply returns `body`, just like `Else` does: it's only readability sugar for `If` (or `GEN_IF`) calls.
+// Then simply returns `body`, just like `Else` does: it's only readability sugar for use in `If` (or `GEN_IF`) calls.
 func Then(body ...ISyn) Syns {
 	return body
 }
 
-// Else simply returns `body`, just like `Then` does: it's only readability sugar for `If` (or `GEN_IF`) calls.
+// Else simply returns `body`, just like `Then` does: it's only readability sugar for use in `If` (or `GEN_IF`) calls.
 func Else(body ...ISyn) Syns {
 	return body
 }
@@ -205,6 +205,17 @@ func Else(body ...ISyn) Syns {
 // Call constructs an `ExprCall`.
 func Call(callee ISyn, args ...ISyn) *ExprCall {
 	return &ExprCall{Callee: callee, Args: args}
+}
+
+func C(callee Any, args ...Any) *ExprCall {
+	var syn ISyn
+	switch c := callee.(type) {
+	case ISyn:
+		syn = c
+	case string:
+		syn = N(c)
+	}
+	return &ExprCall{Callee: syn, Args: synsFrom(nil, args...)}
 }
 
 // Const constructs a `StmtConst`.
@@ -218,43 +229,6 @@ func Const(name string, maybeType *TypeRef, exprLit ExprLit) (this *StmtConst) {
 func Defer(call *ExprCall) (this StmtDefer) {
 	this.Expr = call
 	return
-}
-
-// GEN_IF returns either none, all, or one of `stmts` depending on `check` and as follows:
-//
-// - if there are 2 `stmts` and _each one_ is a `Syns`, they're **then/else**-like and one returns
-//
-// - otherwise: if `check` is `true`, all `stmts` are returned, else `nil` is returned
-func GEN_IF(check bool, stmts ...ISyn) Syns {
-	if len(stmts) == 2 {
-		if otherwise, okelse := stmts[1].(Syns); okelse {
-			if then, okthen := stmts[0].(Syns); okthen {
-				if check {
-					return then
-				}
-				return otherwise
-			}
-		}
-	}
-	if check {
-		return stmts
-	}
-	return nil
-}
-
-// USUALLY serves as a codegen-time readability wrapper for `GEN_BYCASE` callers.
-type USUALLY ISyn
-
-// UNLESS serves as a codegen-time readability wrapper for `GEN_BYCASE` callers.
-type UNLESS map[bool]ISyn
-
-// GEN_BYCASE is like a codegen-time `switch..case` construct:
-// it returns `unless[true]` if present, else `byDefault`.
-func GEN_BYCASE(byDefault USUALLY, unless UNLESS) ISyn {
-	if then, ok := unless[true]; ok {
-		return then
-	}
-	return byDefault
 }
 
 // File constructs a `SourceFile`.
@@ -289,14 +263,14 @@ func Go(call *ExprCall) (this StmtGo) {
 // 0 or more alternating-pairs of `if` conditions and corresponding
 // `then` branches, plus optionally a final `else` branch.
 func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
-	this = &StmtIf{IfThens: make(SynConds, 0, 1+len(ifThensAndMaybeAnElse)/2)}
+	this = &StmtIf{IfThens: make(SynCases, 0, 1+len(ifThensAndMaybeAnElse)/2)}
 	if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
 		this.Else.Body = synsFrom(ifThensAndMaybeAnElse[l-1])
 		ifThensAndMaybeAnElse = ifThensAndMaybeAnElse[:l-1]
 	}
 	for i := 1; i < len(ifThensAndMaybeAnElse); i += 2 {
 		body := synsFrom(ifThensAndMaybeAnElse[i])
-		this.IfThens = append(this.IfThens, SynCond{Cond: ifThensAndMaybeAnElse[i-1], SynBlock: SynBlock{Body: body}})
+		this.IfThens = append(this.IfThens, SynCase{Cond: ifThensAndMaybeAnElse[i-1], SynBlock: SynBlock{Body: body}})
 	}
 	return
 }
@@ -311,18 +285,15 @@ func Ret(retExpr ISyn) (this StmtRet) {
 }
 
 // Switch constructs a `StmtSwitch`.
-func Switch(maybeScrutinee ISyn, casesCap int, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch) {
-	if c := len(caseCondsAndBlocksPlusMaybeDefaultBlock) / 2; casesCap < c {
-		casesCap = c
-	}
-	this = &StmtSwitch{Scrutinee: maybeScrutinee, Cases: make(SynConds, 0, casesCap)}
+func Switch(maybeScrutinee ISyn, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch) {
+	this = &StmtSwitch{Scrutinee: maybeScrutinee, Cases: make(SynCases, 0, 1+len(caseCondsAndBlocksPlusMaybeDefaultBlock)/2)}
 	if l := len(caseCondsAndBlocksPlusMaybeDefaultBlock); l%2 != 0 {
 		this.Default.Body = synsFrom(caseCondsAndBlocksPlusMaybeDefaultBlock[l-1])
 		caseCondsAndBlocksPlusMaybeDefaultBlock = caseCondsAndBlocksPlusMaybeDefaultBlock[:l-1]
 	}
 	for i := 1; i < len(caseCondsAndBlocksPlusMaybeDefaultBlock); i += 2 {
 		body := synsFrom(caseCondsAndBlocksPlusMaybeDefaultBlock[i])
-		this.Cases = append(this.Cases, SynCond{Cond: caseCondsAndBlocksPlusMaybeDefaultBlock[i-1], SynBlock: SynBlock{Body: body}})
+		this.Cases = append(this.Cases, SynCase{Cond: caseCondsAndBlocksPlusMaybeDefaultBlock[i-1], SynBlock: SynBlock{Body: body}})
 	}
 	return
 }
@@ -334,10 +305,9 @@ func Var(name string, maybeType *TypeRef, maybeExpr ISyn) (this *StmtVar) {
 	return
 }
 
-// Cond constructs a `SynCond` as used in `StmtIf`s and `StmtSwitch`es.
-func Cond(cond ISyn, thens ...ISyn) (this SynCond) {
-	this.Cond, this.Body = cond, thens
-	return
+// Case constructs a `SynCase` as used in `StmtIf`s and `StmtSwitch`es.
+func Case(cond ISyn, thens ...ISyn) *SynCase {
+	return &SynCase{Cond: cond, SynBlock: SynBlock{Body: thens}}
 }
 
 // Fn constructs a `SynFunc`. If `maybeRecv` has a `Type` set, `this` represents a method of that type.
@@ -352,14 +322,14 @@ func Func(name string, args ...NamedTyped) *SynFunc {
 	return &SynFunc{NamedTyped: NamedTyped{Named: Named{Name: name}, Type: TrFunc(TdFn(args))}}
 }
 
-func synFrom(any interface{}) ISyn {
+func synFrom(any Any) ISyn {
 	if syn, ok := any.(ISyn); ok {
 		return syn
 	}
 	return ExprLit{Val: any}
 }
 
-func synsFrom(eitherSyn ISyn, orThings ...interface{}) Syns {
+func synsFrom(eitherSyn ISyn, orThings ...Any) Syns {
 	if eitherSyn == nil && len(orThings) > 0 {
 		syns := make(Syns, len(orThings))
 		for i, any := range orThings {

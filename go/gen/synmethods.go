@@ -81,10 +81,10 @@ func (this *ExprCall) Go() StmtGo {
 	return StmtGo{StmtUnary: StmtUnary{Expr: this}}
 }
 
-// C constructs an `ExprCall` of `name` exposed by `this` imported-package.
-func (this PkgName) C(name string, args ...ISyn) *ExprCall {
+// C constructs an `ExprCall` of the `funcName` exported by `this` imported-package.
+func (this PkgName) C(funcName string, args ...ISyn) *ExprCall {
 	return &ExprCall{
-		Callee: OpDot{Op: Op{Operands: Syns{Named{Name: string(this)}, Named{Name: name}}}},
+		Callee: OpDot{Op: Op{Operands: Syns{Named{Name: string(this)}, Named{Name: funcName}}}},
 		Args:   args,
 	}
 }
@@ -173,13 +173,37 @@ func (this *SynFunc) Sig(sig *TypeFunc) *SynFunc {
 
 // Case adds the given `case` branch to the `StmtSwitch.Cases` of `this`.
 func (this *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch {
-	this.Cases = append(this.Cases, SynCond{Cond: cond, SynBlock: SynBlock{Body: thens}})
+	this.Cases = append(this.Cases, SynCase{Cond: cond, SynBlock: SynBlock{Body: thens}})
 	return this
 }
 
-// Case adds the given `case` branches to the `StmtSwitch.Cases` of `this`.
-func (this *StmtSwitch) CasesOf(conds ...SynCond) *StmtSwitch {
-	this.Cases = append(this.Cases, conds...)
+// CasesFrom adds to `this.Cases` and returns `this`.
+// If `areAllSynCases`, each `ISyn` is expected to be a `*SynCase` and added.
+// Otherwise, `synCasesOrCondsAndThens` are alternating pairs of `Cond`s-and-thens
+// that are used to construct the individual `SynCase`s to add.
+func (this *StmtSwitch) CasesFrom(areAllSynCases bool, synCasesOrCondsAndThens ...ISyn) *StmtSwitch {
+	if div := 2; len(this.Cases) == 0 {
+		if areAllSynCases {
+			div = 1
+		}
+		this.Cases = make(SynCases, 0, len(synCasesOrCondsAndThens)/div)
+	}
+
+	if areAllSynCases {
+		for i := range synCasesOrCondsAndThens {
+			this.Cases = append(this.Cases, *synCasesOrCondsAndThens[i].(*SynCase))
+		}
+	} else {
+		for i := 1; i < len(synCasesOrCondsAndThens); i += 2 {
+			this.Cases = append(this.Cases, SynCase{Cond: synCasesOrCondsAndThens[i-1], SynBlock: SynBlock{Body: synsFrom(synCasesOrCondsAndThens[i])}})
+		}
+	}
+	return this
+}
+
+// CasesOf adds the given `case` branches to the `StmtSwitch.Cases` of `this`.
+func (this *StmtSwitch) CasesOf(cases ...SynCase) *StmtSwitch {
+	this.Cases = append(this.Cases, cases...)
 	return this
 }
 
