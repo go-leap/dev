@@ -121,6 +121,8 @@ var (
 		R Named
 		// `"s"`, common for a func's `string` arg
 		S Named
+		// `"t"`, suitable for temporary intermediate vars
+		T Named
 		// `"i"`, common for iterations
 		I Named
 		// `"j"`, common for sub-iterations
@@ -176,7 +178,7 @@ var (
 )
 
 func init() {
-	Vars.Err.Name, Vars.Err.Type, Vars.R.Name, Vars.This.Name, Vars.Self.Name, Vars.Me.Name, Vars.I.Name, Vars.J.Name, Vars.K.Name, Vars.V.Name, Vars.Ok.Name, Vars.S.Name = "err", TrNamed("", "error"), "r", "this", "self", "me", "i", "j", "k", "v", "ok", "s"
+	Vars.Err.Name, Vars.Err.Type, Vars.R.Name, Vars.This.Name, Vars.Self.Name, Vars.Me.Name, Vars.I.Name, Vars.J.Name, Vars.K.Name, Vars.V.Name, Vars.Ok.Name, Vars.S.Name, Vars.T.Name = "err", TrNamed("", "error"), "r", "this", "self", "me", "i", "j", "k", "v", "ok", "s", "t"
 
 	B.Append.Name, B.Cap.Name, B.Close.Name, B.Complex.Name, B.Copy.Name, B.Delete.Name, B.Imag.Name, B.Len.Name, B.Make.Name, B.New.Name, B.Panic.Name, B.Print.Name, B.Println.Name, B.Real.Name, B.Recover.Name = "append", "cap", "close", "complex", "copy", "delete", "imag", "len", "make", "new", "panic", "print", "println", "real", "recover"
 	B.True, B.False = L(true), L(false)

@@ -55,7 +55,16 @@ func And(operands ...ISyn) OpAnd {
 func Tup(operands ...ISyn) OpComma { return OpComma{Op: Op{Operands: operands}} }
 
 // Sl constructs an `OpColon`.
-func Sl(operands ...ISyn) OpColon { return OpColon{Op: Op{Operands: operands}} }
+func Sl(operands ...ISyn) OpColon {
+	for i := range operands {
+		if lit, okl := operands[i].(ExprLit); okl {
+			if intlit, oki := lit.Val.(int); (oki && intlit == -1) || lit.Val == nil {
+				operands[i] = nil
+			}
+		}
+	}
+	return OpColon{Op: Op{Operands: operands}}
+}
 
 // D constructs an `OpDot`.
 func D(operands ...ISyn) OpDot { return OpDot{Op: Op{Operands: operands}} }
@@ -278,6 +287,8 @@ func Go(call *ExprCall) (this StmtGo) {
 // If constructs a `StmtIf` with `ifThensAndMaybeAnElse` containing
 // 0 or more alternating-pairs of `if` conditions and corresponding
 // `then` branches, plus optionally a final `else` branch.
+//
+// Should any of the `if` conditions be `nil`, then `this` will return as `nil`.
 func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
 	this = &StmtIf{IfThens: make(SynCases, 0, 1+len(ifThensAndMaybeAnElse)/2)}
 	if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
@@ -285,8 +296,11 @@ func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
 		ifThensAndMaybeAnElse = ifThensAndMaybeAnElse[:l-1]
 	}
 	for i := 1; i < len(ifThensAndMaybeAnElse); i += 2 {
-		body := synsFrom(ifThensAndMaybeAnElse[i])
-		this.IfThens = append(this.IfThens, SynCase{Cond: ifThensAndMaybeAnElse[i-1], SynBlock: SynBlock{Body: body}})
+		if cond, body := ifThensAndMaybeAnElse[i-1], synsFrom(ifThensAndMaybeAnElse[i]); cond == nil {
+			return nil
+		} else {
+			this.IfThens = append(this.IfThens, SynCase{Cond: cond, SynBlock: SynBlock{Body: body}})
+		}
 	}
 	return
 }
@@ -346,13 +360,16 @@ func synFrom(any Any) ISyn {
 }
 
 func synsFrom(eitherSyn ISyn, orThings ...Any) Syns {
-	if eitherSyn == nil && len(orThings) > 0 {
-		syns := make(Syns, len(orThings))
-		for i, any := range orThings {
-			if syn, ok := any.(ISyn); ok {
-				syns[i] = syn
-			} else {
-				syns[i] = ExprLit{Val: any}
+	if eitherSyn == nil {
+		var syns Syns
+		if len(orThings) > 0 {
+			syns = make(Syns, len(orThings))
+			for i, any := range orThings {
+				if syn, ok := any.(ISyn); ok {
+					syns[i] = syn
+				} else {
+					syns[i] = ExprLit{Val: any}
+				}
 			}
 		}
 		return syns
@@ -362,9 +379,6 @@ func synsFrom(eitherSyn ISyn, orThings ...Any) Syns {
 	}
 	if syns, ok := eitherSyn.(Syns); ok {
 		return syns
-	}
-	if eitherSyn == nil {
-		return nil
 	}
 	return Syns{eitherSyn}
 }

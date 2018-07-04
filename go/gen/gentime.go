@@ -16,12 +16,10 @@ func GEN_MAYBE(maybe ISyn) ISyn {
 
 // GEN_EITHER returns `then` if `check`, else `otherwise`.
 func GEN_EITHER(check bool, then ISyn, otherwise ISyn) ISyn {
-	if check && then != nil {
+	if check {
 		return then
-	} else if (!check) && otherwise != nil {
-		return otherwise
 	}
-	return Syns(nil)
+	return otherwise
 }
 
 // GEN_IF returns either none, all, or one of `stmts` depending on `check` and as follows:

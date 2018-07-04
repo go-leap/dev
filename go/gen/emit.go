@@ -374,27 +374,29 @@ func (this Op) emit(w *writer, operator string) {
 		if i > 0 || unary {
 			w.WriteString(operator)
 		}
-		if canparens {
-			_, parens = this.Operands[i].(interface{ isOp() })
+		if this.Operands[i] != nil {
+			if canparens {
+				_, parens = this.Operands[i].(interface{ isOp() })
+				if parens {
+					switch this.Operands[i].(type) {
+					case OpIdx:
+						parens = false
+					}
+				}
+				if (!parens) && i == last && operator == "." {
+					if _, parens = this.Operands[i].(*TypeRef); !parens {
+						name, _ := this.Operands[i].(Named)
+						parens = name.Name == "type"
+					}
+				}
+			}
 			if parens {
-				switch this.Operands[i].(type) {
-				case OpIdx:
-					parens = false
-				}
+				w.WriteByte('(')
 			}
-			if (!parens) && i == last && operator == "." {
-				if _, parens = this.Operands[i].(*TypeRef); !parens {
-					name, _ := this.Operands[i].(Named)
-					parens = name.Name == "type"
-				}
+			this.Operands[i].emitTo(w)
+			if parens {
+				w.WriteByte(')')
 			}
-		}
-		if parens {
-			w.WriteByte('(')
-		}
-		this.Operands[i].emitTo(w)
-		if parens {
-			w.WriteByte(')')
 		}
 	}
 }

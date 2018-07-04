@@ -81,8 +81,8 @@ func (this *ExprCall) Go() StmtGo {
 	return StmtGo{StmtUnary: StmtUnary{Expr: this}}
 }
 
-// C constructs an `ExprCall` of the `funcName` exported by `this` imported-package.
-func (this PkgName) C(funcName string, args ...Any) *ExprCall {
+// Call constructs an `ExprCall` of the `funcName` exported by `this` imported-package.
+func (this PkgName) Call(funcName string, args ...Any) *ExprCall {
 	return &ExprCall{
 		Callee: OpDot{Op: Op{Operands: Syns{Named{Name: string(this)}, Named{Name: funcName}}}},
 		Args:   synsFrom(nil, args...),

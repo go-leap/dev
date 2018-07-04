@@ -90,6 +90,8 @@ var (
 		R Named
 		// `"s"`, common for a func's `string` arg
 		S Named
+		// `"t"`, suitable for temporary intermediate vars
+		T Named
 		// `"i"`, common for iterations
 		I Named
 		// `"j"`, common for sub-iterations
@@ -1654,12 +1656,12 @@ type PkgName string
 
 PkgName offers some handy methods on package import names.
 
-#### func (PkgName) C
+#### func (PkgName) Call
 
 ```go
-func (this PkgName) C(funcName string, args ...Any) *ExprCall
+func (this PkgName) Call(funcName string, args ...Any) *ExprCall
 ```
-C constructs an `ExprCall` of the `funcName` exported by `this`
+Call constructs an `ExprCall` of the `funcName` exported by `this`
 imported-package.
 
 #### type SingleLineDocCommentParagraphs
@@ -1873,6 +1875,8 @@ func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf)
 If constructs a `StmtIf` with `ifThensAndMaybeAnElse` containing 0 or more
 alternating-pairs of `if` conditions and corresponding `then` branches, plus
 optionally a final `else` branch.
+
+Should any of the `if` conditions be `nil`, then `this` will return as `nil`.
 
 #### type StmtLabel
 
