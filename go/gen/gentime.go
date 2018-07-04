@@ -6,12 +6,22 @@ type USUALLY ISyn
 // UNLESS serves as a codegen-time readability wrapper for `GEN_BYCASE` callers.
 type UNLESS map[bool]ISyn
 
+// GEN_MAYBE returns `maybe` if not `nil`, otherwise an empty `Syns`.
+func GEN_MAYBE(maybe ISyn) ISyn {
+	if maybe == nil {
+		return Syns(nil)
+	}
+	return maybe
+}
+
 // GEN_EITHER returns `then` if `check`, else `otherwise`.
 func GEN_EITHER(check bool, then ISyn, otherwise ISyn) ISyn {
-	if check {
+	if check && then != nil {
 		return then
+	} else if (!check) && otherwise != nil {
+		return otherwise
 	}
-	return otherwise
+	return Syns(nil)
 }
 
 // GEN_IF returns either none, all, or one of `stmts` depending on `check` and as follows:
@@ -45,17 +55,29 @@ func GEN_BYCASE(byDefault USUALLY, unless UNLESS) ISyn {
 	return byDefault
 }
 
-// GEN_FOR is a codegen-time iterating `Syns`-builder. Traversing `sl` with the
-// given `step` skip-length, it calls `each` once per iteration with a fresh
-// sub-slice of `sl` that has a `len` of usually `step` and always greater than zero (but
-// it might be less than `step` in the very last iteration depending on the `len` of `sl`).
-func GEN_FOR(sl []Any, step int, each func([]Any) ISyn) (yield Syns) {
+// GEN_FOR_IN is a codegen-time iterating `Syns`-builder. It calls `do` once per
+// iteration with the current index, which is equal to `start` in the very first
+// iteration, never less-than zero and always less-than `whileLessThan`.
+func GEN_FOR(start int, whileLessThan int, incrementBy int, do func(int) ISyn) (yield Syns) {
+	yield = make(Syns, 0, (whileLessThan-start)/incrementBy)
+	for i := start; (i >= 0) && (i < whileLessThan); i += incrementBy {
+		yield = append(yield, do(i))
+	}
+	return
+}
+
+// GEN_FOR_IN is a codegen-time iterating `Syns`-builder. Traversing `sl` with the given `step`
+// skip-length, it calls `each` once per iteration with the current index into `sl` and the next
+// sub-slice of `sl` (at that index) that has a `len` of usually `step` and always greater than zero
+// (but it might be less than `step` in the very last iteration depending on the `len` of `sl`).
+func GEN_FOR_IN(sl []Any, step int, each func(int, []Any) ISyn) (yield Syns) {
+	yield = make(Syns, 0, len(sl)/step)
 	for i := 0; i < len(sl); i += step {
-		idx := i + step
-		if idx > len(sl) {
-			idx = len(sl)
+		max := i + step
+		if max > len(sl) {
+			max = len(sl)
 		}
-		yield = append(yield, each(sl[i:idx]))
+		yield = append(yield, each(i, sl[i:max]))
 	}
 	return
 }

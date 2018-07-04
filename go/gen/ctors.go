@@ -41,7 +41,15 @@ func Add(operands ...ISyn) OpAdd { return OpAdd{Op: Op{Operands: operands}} }
 func Addr(operands ...ISyn) OpAddr { return OpAddr{Op: Op{Operands: operands}} }
 
 // And constructs an `OpAnd`.
-func And(operands ...ISyn) OpAnd { return OpAnd{Op: Op{Operands: operands}} }
+func And(operands ...ISyn) OpAnd {
+	if len(operands) == 2 {
+		if opand, ok := operands[0].(OpAnd); ok {
+			opand.Operands = append(opand.Operands, operands[1])
+			return opand
+		}
+	}
+	return OpAnd{Op: Op{Operands: operands}}
+}
 
 // Tup constructs an `OpComma`.
 func Tup(operands ...ISyn) OpComma { return OpComma{Op: Op{Operands: operands}} }
@@ -95,7 +103,15 @@ func Neq(operands ...ISyn) OpNeq { return OpNeq{Op: Op{Operands: operands}} }
 func Not(operands ...ISyn) OpNot { return OpNot{Op: Op{Operands: operands}} }
 
 // Or constructs an `OpOr`.
-func Or(operands ...ISyn) OpOr { return OpOr{Op: Op{Operands: operands}} }
+func Or(operands ...ISyn) OpOr {
+	if len(operands) == 2 {
+		if opor, ok := operands[0].(OpOr); ok {
+			opor.Operands = append(opor.Operands, operands[1])
+			return opor
+		}
+	}
+	return OpOr{Op: Op{Operands: operands}}
+}
 
 // Set constructs an `OpSet`.
 func Set(operands ...ISyn) OpSet { return OpSet{Op: Op{Operands: operands}} }

@@ -192,13 +192,6 @@ func (this *ExprCall) At(operand Any) OpIdx
 ```
 At implements `IExprContainish`.
 
-#### func (*ExprCall) C
-
-```go
-func (this *ExprCall) C(args ...Any) *ExprCall
-```
-C implements `IExprCallish`.
-
 #### func (*ExprCall) Defer
 
 ```go
@@ -297,6 +290,13 @@ func (this *ExprCall) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
+#### func (*ExprCall) Of
+
+```go
+func (this *ExprCall) Of(args ...Any) *ExprCall
+```
+Of implements `IExprCallish`.
+
 #### func (*ExprCall) Or
 
 ```go
@@ -349,8 +349,11 @@ L constructs an `ExprLit`.
 type IExprBoolish interface {
 	IExprEqualish
 
+	// expr.And(foo) == And(expr, ISyn(foo))
 	And(Any) OpAnd
+	// expr.Or(foo) == Or(expr, ISyn(foo))
 	Or(Any) OpOr
+	// expr.Not() == Not(expr)
 	Not() OpNot
 }
 ```
@@ -367,7 +370,8 @@ others are converted into `ExprLit`s.
 type IExprCallish interface {
 	ISyn
 
-	C(...Any) *ExprCall
+	// expr.Of(foos...) == Call(expr, Syns(foos)...)
+	Of(...Any) *ExprCall
 }
 ```
 
@@ -383,14 +387,17 @@ others are converted into `ExprLit`s.
 type IExprContainish interface {
 	ISyn
 
+	// expr.At(foo) == At(expr, ISyn(foo))
 	At(Any) OpIdx
+	// expr.Deref() == Deref(expr)
 	Deref() OpDeref
+	// expr.Sl(foo,bar) == At(expr, Sl(Syn(foo), Syn(bar)))
 	Sl(Any, Any) OpIdx
 }
 ```
 
 IExprContainish is implemented by `ISyn`s that also wish to offer dot-accessor
-syntax over the `At` and `Deref` constructors.
+syntax over the `At`, `Sl`, `Deref` constructors.
 
 #### type IExprEqualish
 
@@ -398,7 +405,9 @@ syntax over the `At` and `Deref` constructors.
 type IExprEqualish interface {
 	ISyn
 
+	// expr.Eq(foo) == Eq(expr, ISyn(foo))
 	Eq(Any) OpEq
+	// expr.Neq(foo) == Neq(expr, ISyn(foo))
 	Neq(Any) OpNeq
 }
 ```
@@ -415,11 +424,17 @@ others are converted into `ExprLit`s.
 type IExprNumerish interface {
 	IExprOrdish
 
+	// expr.Plus(foo) == Add(expr, ISyn(foo))
 	Plus(Any) OpAdd
+	// expr.Minus(foo) == Sub(expr, ISyn(foo))
 	Minus(Any) OpSub
+	// expr.Times(foo) == Mul(expr, ISyn(foo))
 	Times(Any) OpMul
+	// expr.Div(foo) == Div(expr, ISyn(foo))
 	Div(Any) OpDiv
+	// expr.Mod(foo) == Mod(expr, ISyn(foo))
 	Mod(Any) OpMod
+	// expr.Neg() == Neg(expr)
 	Neg() OpSub
 }
 ```
@@ -436,9 +451,13 @@ others are converted into `ExprLit`s.
 type IExprOrdish interface {
 	IExprEqualish
 
+	// expr.Geq(foo) == Geq(expr, ISyn(foo))
 	Geq(Any) IExprBoolish
+	// expr.Leq(foo) == Leq(expr, ISyn(foo))
 	Leq(Any) IExprBoolish
+	// expr.Gt(foo) == Gt(expr, ISyn(foo))
 	Gt(Any) IExprBoolish
+	// expr.Lt(foo) == Lt(expr, ISyn(foo))
 	Lt(Any) IExprBoolish
 }
 ```
@@ -458,10 +477,15 @@ others are converted into `ExprLit`s.
 type IExprVarish interface {
 	IExprContainish
 
+	// expr.Addr() == Addr(expr)
 	Addr() OpAddr
+	// expr.Set(foo) == Set(expr, ISyn(foo))
 	Set(Any) OpSet
+	// expr.Let(foo) == Decl(expr, ISyn(foo))
 	Let(Any) OpDecl
+	// expr.Incr1() == Set(expr, Add(expr, L(1)))
 	Incr1() OpSet
+	// expr.Decr1() == Set(expr, Sub(expr, L(1)))
 	Decr1() OpSet
 }
 ```
@@ -498,6 +522,13 @@ GEN_BYCASE is like a codegen-time `switch..case` construct: it returns
 func GEN_EITHER(check bool, then ISyn, otherwise ISyn) ISyn
 ```
 GEN_EITHER returns `then` if `check`, else `otherwise`.
+
+#### func  GEN_MAYBE
+
+```go
+func GEN_MAYBE(maybe ISyn) ISyn
+```
+GEN_MAYBE returns `maybe` if not `nil`, otherwise an empty `Syns`.
 
 #### type Named
 
@@ -537,13 +568,6 @@ And implements `IExprBoolish`.
 func (this Named) At(operand Any) OpIdx
 ```
 At implements `IExprContainish`.
-
-#### func (Named) C
-
-```go
-func (this Named) C(args ...Any) *ExprCall
-```
-C implements `IExprCallish`.
 
 #### func (Named) Decr1
 
@@ -649,6 +673,13 @@ Neq implements `IExprEqualish`.
 func (this Named) Not() OpNot
 ```
 Not implements `IExprBoolish`.
+
+#### func (Named) Of
+
+```go
+func (this Named) Of(args ...Any) *ExprCall
+```
+Of implements `IExprCallish`.
 
 #### func (Named) OfType
 
@@ -1139,13 +1170,6 @@ func (this OpIdx) At(operand Any) OpIdx
 ```
 At implements `IExprContainish`.
 
-#### func (OpIdx) C
-
-```go
-func (this OpIdx) C(args ...Any) *ExprCall
-```
-C implements `IExprCallish`.
-
 #### func (OpIdx) Decr1
 
 ```go
@@ -1243,6 +1267,13 @@ Neq implements `IExprEqualish`.
 func (this OpIdx) Not() OpNot
 ```
 Not implements `IExprBoolish`.
+
+#### func (OpIdx) Of
+
+```go
+func (this OpIdx) Of(args ...Any) *ExprCall
+```
+Of implements `IExprCallish`.
 
 #### func (OpIdx) Or
 
@@ -2163,13 +2194,22 @@ for use in `If` (or `GEN_IF`) calls.
 #### func  GEN_FOR
 
 ```go
-func GEN_FOR(sl []Any, step int, each func([]Any) ISyn) (yield Syns)
+func GEN_FOR(start int, whileLessThan int, incrementBy int, do func(int) ISyn) (yield Syns)
 ```
-GEN_FOR is a codegen-time iterating `Syns`-builder. Traversing `sl` with the
-given `step` skip-length, it calls `each` once per iteration with a fresh
-sub-slice of `sl` that has a `len` of usually `step` and always greater than
-zero (but it might be less than `step` in the very last iteration depending on
-the `len` of `sl`).
+GEN_FOR_IN is a codegen-time iterating `Syns`-builder. It calls `do` once per
+iteration with the current index, which is equal to `start` in the very first
+iteration, never less-than zero and always less-than `whileLessThan`.
+
+#### func  GEN_FOR_IN
+
+```go
+func GEN_FOR_IN(sl []Any, step int, each func(int, []Any) ISyn) (yield Syns)
+```
+GEN_FOR_IN is a codegen-time iterating `Syns`-builder. Traversing `sl` with the
+given `step` skip-length, it calls `each` once per iteration with the current
+index into `sl` and the next sub-slice of `sl` (at that index) that has a `len`
+of usually `step` and always greater than zero (but it might be less than `step`
+in the very last iteration depending on the `len` of `sl`).
 
 #### func  GEN_IF
 

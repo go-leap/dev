@@ -8,20 +8,28 @@ package udevgogen
 type IExprVarish interface {
 	IExprContainish
 
+	// expr.Addr() == Addr(expr)
 	Addr() OpAddr
+	// expr.Set(foo) == Set(expr, ISyn(foo))
 	Set(Any) OpSet
+	// expr.Let(foo) == Decl(expr, ISyn(foo))
 	Let(Any) OpDecl
+	// expr.Incr1() == Set(expr, Add(expr, L(1)))
 	Incr1() OpSet
+	// expr.Decr1() == Set(expr, Sub(expr, L(1)))
 	Decr1() OpSet
 }
 
-// IExprContainish is implemented by `ISyn`s that also wish to
-// offer dot-accessor syntax over the `At` and `Deref` constructors.
+// IExprContainish is implemented by `ISyn`s that also wish to offer
+// dot-accessor syntax over the `At`, `Sl`, `Deref` constructors.
 type IExprContainish interface {
 	ISyn
 
+	// expr.At(foo) == At(expr, ISyn(foo))
 	At(Any) OpIdx
+	// expr.Deref() == Deref(expr)
 	Deref() OpDeref
+	// expr.Sl(foo,bar) == At(expr, Sl(Syn(foo), Syn(bar)))
 	Sl(Any, Any) OpIdx
 }
 
@@ -33,7 +41,9 @@ type IExprContainish interface {
 type IExprEqualish interface {
 	ISyn
 
+	// expr.Eq(foo) == Eq(expr, ISyn(foo))
 	Eq(Any) OpEq
+	// expr.Neq(foo) == Neq(expr, ISyn(foo))
 	Neq(Any) OpNeq
 }
 
@@ -45,8 +55,11 @@ type IExprEqualish interface {
 type IExprBoolish interface {
 	IExprEqualish
 
+	// expr.And(foo) == And(expr, ISyn(foo))
 	And(Any) OpAnd
+	// expr.Or(foo) == Or(expr, ISyn(foo))
 	Or(Any) OpOr
+	// expr.Not() == Not(expr)
 	Not() OpNot
 }
 
@@ -61,9 +74,13 @@ type IExprBoolish interface {
 type IExprOrdish interface {
 	IExprEqualish
 
+	// expr.Geq(foo) == Geq(expr, ISyn(foo))
 	Geq(Any) IExprBoolish
+	// expr.Leq(foo) == Leq(expr, ISyn(foo))
 	Leq(Any) IExprBoolish
+	// expr.Gt(foo) == Gt(expr, ISyn(foo))
 	Gt(Any) IExprBoolish
+	// expr.Lt(foo) == Lt(expr, ISyn(foo))
 	Lt(Any) IExprBoolish
 }
 
@@ -75,11 +92,17 @@ type IExprOrdish interface {
 type IExprNumerish interface {
 	IExprOrdish
 
+	// expr.Plus(foo) == Add(expr, ISyn(foo))
 	Plus(Any) OpAdd
+	// expr.Minus(foo) == Sub(expr, ISyn(foo))
 	Minus(Any) OpSub
+	// expr.Times(foo) == Mul(expr, ISyn(foo))
 	Times(Any) OpMul
+	// expr.Div(foo) == Div(expr, ISyn(foo))
 	Div(Any) OpDiv
+	// expr.Mod(foo) == Mod(expr, ISyn(foo))
 	Mod(Any) OpMod
+	// expr.Neg() == Neg(expr)
 	Neg() OpSub
 }
 
@@ -91,7 +114,8 @@ type IExprNumerish interface {
 type IExprCallish interface {
 	ISyn
 
-	C(...Any) *ExprCall
+	// expr.Of(foos...) == Call(expr, Syns(foos)...)
+	Of(...Any) *ExprCall
 }
 
 // Set implements `IExprVar`.
@@ -165,8 +189,8 @@ func (this Named) Not() OpNot { return Not(this) }
 // Neg implements `IExprNumerish`.
 func (this Named) Neg() OpSub { return Neg(this) }
 
-// C implements `IExprCallish`.
-func (this Named) C(args ...Any) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
+// Of implements `IExprCallish`.
+func (this Named) Of(args ...Any) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
 
 // Deref implements `IExprContainish`.
 func (this *ExprCall) Deref() OpDeref { return Deref(this) }
@@ -224,10 +248,8 @@ func (this *ExprCall) Not() OpNot { return Not(this) }
 // Neg implements `IExprNumerish`.
 func (this *ExprCall) Neg() OpSub { return Neg(this) }
 
-// C implements `IExprCallish`.
-func (this *ExprCall) C(args ...Any) *ExprCall {
-	return Call(this, synsFrom(nil, args...)...)
-}
+// Of implements `IExprCallish`.
+func (this *ExprCall) Of(args ...Any) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
 
 // Eq implements `IExprEqualish`.
 func (this OpGeq) Eq(operand Any) OpEq { return Eq(this, synFrom(operand)) }
@@ -438,5 +460,5 @@ func (this OpIdx) Not() OpNot { return Not(this) }
 // Neg implements `IExprNumerish`.
 func (this OpIdx) Neg() OpSub { return Neg(this) }
 
-// C implements `IExprCallish`.
-func (this OpIdx) C(args ...Any) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
+// Of implements `IExprCallish`.
+func (this OpIdx) Of(args ...Any) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
