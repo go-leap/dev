@@ -147,14 +147,6 @@ var (
 )
 ```
 
-#### type Any
-
-```go
-type Any = interface{}
-```
-
-Any is opinionated brevity-readability-delight.
-
 #### type ExprCall
 
 ```go
@@ -170,7 +162,7 @@ ExprCall represents a call to any callable `Callee`, or a type conversion (if
 #### func  C
 
 ```go
-func C(callee Any, args ...Any) *ExprCall
+func C(callee IAny, args ...IAny) *ExprCall
 ```
 
 #### func  Call
@@ -183,14 +175,14 @@ Call constructs an `ExprCall`.
 #### func (*ExprCall) And
 
 ```go
-func (this *ExprCall) And(operand Any) OpAnd
+func (this *ExprCall) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (*ExprCall) At
 
 ```go
-func (this *ExprCall) At(operand Any) OpIdx
+func (this *ExprCall) At(operand IAny) OpIdx
 ```
 At implements `IExprContainish`.
 
@@ -211,21 +203,21 @@ Deref implements `IExprContainish`.
 #### func (*ExprCall) Div
 
 ```go
-func (this *ExprCall) Div(operand Any) OpDiv
+func (this *ExprCall) Div(operand IAny) OpDiv
 ```
 Div implements `IExprNumerish`.
 
 #### func (*ExprCall) Eq
 
 ```go
-func (this *ExprCall) Eq(operand Any) OpEq
+func (this *ExprCall) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (*ExprCall) Geq
 
 ```go
-func (this *ExprCall) Geq(operand Any) IExprBoolish
+func (this *ExprCall) Geq(operand IAny) IExprBoolish
 ```
 Geq implements `IExprOrdish`.
 
@@ -239,35 +231,35 @@ Go constructs a `StmtGo` on `this` call.
 #### func (*ExprCall) Gt
 
 ```go
-func (this *ExprCall) Gt(operand Any) IExprBoolish
+func (this *ExprCall) Gt(operand IAny) IExprBoolish
 ```
 Gt implements `IExprOrdish`.
 
 #### func (*ExprCall) Leq
 
 ```go
-func (this *ExprCall) Leq(operand Any) IExprBoolish
+func (this *ExprCall) Leq(operand IAny) IExprBoolish
 ```
 Leq implements `IExprOrdish`.
 
 #### func (*ExprCall) Lt
 
 ```go
-func (this *ExprCall) Lt(operand Any) IExprBoolish
+func (this *ExprCall) Lt(operand IAny) IExprBoolish
 ```
 Lt implements `IExprOrdish`.
 
 #### func (*ExprCall) Minus
 
 ```go
-func (this *ExprCall) Minus(operand Any) OpSub
+func (this *ExprCall) Minus(operand IAny) OpSub
 ```
 Minus implements `IExprNumerish`.
 
 #### func (*ExprCall) Mod
 
 ```go
-func (this *ExprCall) Mod(operand Any) OpMod
+func (this *ExprCall) Mod(operand IAny) OpMod
 ```
 Mod implements `IExprNumerish`.
 
@@ -281,7 +273,7 @@ Neg implements `IExprNumerish`.
 #### func (*ExprCall) Neq
 
 ```go
-func (this *ExprCall) Neq(operand Any) OpNeq
+func (this *ExprCall) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
@@ -295,35 +287,35 @@ Not implements `IExprBoolish`.
 #### func (*ExprCall) Of
 
 ```go
-func (this *ExprCall) Of(args ...Any) *ExprCall
+func (this *ExprCall) Of(args ...IAny) *ExprCall
 ```
 Of implements `IExprCallish`.
 
 #### func (*ExprCall) Or
 
 ```go
-func (this *ExprCall) Or(operand Any) OpOr
+func (this *ExprCall) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
 #### func (*ExprCall) Plus
 
 ```go
-func (this *ExprCall) Plus(operand Any) OpAdd
+func (this *ExprCall) Plus(operand IAny) OpAdd
 ```
 Plus implements `IExprNumerish`.
 
 #### func (*ExprCall) Sl
 
 ```go
-func (this *ExprCall) Sl(startIndex Any, stopIndex Any) OpIdx
+func (this *ExprCall) Sl(startIndex IAny, stopIndex IAny) OpIdx
 ```
 Sl implements `IExprContainish`.
 
 #### func (*ExprCall) Times
 
 ```go
-func (this *ExprCall) Times(operand Any) OpMul
+func (this *ExprCall) Times(operand IAny) OpMul
 ```
 Times implements `IExprNumerish`.
 
@@ -331,7 +323,7 @@ Times implements `IExprNumerish`.
 
 ```go
 type ExprLit struct {
-	Val Any
+	Val IAny
 }
 ```
 
@@ -341,9 +333,17 @@ boolean.
 #### func  L
 
 ```go
-func L(lit Any) ExprLit
+func L(lit IAny) ExprLit
 ```
 L constructs an `ExprLit`.
+
+#### type IAny
+
+```go
+type IAny = interface{}
+```
+
+IAny is opinionated brevity-readability-delight.
 
 #### type IExprBoolish
 
@@ -352,9 +352,9 @@ type IExprBoolish interface {
 	IExprEqualish
 
 	// expr.And(foo) == And(expr, ISyn(foo))
-	And(Any) OpAnd
+	And(IAny) OpAnd
 	// expr.Or(foo) == Or(expr, ISyn(foo))
-	Or(Any) OpOr
+	Or(IAny) OpOr
 	// expr.Not() == Not(expr)
 	Not() OpNot
 }
@@ -373,7 +373,7 @@ type IExprCallish interface {
 	ISyn
 
 	// expr.Of(foos...) == Call(expr, Syns(foos)...)
-	Of(...Any) *ExprCall
+	Of(...IAny) *ExprCall
 }
 ```
 
@@ -390,11 +390,11 @@ type IExprContainish interface {
 	ISyn
 
 	// expr.At(foo) == At(expr, ISyn(foo))
-	At(Any) OpIdx
+	At(IAny) OpIdx
 	// expr.Deref() == Deref(expr)
 	Deref() OpDeref
 	// expr.Sl(foo,bar) == At(expr, Sl(Syn(foo), Syn(bar)))
-	Sl(Any, Any) OpIdx
+	Sl(IAny, IAny) OpIdx
 }
 ```
 
@@ -408,9 +408,9 @@ type IExprEqualish interface {
 	ISyn
 
 	// expr.Eq(foo) == Eq(expr, ISyn(foo))
-	Eq(Any) OpEq
+	Eq(IAny) OpEq
 	// expr.Neq(foo) == Neq(expr, ISyn(foo))
-	Neq(Any) OpNeq
+	Neq(IAny) OpNeq
 }
 ```
 
@@ -427,15 +427,15 @@ type IExprNumerish interface {
 	IExprOrdish
 
 	// expr.Plus(foo) == Add(expr, ISyn(foo))
-	Plus(Any) OpAdd
+	Plus(IAny) OpAdd
 	// expr.Minus(foo) == Sub(expr, ISyn(foo))
-	Minus(Any) OpSub
+	Minus(IAny) OpSub
 	// expr.Times(foo) == Mul(expr, ISyn(foo))
-	Times(Any) OpMul
+	Times(IAny) OpMul
 	// expr.Div(foo) == Div(expr, ISyn(foo))
-	Div(Any) OpDiv
+	Div(IAny) OpDiv
 	// expr.Mod(foo) == Mod(expr, ISyn(foo))
-	Mod(Any) OpMod
+	Mod(IAny) OpMod
 	// expr.Neg() == Neg(expr)
 	Neg() OpSub
 }
@@ -454,13 +454,13 @@ type IExprOrdish interface {
 	IExprEqualish
 
 	// expr.Geq(foo) == Geq(expr, ISyn(foo))
-	Geq(Any) IExprBoolish
+	Geq(IAny) IExprBoolish
 	// expr.Leq(foo) == Leq(expr, ISyn(foo))
-	Leq(Any) IExprBoolish
+	Leq(IAny) IExprBoolish
 	// expr.Gt(foo) == Gt(expr, ISyn(foo))
-	Gt(Any) IExprBoolish
+	Gt(IAny) IExprBoolish
 	// expr.Lt(foo) == Lt(expr, ISyn(foo))
-	Lt(Any) IExprBoolish
+	Lt(IAny) IExprBoolish
 }
 ```
 
@@ -482,9 +482,9 @@ type IExprVarish interface {
 	// expr.Addr() == Addr(expr)
 	Addr() OpAddr
 	// expr.Set(foo) == Set(expr, ISyn(foo))
-	Set(Any) OpSet
+	Set(IAny) OpSet
 	// expr.Let(foo) == Decl(expr, ISyn(foo))
-	Let(Any) OpDecl
+	Let(IAny) OpDecl
 	// expr.Incr1() == Set(expr, Add(expr, L(1)))
 	Incr1() OpSet
 	// expr.Decr1() == Set(expr, Sub(expr, L(1)))
@@ -560,14 +560,14 @@ Addr implements `IExprVarish`.
 #### func (Named) And
 
 ```go
-func (this Named) And(operand Any) OpAnd
+func (this Named) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (Named) At
 
 ```go
-func (this Named) At(operand Any) OpIdx
+func (this Named) At(operand IAny) OpIdx
 ```
 At implements `IExprContainish`.
 
@@ -588,28 +588,28 @@ Deref implements `IExprContainish`.
 #### func (Named) Div
 
 ```go
-func (this Named) Div(operand Any) OpDiv
+func (this Named) Div(operand IAny) OpDiv
 ```
 Div implements `IExprNumerish`.
 
 #### func (Named) Eq
 
 ```go
-func (this Named) Eq(operand Any) OpEq
+func (this Named) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (Named) Geq
 
 ```go
-func (this Named) Geq(operand Any) IExprBoolish
+func (this Named) Geq(operand IAny) IExprBoolish
 ```
 Geq implements `IExprOrdish`.
 
 #### func (Named) Gt
 
 ```go
-func (this Named) Gt(operand Any) IExprBoolish
+func (this Named) Gt(operand IAny) IExprBoolish
 ```
 Gt implements `IExprOrdish`.
 
@@ -623,35 +623,35 @@ Incr1 implements `IExprVarish`.
 #### func (Named) Leq
 
 ```go
-func (this Named) Leq(operand Any) IExprBoolish
+func (this Named) Leq(operand IAny) IExprBoolish
 ```
 Leq implements `IExprOrdish`.
 
 #### func (Named) Let
 
 ```go
-func (this Named) Let(operand Any) OpDecl
+func (this Named) Let(operand IAny) OpDecl
 ```
 Let implements `IExprVar`.
 
 #### func (Named) Lt
 
 ```go
-func (this Named) Lt(operand Any) IExprBoolish
+func (this Named) Lt(operand IAny) IExprBoolish
 ```
 Lt implements `IExprOrdish`.
 
 #### func (Named) Minus
 
 ```go
-func (this Named) Minus(operand Any) OpSub
+func (this Named) Minus(operand IAny) OpSub
 ```
 Minus implements `IExprNumerish`.
 
 #### func (Named) Mod
 
 ```go
-func (this Named) Mod(operand Any) OpMod
+func (this Named) Mod(operand IAny) OpMod
 ```
 Mod implements `IExprNumerish`.
 
@@ -665,7 +665,7 @@ Neg implements `IExprNumerish`.
 #### func (Named) Neq
 
 ```go
-func (this Named) Neq(operand Any) OpNeq
+func (this Named) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
@@ -679,7 +679,7 @@ Not implements `IExprBoolish`.
 #### func (Named) Of
 
 ```go
-func (this Named) Of(args ...Any) *ExprCall
+func (this Named) Of(args ...IAny) *ExprCall
 ```
 Of implements `IExprCallish`.
 
@@ -693,35 +693,35 @@ OfType returns a `NamedTyped` with `this.Name` and `typeRef`.
 #### func (Named) Or
 
 ```go
-func (this Named) Or(operand Any) OpOr
+func (this Named) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
 #### func (Named) Plus
 
 ```go
-func (this Named) Plus(operand Any) OpAdd
+func (this Named) Plus(operand IAny) OpAdd
 ```
 Plus implements `IExprNumerish`.
 
 #### func (Named) Set
 
 ```go
-func (this Named) Set(operand Any) OpSet
+func (this Named) Set(operand IAny) OpSet
 ```
 Set implements `IExprVar`.
 
 #### func (Named) Sl
 
 ```go
-func (this Named) Sl(startIndex Any, stopIndex Any) OpIdx
+func (this Named) Sl(startIndex IAny, stopIndex IAny) OpIdx
 ```
 Sl implements `IExprContainish`.
 
 #### func (Named) Times
 
 ```go
-func (this Named) Times(operand Any) OpMul
+func (this Named) Times(operand IAny) OpMul
 ```
 Times implements `IExprNumerish`.
 
@@ -836,21 +836,21 @@ And constructs an `OpAnd`.
 #### func (OpAnd) And
 
 ```go
-func (this OpAnd) And(operand Any) OpAnd
+func (this OpAnd) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpAnd) Eq
 
 ```go
-func (this OpAnd) Eq(operand Any) OpEq
+func (this OpAnd) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpAnd) Neq
 
 ```go
-func (this OpAnd) Neq(operand Any) OpNeq
+func (this OpAnd) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
@@ -864,7 +864,7 @@ Not implements `IExprBoolish`.
 #### func (OpAnd) Or
 
 ```go
-func (this OpAnd) Or(operand Any) OpOr
+func (this OpAnd) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -894,7 +894,7 @@ OpComma emits all its operands separated by `,` commas.
 #### func  Lits
 
 ```go
-func Lits(lits ...Any) OpComma
+func Lits(lits ...IAny) OpComma
 ```
 Lits constructs an `OpComma` of `ExprLit` operands.
 
@@ -915,14 +915,14 @@ Tup constructs an `OpComma`.
 #### func (OpComma) Let
 
 ```go
-func (this OpComma) Let(operand Any) OpDecl
+func (this OpComma) Let(operand IAny) OpDecl
 ```
 Let implements `IExprVar`.
 
 #### func (OpComma) Set
 
 ```go
-func (this OpComma) Set(operand Any) OpSet
+func (this OpComma) Set(operand IAny) OpSet
 ```
 Set implements `IExprVar`.
 
@@ -1004,21 +1004,21 @@ Eq constructs an `OpEq`.
 #### func (OpEq) And
 
 ```go
-func (this OpEq) And(operand Any) OpAnd
+func (this OpEq) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpEq) Eq
 
 ```go
-func (this OpEq) Eq(operand Any) OpEq
+func (this OpEq) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpEq) Neq
 
 ```go
-func (this OpEq) Neq(operand Any) OpNeq
+func (this OpEq) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
@@ -1032,7 +1032,7 @@ Not implements `IExprBoolish`.
 #### func (OpEq) Or
 
 ```go
-func (this OpEq) Or(operand Any) OpOr
+func (this OpEq) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1054,21 +1054,21 @@ Geq constructs an `OpGeq`.
 #### func (OpGeq) And
 
 ```go
-func (this OpGeq) And(operand Any) OpAnd
+func (this OpGeq) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpGeq) Eq
 
 ```go
-func (this OpGeq) Eq(operand Any) OpEq
+func (this OpGeq) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpGeq) Neq
 
 ```go
-func (this OpGeq) Neq(operand Any) OpNeq
+func (this OpGeq) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
@@ -1082,7 +1082,7 @@ Not implements `IExprBoolish`.
 #### func (OpGeq) Or
 
 ```go
-func (this OpGeq) Or(operand Any) OpOr
+func (this OpGeq) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1104,21 +1104,21 @@ Gt constructs an `OpGt`.
 #### func (OpGt) And
 
 ```go
-func (this OpGt) And(operand Any) OpAnd
+func (this OpGt) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpGt) Eq
 
 ```go
-func (this OpGt) Eq(operand Any) OpEq
+func (this OpGt) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpGt) Neq
 
 ```go
-func (this OpGt) Neq(operand Any) OpNeq
+func (this OpGt) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
@@ -1132,7 +1132,7 @@ Not implements `IExprBoolish`.
 #### func (OpGt) Or
 
 ```go
-func (this OpGt) Or(operand Any) OpOr
+func (this OpGt) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1161,14 +1161,14 @@ Addr implements `IExprVarish`.
 #### func (OpIdx) And
 
 ```go
-func (this OpIdx) And(operand Any) OpAnd
+func (this OpIdx) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpIdx) At
 
 ```go
-func (this OpIdx) At(operand Any) OpIdx
+func (this OpIdx) At(operand IAny) OpIdx
 ```
 At implements `IExprContainish`.
 
@@ -1189,28 +1189,28 @@ Deref implements `IExprContainish`.
 #### func (OpIdx) Div
 
 ```go
-func (this OpIdx) Div(operand Any) OpDiv
+func (this OpIdx) Div(operand IAny) OpDiv
 ```
 Div implements `IExprNumerish`.
 
 #### func (OpIdx) Eq
 
 ```go
-func (this OpIdx) Eq(operand Any) OpEq
+func (this OpIdx) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpIdx) Geq
 
 ```go
-func (this OpIdx) Geq(operand Any) IExprBoolish
+func (this OpIdx) Geq(operand IAny) IExprBoolish
 ```
 Geq implements `IExprOrdish`.
 
 #### func (OpIdx) Gt
 
 ```go
-func (this OpIdx) Gt(operand Any) IExprBoolish
+func (this OpIdx) Gt(operand IAny) IExprBoolish
 ```
 Gt implements `IExprOrdish`.
 
@@ -1224,28 +1224,28 @@ Incr1 implements `IExprVarish`.
 #### func (OpIdx) Leq
 
 ```go
-func (this OpIdx) Leq(operand Any) IExprBoolish
+func (this OpIdx) Leq(operand IAny) IExprBoolish
 ```
 Leq implements `IExprOrdish`.
 
 #### func (OpIdx) Lt
 
 ```go
-func (this OpIdx) Lt(operand Any) IExprBoolish
+func (this OpIdx) Lt(operand IAny) IExprBoolish
 ```
 Lt implements `IExprOrdish`.
 
 #### func (OpIdx) Minus
 
 ```go
-func (this OpIdx) Minus(operand Any) OpSub
+func (this OpIdx) Minus(operand IAny) OpSub
 ```
 Minus implements `IExprNumerish`.
 
 #### func (OpIdx) Mod
 
 ```go
-func (this OpIdx) Mod(operand Any) OpMod
+func (this OpIdx) Mod(operand IAny) OpMod
 ```
 Mod implements `IExprNumerish`.
 
@@ -1259,7 +1259,7 @@ Neg implements `IExprNumerish`.
 #### func (OpIdx) Neq
 
 ```go
-func (this OpIdx) Neq(operand Any) OpNeq
+func (this OpIdx) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
@@ -1273,42 +1273,42 @@ Not implements `IExprBoolish`.
 #### func (OpIdx) Of
 
 ```go
-func (this OpIdx) Of(args ...Any) *ExprCall
+func (this OpIdx) Of(args ...IAny) *ExprCall
 ```
 Of implements `IExprCallish`.
 
 #### func (OpIdx) Or
 
 ```go
-func (this OpIdx) Or(operand Any) OpOr
+func (this OpIdx) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
 #### func (OpIdx) Plus
 
 ```go
-func (this OpIdx) Plus(operand Any) OpAdd
+func (this OpIdx) Plus(operand IAny) OpAdd
 ```
 Plus implements `IExprNumerish`.
 
 #### func (OpIdx) Set
 
 ```go
-func (this OpIdx) Set(operand Any) OpSet
+func (this OpIdx) Set(operand IAny) OpSet
 ```
 Set implements `IExprVar`.
 
 #### func (OpIdx) Sl
 
 ```go
-func (this OpIdx) Sl(startIndex Any, stopIndex Any) OpIdx
+func (this OpIdx) Sl(startIndex IAny, stopIndex IAny) OpIdx
 ```
 Sl implements `IExprContainish`.
 
 #### func (OpIdx) Times
 
 ```go
-func (this OpIdx) Times(operand Any) OpMul
+func (this OpIdx) Times(operand IAny) OpMul
 ```
 Times implements `IExprNumerish`.
 
@@ -1330,21 +1330,21 @@ Leq constructs an `OpLeq`.
 #### func (OpLeq) And
 
 ```go
-func (this OpLeq) And(operand Any) OpAnd
+func (this OpLeq) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpLeq) Eq
 
 ```go
-func (this OpLeq) Eq(operand Any) OpEq
+func (this OpLeq) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpLeq) Neq
 
 ```go
-func (this OpLeq) Neq(operand Any) OpNeq
+func (this OpLeq) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
@@ -1358,7 +1358,7 @@ Not implements `IExprBoolish`.
 #### func (OpLeq) Or
 
 ```go
-func (this OpLeq) Or(operand Any) OpOr
+func (this OpLeq) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1380,21 +1380,21 @@ Lt constructs an `OpLt`.
 #### func (OpLt) And
 
 ```go
-func (this OpLt) And(operand Any) OpAnd
+func (this OpLt) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpLt) Eq
 
 ```go
-func (this OpLt) Eq(operand Any) OpEq
+func (this OpLt) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpLt) Neq
 
 ```go
-func (this OpLt) Neq(operand Any) OpNeq
+func (this OpLt) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
@@ -1408,7 +1408,7 @@ Not implements `IExprBoolish`.
 #### func (OpLt) Or
 
 ```go
-func (this OpLt) Or(operand Any) OpOr
+func (this OpLt) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1460,21 +1460,21 @@ Neq constructs an `OpNeq`.
 #### func (OpNeq) And
 
 ```go
-func (this OpNeq) And(operand Any) OpAnd
+func (this OpNeq) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpNeq) Eq
 
 ```go
-func (this OpNeq) Eq(operand Any) OpEq
+func (this OpNeq) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpNeq) Neq
 
 ```go
-func (this OpNeq) Neq(operand Any) OpNeq
+func (this OpNeq) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
@@ -1488,7 +1488,7 @@ Not implements `IExprBoolish`.
 #### func (OpNeq) Or
 
 ```go
-func (this OpNeq) Or(operand Any) OpOr
+func (this OpNeq) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1510,21 +1510,21 @@ Not constructs an `OpNot`.
 #### func (OpNot) And
 
 ```go
-func (this OpNot) And(operand Any) OpAnd
+func (this OpNot) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpNot) Eq
 
 ```go
-func (this OpNot) Eq(operand Any) OpEq
+func (this OpNot) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpNot) Neq
 
 ```go
-func (this OpNot) Neq(operand Any) OpNeq
+func (this OpNot) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
@@ -1538,7 +1538,7 @@ Not implements `IExprBoolish`.
 #### func (OpNot) Or
 
 ```go
-func (this OpNot) Or(operand Any) OpOr
+func (this OpNot) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1560,21 +1560,21 @@ Or constructs an `OpOr`.
 #### func (OpOr) And
 
 ```go
-func (this OpOr) And(operand Any) OpAnd
+func (this OpOr) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpOr) Eq
 
 ```go
-func (this OpOr) Eq(operand Any) OpEq
+func (this OpOr) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpOr) Neq
 
 ```go
-func (this OpOr) Neq(operand Any) OpNeq
+func (this OpOr) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
@@ -1588,7 +1588,7 @@ Not implements `IExprBoolish`.
 #### func (OpOr) Or
 
 ```go
-func (this OpOr) Or(operand Any) OpOr
+func (this OpOr) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1659,7 +1659,7 @@ PkgName offers some handy methods on package import names.
 #### func (PkgName) Call
 
 ```go
-func (this PkgName) Call(funcName string, args ...Any) *ExprCall
+func (this PkgName) Call(funcName string, args ...IAny) *ExprCall
 ```
 Call constructs an `ExprCall` of the `funcName` exported by `this`
 imported-package.
@@ -2207,7 +2207,7 @@ iteration, never less-than zero and always less-than `whileLessThan`.
 #### func  GEN_FOR_IN
 
 ```go
-func GEN_FOR_IN(sl []Any, step int, each func(int, []Any) ISyn) (yield Syns)
+func GEN_FOR_IN(sl []IAny, step int, each func(int, []IAny) ISyn) (yield Syns)
 ```
 GEN_FOR_IN is a codegen-time iterating `Syns`-builder. Traversing `sl` with the
 given `step` skip-length, it calls `each` once per iteration with the current

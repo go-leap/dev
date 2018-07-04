@@ -333,7 +333,7 @@ type OpNot struct{ Op }
 // ExprLit represents any literal constant value,
 // such as a string, rune, number or boolean.
 type ExprLit struct {
-	Val Any
+	Val IAny
 }
 
 // ExprCall represents a call to any callable `Callee`, or a

@@ -288,6 +288,9 @@ func (this *StmtVar) emitTo(w *writer) {
 }
 
 func (this *StmtIf) emitTo(w *writer) {
+	if this == nil || len(this.IfThens) == 0 || this.IfThens[0].Cond == nil {
+		return
+	}
 	finali, finalelse := len(this.IfThens)-1, len(this.Else.Body) > 0
 	for i := range this.IfThens {
 		w.WriteString("if ")
@@ -489,7 +492,7 @@ func (this ExprLit) emitTo(w *writer) {
 	this.emit(w, this.Val)
 }
 
-func (this ExprLit) emit(w *writer, val Any) {
+func (this ExprLit) emit(w *writer, val IAny) {
 	if val == nil {
 		w.WriteString("nil")
 		return

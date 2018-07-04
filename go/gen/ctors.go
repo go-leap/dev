@@ -13,10 +13,10 @@ func Names(names ...string) OpComma {
 }
 
 // L constructs an `ExprLit`.
-func L(lit Any) ExprLit { return ExprLit{Val: lit} }
+func L(lit IAny) ExprLit { return ExprLit{Val: lit} }
 
 // Lits constructs an `OpComma` of `ExprLit` operands.
-func Lits(lits ...Any) OpComma {
+func Lits(lits ...IAny) OpComma {
 	operands := make(Syns, len(lits))
 	for i := range lits {
 		operands[i] = ExprLit{Val: lits[i]}
@@ -232,7 +232,7 @@ func Call(callee ISyn, args ...ISyn) *ExprCall {
 	return &ExprCall{Callee: callee, Args: args}
 }
 
-func C(callee Any, args ...Any) *ExprCall {
+func C(callee IAny, args ...IAny) *ExprCall {
 	var syn ISyn
 	switch c := callee.(type) {
 	case ISyn:
@@ -290,15 +290,14 @@ func Go(call *ExprCall) (this StmtGo) {
 //
 // Should any of the `if` conditions be `nil`, then `this` will return as `nil`.
 func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
-	this = &StmtIf{IfThens: make(SynCases, 0, 1+len(ifThensAndMaybeAnElse)/2)}
-	if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
-		this.Else.Body = synsFrom(ifThensAndMaybeAnElse[l-1])
-		ifThensAndMaybeAnElse = ifThensAndMaybeAnElse[:l-1]
-	}
-	for i := 1; i < len(ifThensAndMaybeAnElse); i += 2 {
-		if cond, body := ifThensAndMaybeAnElse[i-1], synsFrom(ifThensAndMaybeAnElse[i]); cond == nil {
-			return nil
-		} else {
+	if len(ifThensAndMaybeAnElse) > 0 || ifThensAndMaybeAnElse[0] != nil {
+		this = &StmtIf{IfThens: make(SynCases, 0, 1+len(ifThensAndMaybeAnElse)/2)}
+		if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
+			this.Else.Body = synsFrom(ifThensAndMaybeAnElse[l-1])
+			ifThensAndMaybeAnElse = ifThensAndMaybeAnElse[:l-1]
+		}
+		for i := 1; i < len(ifThensAndMaybeAnElse); i += 2 {
+			cond, body := ifThensAndMaybeAnElse[i-1], synsFrom(ifThensAndMaybeAnElse[i])
 			this.IfThens = append(this.IfThens, SynCase{Cond: cond, SynBlock: SynBlock{Body: body}})
 		}
 	}
@@ -352,14 +351,14 @@ func Func(name string, args ...NamedTyped) *SynFunc {
 	return &SynFunc{NamedTyped: NamedTyped{Named: Named{Name: name}, Type: TrFunc(TdFn(args))}}
 }
 
-func synFrom(any Any) ISyn {
+func synFrom(any IAny) ISyn {
 	if syn, ok := any.(ISyn); ok {
 		return syn
 	}
 	return ExprLit{Val: any}
 }
 
-func synsFrom(eitherSyn ISyn, orThings ...Any) Syns {
+func synsFrom(eitherSyn ISyn, orThings ...IAny) Syns {
 	if eitherSyn == nil {
 		var syns Syns
 		if len(orThings) > 0 {

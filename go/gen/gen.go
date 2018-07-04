@@ -25,8 +25,8 @@ import (
 	"github.com/go-leap/str"
 )
 
-// Any is opinionated brevity-readability-delight.
-type Any = interface{}
+// IAny is opinionated brevity-readability-delight.
+type IAny = interface{}
 
 // SourceFile is a simple collection of `ISyn`s
 // representing top-level definition declarations

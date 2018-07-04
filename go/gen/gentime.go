@@ -68,7 +68,7 @@ func GEN_FOR(start int, whileLessThan int, incrementBy int, do func(int) ISyn) (
 // skip-length, it calls `each` once per iteration with the current index into `sl` and the next
 // sub-slice of `sl` (at that index) that has a `len` of usually `step` and always greater than zero
 // (but it might be less than `step` in the very last iteration depending on the `len` of `sl`).
-func GEN_FOR_IN(sl []Any, step int, each func(int, []Any) ISyn) (yield Syns) {
+func GEN_FOR_IN(sl []IAny, step int, each func(int, []IAny) ISyn) (yield Syns) {
 	yield = make(Syns, 0, len(sl)/step)
 	for i := 0; i < len(sl); i += step {
 		max := i + step
