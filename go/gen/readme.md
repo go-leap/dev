@@ -124,7 +124,7 @@ var (
 		String     *TypeRef
 
 		// some not-so-uncommon slices
-		Sl struct {
+		SliceOf struct {
 			Ints    *TypeRef
 			Strings *TypeRef
 		}
