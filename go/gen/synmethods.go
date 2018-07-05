@@ -171,6 +171,12 @@ func (this *SynFunc) Sig(sig *TypeFunc) *SynFunc {
 	return this
 }
 
+// Code sets `this.Body` and returns `this`.
+func (this *StmtFor) Code(stmts ...ISyn) *StmtFor {
+	this.Body = stmts
+	return this
+}
+
 // Case adds the given `case` branch to the `StmtSwitch.Cases` of `this`.
 func (this *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch {
 	this.Cases = append(this.Cases, SynCase{Cond: cond, SynBlock: SynBlock{Body: thens}})

@@ -1821,6 +1821,13 @@ func ForEach(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (this *S
 ```
 ForEach constructs a `StmtFor` that emits a `for .. range` loop.
 
+#### func (*StmtFor) Code
+
+```go
+func (this *StmtFor) Code(stmts ...ISyn) *StmtFor
+```
+Code sets `this.Body` and returns `this`.
+
 #### type StmtGo
 
 ```go
