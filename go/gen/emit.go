@@ -219,6 +219,11 @@ func (this *SynFunc) emitTo(w *writer) {
 		}
 	}
 
+	oldimps := w.pkgImportsActuallyEmitted
+	if this.EmitCommented {
+		w.pkgImportsActuallyEmitted = map[string]bool{}
+		w.WriteString("/*\n")
+	}
 	if w.WriteString("func "); this.Recv.Type != nil {
 		w.WriteByte('(')
 		w.WriteString(this.Recv.Name)
@@ -236,6 +241,10 @@ func (this *SynFunc) emitTo(w *writer) {
 	}
 	if this.Name != "" {
 		w.WriteByte('\n')
+	}
+	if this.EmitCommented {
+		w.WriteString("*/\n")
+		w.pkgImportsActuallyEmitted = oldimps
 	}
 }
 

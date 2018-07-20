@@ -130,6 +130,8 @@ type SynFunc struct {
 	Recv NamedTyped
 	// doc comments for this func declaration
 	Docs SingleLineDocCommentParagraphs
+	// if true, emitted inside /* comment */
+	EmitCommented bool
 }
 
 // SingleLineDocCommentParagraphs prepends doc-comments to a top-level `SynFunc` being emitted. Each represents a

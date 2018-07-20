@@ -2087,6 +2087,8 @@ type SynFunc struct {
 	Recv NamedTyped
 	// doc comments for this func declaration
 	Docs SingleLineDocCommentParagraphs
+	// if true, emitted inside /* comment */
+	EmitCommented bool
 }
 ```
 
