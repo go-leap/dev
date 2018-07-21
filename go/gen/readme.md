@@ -125,6 +125,7 @@ var (
 
 		// some not-so-uncommon slices
 		SliceOf struct {
+			Bytes   *TypeRef
 			Ints    *TypeRef
 			Strings *TypeRef
 		}
@@ -151,8 +152,9 @@ var (
 
 ```go
 type ExprCall struct {
-	Callee ISyn
-	Args   Syns
+	Callee         ISyn
+	Args           Syns
+	LastArgSpreads bool
 }
 ```
 
@@ -185,6 +187,20 @@ And implements `IExprBoolish`.
 func (this *ExprCall) At(operand IAny) OpIdx
 ```
 At implements `IExprContainish`.
+
+#### func (*ExprCall) C
+
+```go
+func (this *ExprCall) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
+```
+C implements `IExprDottish`.
+
+#### func (*ExprCall) D
+
+```go
+func (this *ExprCall) D(operands ...IAny) OpDot
+```
+D implements `IExprDottish`.
 
 #### func (*ExprCall) Defer
 
@@ -312,6 +328,12 @@ func (this *ExprCall) Sl(startIndex IAny, stopIndex IAny) OpIdx
 ```
 Sl implements `IExprContainish`.
 
+#### func (*ExprCall) Spreads
+
+```go
+func (this *ExprCall) Spreads() *ExprCall
+```
+
 #### func (*ExprCall) Times
 
 ```go
@@ -360,8 +382,8 @@ type IExprBoolish interface {
 }
 ```
 
-IExprBoolish is implemented by `ISyn`s that also wish to offer dot-accessor
-syntax over the `And`, `Or`, `Not` constructors.
+IExprBoolish is implemented by `IExprEqualish`s that also wish to offer
+dot-accessor syntax over the `And`, `Or`, `Not` constructors.
 
 All `ISyn`s among the `Any`-typed operand arguments are used directly, any
 others are converted into `ExprLit`s.
@@ -400,6 +422,34 @@ type IExprContainish interface {
 
 IExprContainish is implemented by `ISyn`s that also wish to offer dot-accessor
 syntax over the `At`, `Sl`, `Deref` constructors.
+
+#### type IExprDeclish
+
+```go
+type IExprDeclish interface {
+	IExprVarish
+
+	// expr.Let(foo) == Decl(expr, ISyn(foo))
+	Let(IAny) OpDecl
+}
+```
+
+IExprDeclish is implemented by `IExprVarish`s that also wish to offer
+dot-accessor syntax over the `Decl` constructor.
+
+#### type IExprDottish
+
+```go
+type IExprDottish interface {
+	ISyn
+
+	C(string, ...IAny) *ExprCall
+	D() OpDot
+}
+```
+
+IExprDottish is implemented by `ISyn`s that also wish to offer dot-accessor
+syntax over the `D` constructor.
 
 #### type IExprEqualish
 
@@ -441,8 +491,9 @@ type IExprNumerish interface {
 }
 ```
 
-IExprOrdish is implemented by `ISyn`s that also wish to offer dot-accessor
-syntax over the `Add`, `Sub`, `Mul`, `Div`, `Mod`, `Neg` constructors.
+IExprOrdish is implemented by `IExprOrdish`s that also wish to offer
+dot-accessor syntax over the `Add`, `Sub`, `Mul`, `Div`, `Mod`, `Neg`
+constructors.
 
 All `ISyn`s among the `Any`-typed operand arguments are used directly, any
 others are converted into `ExprLit`s.
@@ -464,8 +515,8 @@ type IExprOrdish interface {
 }
 ```
 
-IExprOrdish is implemented by `ISyn`s that also wish to offer dot-accessor
-syntax over the `Geq`, `Gt`, `Leq`, `Lt` constructors.
+IExprOrdish is implemented by `IExprEqualish`s that also wish to offer
+dot-accessor syntax over the `Geq`, `Gt`, `Leq`, `Lt` constructors.
 
 All methods return the appropriate operator types at all times, ie. `Geq` always
 returns an `OpGeq`, `Lt` always an `OpLt` etc.
@@ -483,8 +534,6 @@ type IExprVarish interface {
 	Addr() OpAddr
 	// expr.Set(foo) == Set(expr, ISyn(foo))
 	Set(IAny) OpSet
-	// expr.Let(foo) == Decl(expr, ISyn(foo))
-	Let(IAny) OpDecl
 	// expr.Incr1() == Set(expr, Add(expr, L(1)))
 	Incr1() OpSet
 	// expr.Decr1() == Set(expr, Sub(expr, L(1)))
@@ -492,8 +541,8 @@ type IExprVarish interface {
 }
 ```
 
-IExprVarish is implemented by `ISyn`s that also wish to offer dot-accessor
-syntax over the `Addr`, `Set`, `Decl` constructors.
+IExprVarish is implemented by `IExprContainish`s that also wish to offer
+dot-accessor syntax over the `Addr`, `Set` constructors.
 
 All `ISyn`s among the `Any`-typed operand arguments are used directly, any
 others are converted into `ExprLit`s.
@@ -570,6 +619,20 @@ And implements `IExprBoolish`.
 func (this Named) At(operand IAny) OpIdx
 ```
 At implements `IExprContainish`.
+
+#### func (Named) C
+
+```go
+func (this Named) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
+```
+C implements `IExprDottish`.
+
+#### func (Named) D
+
+```go
+func (this Named) D(operands ...IAny) OpDot
+```
+D implements `IExprDottish`.
 
 #### func (Named) Decr1
 
@@ -956,6 +1019,174 @@ func Deref(operands ...ISyn) OpDeref
 ```
 Deref constructs an `OpDeref`.
 
+#### func (OpDeref) And
+
+```go
+func (this OpDeref) And(operand IAny) OpAnd
+```
+And implements `IExprBoolish`.
+
+#### func (OpDeref) At
+
+```go
+func (this OpDeref) At(operand IAny) OpIdx
+```
+At implements `IExprContainish`.
+
+#### func (OpDeref) C
+
+```go
+func (this OpDeref) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
+```
+C implements `IExprDottish`.
+
+#### func (OpDeref) D
+
+```go
+func (this OpDeref) D(operands ...IAny) OpDot
+```
+D implements `IExprDottish`.
+
+#### func (OpDeref) Decr1
+
+```go
+func (this OpDeref) Decr1() OpSet
+```
+Decr1 implements `IExprVarish`.
+
+#### func (OpDeref) Deref
+
+```go
+func (this OpDeref) Deref() OpDeref
+```
+Deref implements `IExprContainish`.
+
+#### func (OpDeref) Div
+
+```go
+func (this OpDeref) Div(operand IAny) OpDiv
+```
+Div implements `IExprNumerish`.
+
+#### func (OpDeref) Eq
+
+```go
+func (this OpDeref) Eq(operand IAny) OpEq
+```
+Eq implements `IExprEqualish`.
+
+#### func (OpDeref) Geq
+
+```go
+func (this OpDeref) Geq(operand IAny) IExprBoolish
+```
+Geq implements `IExprOrdish`.
+
+#### func (OpDeref) Gt
+
+```go
+func (this OpDeref) Gt(operand IAny) IExprBoolish
+```
+Gt implements `IExprOrdish`.
+
+#### func (OpDeref) Incr1
+
+```go
+func (this OpDeref) Incr1() OpSet
+```
+Incr1 implements `IExprVarish`.
+
+#### func (OpDeref) Leq
+
+```go
+func (this OpDeref) Leq(operand IAny) IExprBoolish
+```
+Leq implements `IExprOrdish`.
+
+#### func (OpDeref) Lt
+
+```go
+func (this OpDeref) Lt(operand IAny) IExprBoolish
+```
+Lt implements `IExprOrdish`.
+
+#### func (OpDeref) Minus
+
+```go
+func (this OpDeref) Minus(operand IAny) OpSub
+```
+Minus implements `IExprNumerish`.
+
+#### func (OpDeref) Mod
+
+```go
+func (this OpDeref) Mod(operand IAny) OpMod
+```
+Mod implements `IExprNumerish`.
+
+#### func (OpDeref) Neg
+
+```go
+func (this OpDeref) Neg() OpSub
+```
+Neg implements `IExprNumerish`.
+
+#### func (OpDeref) Neq
+
+```go
+func (this OpDeref) Neq(operand IAny) OpNeq
+```
+Neq implements `IExprEqualish`.
+
+#### func (OpDeref) Not
+
+```go
+func (this OpDeref) Not() OpNot
+```
+Not implements `IExprBoolish`.
+
+#### func (OpDeref) Of
+
+```go
+func (this OpDeref) Of(args ...IAny) *ExprCall
+```
+Of implements `IExprCallish`.
+
+#### func (OpDeref) Or
+
+```go
+func (this OpDeref) Or(operand IAny) OpOr
+```
+Or implements `IExprBoolish`.
+
+#### func (OpDeref) Plus
+
+```go
+func (this OpDeref) Plus(operand IAny) OpAdd
+```
+Plus implements `IExprNumerish`.
+
+#### func (OpDeref) Set
+
+```go
+func (this OpDeref) Set(operand IAny) OpSet
+```
+Set implements `IExprVar`.
+
+#### func (OpDeref) Sl
+
+```go
+func (this OpDeref) Sl(startIndex IAny, stopIndex IAny) OpIdx
+```
+Sl implements `IExprContainish`.
+
+#### func (OpDeref) Times
+
+```go
+func (this OpDeref) Times(operand IAny) OpMul
+```
+Times implements `IExprNumerish`.
+
 #### type OpDiv
 
 ```go
@@ -985,6 +1216,181 @@ OpDot represents Go's `.` selector operator.
 func D(operands ...ISyn) OpDot
 ```
 D constructs an `OpDot`.
+
+#### func (OpDot) Addr
+
+```go
+func (this OpDot) Addr() OpAddr
+```
+Addr implements `IExprVarish`.
+
+#### func (OpDot) And
+
+```go
+func (this OpDot) And(operand IAny) OpAnd
+```
+And implements `IExprBoolish`.
+
+#### func (OpDot) At
+
+```go
+func (this OpDot) At(operand IAny) OpIdx
+```
+At implements `IExprContainish`.
+
+#### func (OpDot) C
+
+```go
+func (this OpDot) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
+```
+C implements `IExprDottish`.
+
+#### func (OpDot) D
+
+```go
+func (this OpDot) D(operands ...IAny) OpDot
+```
+D implements `IExprDottish`.
+
+#### func (OpDot) Decr1
+
+```go
+func (this OpDot) Decr1() OpSet
+```
+Decr1 implements `IExprVarish`.
+
+#### func (OpDot) Deref
+
+```go
+func (this OpDot) Deref() OpDeref
+```
+Deref implements `IExprContainish`.
+
+#### func (OpDot) Div
+
+```go
+func (this OpDot) Div(operand IAny) OpDiv
+```
+Div implements `IExprNumerish`.
+
+#### func (OpDot) Eq
+
+```go
+func (this OpDot) Eq(operand IAny) OpEq
+```
+Eq implements `IExprEqualish`.
+
+#### func (OpDot) Geq
+
+```go
+func (this OpDot) Geq(operand IAny) IExprBoolish
+```
+Geq implements `IExprOrdish`.
+
+#### func (OpDot) Gt
+
+```go
+func (this OpDot) Gt(operand IAny) IExprBoolish
+```
+Gt implements `IExprOrdish`.
+
+#### func (OpDot) Incr1
+
+```go
+func (this OpDot) Incr1() OpSet
+```
+Incr1 implements `IExprVarish`.
+
+#### func (OpDot) Leq
+
+```go
+func (this OpDot) Leq(operand IAny) IExprBoolish
+```
+Leq implements `IExprOrdish`.
+
+#### func (OpDot) Lt
+
+```go
+func (this OpDot) Lt(operand IAny) IExprBoolish
+```
+Lt implements `IExprOrdish`.
+
+#### func (OpDot) Minus
+
+```go
+func (this OpDot) Minus(operand IAny) OpSub
+```
+Minus implements `IExprNumerish`.
+
+#### func (OpDot) Mod
+
+```go
+func (this OpDot) Mod(operand IAny) OpMod
+```
+Mod implements `IExprNumerish`.
+
+#### func (OpDot) Neg
+
+```go
+func (this OpDot) Neg() OpSub
+```
+Neg implements `IExprNumerish`.
+
+#### func (OpDot) Neq
+
+```go
+func (this OpDot) Neq(operand IAny) OpNeq
+```
+Neq implements `IExprEqualish`.
+
+#### func (OpDot) Not
+
+```go
+func (this OpDot) Not() OpNot
+```
+Not implements `IExprBoolish`.
+
+#### func (OpDot) Of
+
+```go
+func (this OpDot) Of(args ...IAny) *ExprCall
+```
+Of implements `IExprCallish`.
+
+#### func (OpDot) Or
+
+```go
+func (this OpDot) Or(operand IAny) OpOr
+```
+Or implements `IExprBoolish`.
+
+#### func (OpDot) Plus
+
+```go
+func (this OpDot) Plus(operand IAny) OpAdd
+```
+Plus implements `IExprNumerish`.
+
+#### func (OpDot) Set
+
+```go
+func (this OpDot) Set(operand IAny) OpSet
+```
+Set implements `IExprVar`.
+
+#### func (OpDot) Sl
+
+```go
+func (this OpDot) Sl(startIndex IAny, stopIndex IAny) OpIdx
+```
+Sl implements `IExprContainish`.
+
+#### func (OpDot) Times
+
+```go
+func (this OpDot) Times(operand IAny) OpMul
+```
+Times implements `IExprNumerish`.
 
 #### type OpEq
 
@@ -1171,6 +1577,20 @@ And implements `IExprBoolish`.
 func (this OpIdx) At(operand IAny) OpIdx
 ```
 At implements `IExprContainish`.
+
+#### func (OpIdx) C
+
+```go
+func (this OpIdx) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
+```
+C implements `IExprDottish`.
+
+#### func (OpIdx) D
+
+```go
+func (this OpIdx) D(operands ...IAny) OpDot
+```
+D implements `IExprDottish`.
 
 #### func (OpIdx) Decr1
 
@@ -1663,6 +2083,22 @@ func (this PkgName) Call(funcName string, args ...IAny) *ExprCall
 ```
 Call constructs an `ExprCall` of the `funcName` exported by `this`
 imported-package.
+
+#### func (PkgName) T
+
+```go
+func (this PkgName) T(typeName string) *TypeRef
+```
+T constructs a `TypeRef` with `Named` referring to `this PkgName` and
+`typeName`.
+
+#### func (PkgName) Tª
+
+```go
+func (this PkgName) Tª(typeName string) *TypeRef
+```
+Tª constructs a `TypeRef` with its `Pointer`'s `Named` referring to `this
+PkgName` and `typeName`.
 
 #### type SingleLineDocCommentParagraphs
 
@@ -2159,6 +2595,12 @@ func (this *SynFunc) Sig(sig *TypeFunc) *SynFunc
 ```
 Sig sets `this.Type.Func` to `sig` and returns `this`.
 
+#### func (*SynFunc) Spreads
+
+```go
+func (this *SynFunc) Spreads() *SynFunc
+```
+
 #### type SynRaw
 
 ```go
@@ -2281,6 +2723,8 @@ type TypeFunc struct {
 	Args NamedsTypeds
 	// func return values
 	Rets NamedsTypeds
+
+	LastArgSpreads bool
 }
 ```
 
@@ -2320,6 +2764,12 @@ Ref constructs a `TypeRef` whose `Func` points to `this`.
 func (this *TypeFunc) Ret(name string, typeRef *TypeRef) *TypeFunc
 ```
 Ret adds to `this.Rets` and returns `this`.
+
+#### func (*TypeFunc) Spreads
+
+```go
+func (this *TypeFunc) Spreads() *TypeFunc
+```
 
 #### type TypeInterface
 
@@ -2504,6 +2954,13 @@ TypeStruct represents Go's `struct{..}` construct.
 func TdStruct(fields ...SynStructField) *TypeStruct
 ```
 TdStruct constructs a `TypeStruct`.
+
+#### func (*TypeStruct) Field
+
+```go
+func (this *TypeStruct) Field(name string) (fld *SynStructField)
+```
+Field returns the `SynStructField` in `this.Fields` matching `name`.
 
 #### type UNLESS
 

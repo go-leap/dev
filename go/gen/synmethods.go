@@ -81,12 +81,27 @@ func (this *ExprCall) Go() StmtGo {
 	return StmtGo{StmtUnary: StmtUnary{Expr: this}}
 }
 
+func (this *ExprCall) Spreads() *ExprCall {
+	this.LastArgSpreads = true
+	return this
+}
+
 // Call constructs an `ExprCall` of the `funcName` exported by `this` imported-package.
 func (this PkgName) Call(funcName string, args ...IAny) *ExprCall {
 	return &ExprCall{
 		Callee: OpDot{Op: Op{Operands: Syns{Named{Name: string(this)}, Named{Name: funcName}}}},
 		Args:   synsFrom(nil, args...),
 	}
+}
+
+// T constructs a `TypeRef` with `Named` referring to `this PkgName` and `typeName`.
+func (this PkgName) T(typeName string) *TypeRef {
+	return TrNamed(string(this), typeName)
+}
+
+// Tª constructs a `TypeRef` with its `Pointer`'s `Named` referring to `this PkgName` and `typeName`.
+func (this PkgName) Tª(typeName string) *TypeRef {
+	return TrPtr(this.T(typeName))
 }
 
 // Method constructs a `SynFunc` with the given `name` and `args` plus `this` as its method `Recv`.
@@ -129,6 +144,11 @@ func (this *TypeFunc) Ret(name string, typeRef *TypeRef) *TypeFunc {
 	return this
 }
 
+func (this *TypeFunc) Spreads() *TypeFunc {
+	this.LastArgSpreads = true
+	return this
+}
+
 // Args sets `this.Type.Func.Args` and returns `this`.
 func (this *SynFunc) Args(args ...NamedTyped) *SynFunc {
 	this.Type.Func.Args = args
@@ -138,6 +158,11 @@ func (this *SynFunc) Args(args ...NamedTyped) *SynFunc {
 // Arg adds to `this.Type.Func.Args` and returns `this`.
 func (this *SynFunc) Arg(name string, typeRef *TypeRef) *SynFunc {
 	this.Type.Func.Args = append(this.Type.Func.Args, NamedTyped{Named: Named{Name: name}, Type: typeRef})
+	return this
+}
+
+func (this *SynFunc) Spreads() *SynFunc {
+	this.Type.Func.LastArgSpreads = true
 	return this
 }
 
@@ -217,4 +242,14 @@ func (this *StmtSwitch) CasesOf(cases ...SynCase) *StmtSwitch {
 func (this *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch {
 	this.Default.Body = stmts
 	return this
+}
+
+// Field returns the `SynStructField` in `this.Fields` matching `name`.
+func (this *TypeStruct) Field(name string) (fld *SynStructField) {
+	for i := range this.Fields {
+		if this.Fields[i].Name == name {
+			return &this.Fields[i]
+		}
+	}
+	return nil
 }

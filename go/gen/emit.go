@@ -27,20 +27,23 @@ func (this Named) emit(w *writer, keywordPlusSpace string) {
 	w.WriteString(this.Name)
 }
 
-func (this NamedTyped) emit(w *writer, noFuncKeywordBecauseInterfaceMethod bool) {
+func (this NamedTyped) emit(w *writer, noFuncKeywordBecauseInterfaceMethod bool, spread bool) {
 	if this.Name != "" {
 		w.WriteString(this.Name)
 		w.WriteByte(' ')
 	}
+	if spread {
+		w.WriteString("...")
+	}
 	this.Type.emit(w, noFuncKeywordBecauseInterfaceMethod)
 }
 
-func (this NamedsTypeds) emit(w *writer, sep byte, noFuncKeywordBecauseInterfaceMethods bool) {
+func (this NamedsTypeds) emit(w *writer, sep byte, noFuncKeywordBecauseInterfaceMethods bool, lastSpreads bool) {
 	for i := range this {
 		if i > 0 {
 			w.WriteByte(sep)
 		}
-		this[i].emit(w, noFuncKeywordBecauseInterfaceMethods)
+		this[i].emit(w, noFuncKeywordBecauseInterfaceMethods, lastSpreads && i == len(this)-1)
 	}
 }
 
@@ -53,14 +56,14 @@ func (this *TypeFunc) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfI
 		w.WriteString("func")
 	}
 	w.WriteByte('(')
-	this.Args.emit(w, ',', false)
+	this.Args.emit(w, ',', false, this.LastArgSpreads)
 	w.WriteByte(')')
 	if len(this.Rets) == 1 && this.Rets[0].Name == "" {
 		w.WriteByte(' ')
 		this.Rets[0].Type.emitTo(w)
 	} else if len(this.Rets) > 0 {
 		w.WriteString(" (")
-		this.Rets.emit(w, ',', false)
+		this.Rets.emit(w, ',', false, false)
 		w.WriteByte(')')
 	}
 }
@@ -71,7 +74,7 @@ func (this *TypeInterface) emitTo(w *writer) {
 		this.Embeds[i].emitTo(w)
 		w.WriteByte(';')
 	}
-	this.Methods.emit(w, ';', true)
+	this.Methods.emit(w, ';', true, false)
 	w.WriteByte('}')
 }
 
@@ -85,7 +88,7 @@ func (this *TypeStruct) emitTo(w *writer) {
 }
 
 func (this *SynStructField) emitTo(w *writer) {
-	this.NamedTyped.emit(w, false)
+	this.NamedTyped.emit(w, false, false)
 	if len(this.Tags) > 0 {
 		if unconventional := this.Tags[""]; unconventional != "" && len(this.Tags) == 1 {
 			w.WriteString(strconv.Quote(unconventional))
@@ -555,8 +558,11 @@ func (this *ExprCall) emitTo(w *writer) {
 	}
 	w.WriteByte('(')
 	for i := range this.Args {
-		this.Args[i].emitTo(w)
-		w.WriteByte(',')
+		if this.Args[i].emitTo(w); i == len(this.Args)-1 && this.LastArgSpreads {
+			w.WriteString("...")
+		} else {
+			w.WriteByte(',')
+		}
 	}
 	w.WriteByte(')')
 }

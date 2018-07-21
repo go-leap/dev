@@ -40,6 +40,8 @@ type TypeFunc struct {
 	Args NamedsTypeds
 	// func return values
 	Rets NamedsTypeds
+
+	LastArgSpreads bool
 }
 
 // TypeInterface represents Go's `interface{..}` construct.
@@ -341,8 +343,9 @@ type ExprLit struct {
 // ExprCall represents a call to any callable `Callee`, or a
 // type conversion (if `Callee` effectively names a type).
 type ExprCall struct {
-	Callee ISyn
-	Args   Syns
+	Callee         ISyn
+	Args           Syns
+	LastArgSpreads bool
 }
 
 // SynRaw is an `ISyn` that at codegen time simply emits its self-contained raw Go
