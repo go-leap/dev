@@ -109,28 +109,34 @@ var (
 	Vars struct {
 		// `"err"`
 		Err NamedTyped
-		// `"this"`, suits method-receivers (Go style fetishists hate it though)
-		This Named
-		// `"self"`, Pythonic flavour of `this` (just as pretty and as disliked)
-		Self Named
-		// `"me"`, VB6-style `this`/`self` alternative that won't trigger golint
-		Me Named
-		// `"ok"`, common for type-asserts / lookups / predicates
+		// `"e"`, suits temporary/intermediate error vars
+		E Named
+		// `"ok"`, suitable for type-asserts / lookups / predicates
 		Ok Named
-		// `"r"`, common for a func's primary named `return` value
+		// `"r"`, suitable for a func's primary named `return` value
 		R Named
-		// `"s"`, common for a func's `string` arg
+		// `"s"`, suitable for a func's only `string` arg
 		S Named
+		// `"sl"`, suitable a func's only slice arg
+		Sl Named
 		// `"t"`, suitable for temporary intermediate vars
 		T Named
-		// `"i"`, common for iterations
+		// `"i"`, suitable for iterations
 		I Named
-		// `"j"`, common for sub-iterations
+		// `"j"`, suitable for sub-iterations
 		J Named
-		// `"k"`, common for key-value pairs, eg. in for..range iterations
+		// `"id"`, suitable for an ID
+		Id Named
+		// `"ids"`, suitable for IDs
+		Ids Named
+		// `"k"`, suitable for key-value pairs, eg. in for..range iterations
 		K Named
 		// `"v"`, for key-value pairs or func args (eg. `v interface{}`)
 		V Named
+		// `"kv"`, suitable for a key-value pair
+		KV Named
+		// `"kvs"`, suitable for collection of key-value pairs
+		KVs Named
 	}
 
 	// singletons for common type-refs
@@ -139,6 +145,7 @@ var (
 		Byte       *TypeRef
 		Complex64  *TypeRef
 		Complex128 *TypeRef
+		Error      *TypeRef
 		Float32    *TypeRef
 		Float64    *TypeRef
 		Int8       *TypeRef
@@ -179,14 +186,12 @@ var (
 )
 
 func init() {
-	Vars.Err.Name, Vars.Err.Type, Vars.R.Name, Vars.This.Name, Vars.Self.Name, Vars.Me.Name, Vars.I.Name, Vars.J.Name, Vars.K.Name, Vars.V.Name, Vars.Ok.Name, Vars.S.Name, Vars.T.Name = "err", TrNamed("", "error"), "r", "this", "self", "me", "i", "j", "k", "v", "ok", "s", "t"
-
 	B.Append.Name, B.Cap.Name, B.Close.Name, B.Complex.Name, B.Copy.Name, B.Delete.Name, B.Imag.Name, B.Len.Name, B.Make.Name, B.New.Name, B.Panic.Name, B.Print.Name, B.Println.Name, B.Real.Name, B.Recover.Name = "append", "cap", "close", "complex", "copy", "delete", "imag", "len", "make", "new", "panic", "print", "println", "real", "recover"
 	B.True, B.False = L(true), L(false)
 
-	T.Bool, T.Byte, T.Complex128, T.Complex64, T.Float32, T.Float64, T.Int, T.Int16, T.Int32, T.Int64, T.Int8, T.Rune, T.String, T.Uint, T.Uint16, T.Uint32, T.Uint64, T.Uint8 = TrNamed("", "bool"), TrNamed("", "byte"), TrNamed("", "complex128"), TrNamed("", "complex64"), TrNamed("", "float32"), TrNamed("", "float64"), TrNamed("", "int"), TrNamed("", "int16"), TrNamed("", "int32"), TrNamed("", "int64"), TrNamed("", "int8"), TrNamed("", "rune"), TrNamed("", "string"), TrNamed("", "uint"), TrNamed("", "uint16"), TrNamed("", "uint32"), TrNamed("", "uint64"), TrNamed("", "uint8")
-	T.Empty.Interface, T.Empty.Struct = TrInterface(TdInterface(nil)), TrStruct(TdStruct())
-	T.SliceOf.Bytes, T.SliceOf.Ints, T.SliceOf.Strings = TrSlice(T.Byte), TrSlice(T.Int), TrSlice(T.String)
-
+	T.Error, T.Bool, T.Byte, T.Complex128, T.Complex64, T.Float32, T.Float64, T.Int, T.Int16, T.Int32, T.Int64, T.Int8, T.Rune, T.String, T.Uint, T.Uint16, T.Uint32, T.Uint64, T.Uint8 = TFrom("", "error"), TFrom("", "bool"), TFrom("", "byte"), TFrom("", "complex128"), TFrom("", "complex64"), TFrom("", "float32"), TFrom("", "float64"), TFrom("", "int"), TFrom("", "int16"), TFrom("", "int32"), TFrom("", "int64"), TFrom("", "int8"), TFrom("", "rune"), TFrom("", "string"), TFrom("", "uint"), TFrom("", "uint16"), TFrom("", "uint32"), TFrom("", "uint64"), TFrom("", "uint8")
+	T.Empty.Interface, T.Empty.Struct = TInterface(TdInterface(nil)), TStruct(TdStruct())
+	T.SliceOf.Bytes, T.SliceOf.Ints, T.SliceOf.Strings = TSlice(T.Byte), TSlice(T.Int), TSlice(T.String)
+	Vars.Err.Name, Vars.Err.Type, Vars.R.Name, Vars.I.Name, Vars.J.Name, Vars.K.Name, Vars.V.Name, Vars.Ok.Name, Vars.S.Name, Vars.T.Name, Vars.E.Name, Vars.KV.Name, Vars.KVs.Name, Vars.Sl.Name, Vars.Id.Name, Vars.Ids.Name = "err", T.Error, "r", "i", "j", "k", "v", "ok", "s", "t", "e", "kv", "kvs", "sl", "id", "ids"
 	Sigs.NoneToBool.Rets, Sigs.NoneToString.Rets = NamedsTypeds{Vars.R.OfType(T.Bool)}, NamedsTypeds{Vars.R.OfType(T.String)}
 }

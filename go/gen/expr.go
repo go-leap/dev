@@ -141,6 +141,11 @@ func (this Named) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall {
 
 // D implements `IExprDottish`.
 func (this Named) D(operands ...IAny) OpDot {
+	for i := range operands {
+		if str, ok := operands[i].(string); ok {
+			operands[i] = N(str)
+		}
+	}
 	return D(append([]ISyn{this}, synsFrom(nil, operands...)...)...)
 }
 

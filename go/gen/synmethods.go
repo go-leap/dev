@@ -1,5 +1,9 @@
 package udevgogen
 
+import (
+	"strings"
+)
+
 // OfType returns a `NamedTyped` with `this.Name` and `typeRef`.
 func (this Named) OfType(typeRef *TypeRef) (nt NamedTyped) {
 	nt.Named, nt.Type = this, typeRef
@@ -86,22 +90,24 @@ func (this *ExprCall) Spreads() *ExprCall {
 	return this
 }
 
-// Call constructs an `ExprCall` of the `funcName` exported by `this` imported-package.
-func (this PkgName) Call(funcName string, args ...IAny) *ExprCall {
+// C constructs an `ExprCall` of the `funcName` exported by `this` imported-package.
+func (this PkgName) C(funcName string, args ...IAny) *ExprCall {
 	return &ExprCall{
 		Callee: OpDot{Op: Op{Operands: Syns{Named{Name: string(this)}, Named{Name: funcName}}}},
 		Args:   synsFrom(nil, args...),
 	}
 }
 
+func (this PkgName) N(exportedName string) OpDot { return N(string(this)).D(exportedName) }
+
 // T constructs a `TypeRef` with `Named` referring to `this PkgName` and `typeName`.
 func (this PkgName) T(typeName string) *TypeRef {
-	return TrNamed(string(this), typeName)
+	return TFrom(string(this), typeName)
 }
 
 // Tª constructs a `TypeRef` with its `Pointer`'s `Named` referring to `this PkgName` and `typeName`.
 func (this PkgName) Tª(typeName string) *TypeRef {
-	return TrPtr(this.T(typeName))
+	return TPointer(this.T(typeName))
 }
 
 // Method constructs a `SynFunc` with the given `name` and `args` plus `this` as its method `Recv`.
@@ -113,10 +119,12 @@ func (this NamedTyped) Method(name string, args ...NamedTyped) *SynFunc {
 
 // Method constructs a `SynFunc` with the given `name` and `args` plus a `this`-typed method `Recv` also named `"this"`.
 func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc {
-	fn := &SynFunc{Recv: NamedTyped{Named: Vars.This, Type: this}}
+	fn := &SynFunc{Recv: NamedTyped{Named: This, Type: this}}
 	fn.Name, fn.Type = name, &TypeRef{Func: &TypeFunc{Args: args}}
 	return fn
 }
+
+var This = Named{"this"}
 
 // Conv constructs an `ExprCall` that represents a conversion of `expr` into `this` type.
 // (Go's conversion syntax, eg. `int(myexpr)`, is covered by `ExprCall` due to identical emitting logic.)
@@ -127,8 +135,8 @@ func (this *TypeRef) N(name string) NamedTyped {
 	return NamedTyped{Named: Named{Name: name}, Type: this}
 }
 
-// Ref constructs a `TypeRef` whose `Func` points to `this`.
-func (this *TypeFunc) Ref() *TypeRef {
+// T constructs a `TypeRef` whose `Func` points to `this`.
+func (this *TypeFunc) T() *TypeRef {
 	return &TypeRef{Func: this}
 }
 
@@ -252,4 +260,17 @@ func (this *TypeStruct) Field(name string) (fld *SynStructField) {
 		}
 	}
 	return nil
+}
+
+// JsonName returns `this.Tags["json"][:semicolon]` or `this.Name`.
+func (this *SynStructField) JsonName() (name string) {
+	if name = this.Tags["json"]; name != "" {
+		if i := strings.IndexRune(name, ';'); i >= 0 {
+			name = name[:i]
+		}
+	}
+	if name == "" {
+		name = this.Name
+	}
+	return
 }

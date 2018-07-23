@@ -135,8 +135,8 @@ func TDecl(name string, typeRef *TypeRef, isAlias bool) (this TypeDecl) {
 }
 
 // TdFunc constructs an initially-empty (arg-less and return-less) `TypeFunc`,
-func TdFunc() *TypeFunc {
-	return new(TypeFunc)
+func TdFunc(args ...NamedTyped) *TypeFunc {
+	return &TypeFunc{Args: args}
 }
 
 // TdFn constructs a `TypeFunc`,
@@ -160,52 +160,59 @@ func TdStructFld(name string, typeRef *TypeRef, tags map[string]string) (fld Syn
 	return
 }
 
-// TrFunc constructs a `TypeRef` referring to the specified unnamed `func(..)(..)` signature.
-func TrFunc(typeFunc *TypeFunc) *TypeRef { return &TypeRef{Func: typeFunc} }
+// TFunc constructs a `TypeRef` referring to the specified unnamed `func(..)(..)` signature.
+func TFunc(typeFunc *TypeFunc) *TypeRef { return &TypeRef{Func: typeFunc} }
 
-// TrInterface constructs a `TypeRef` referring to the specified unnamed `interface{..}`.
-func TrInterface(typeIface *TypeInterface) *TypeRef { return &TypeRef{Interface: typeIface} }
+// TInterface constructs a `TypeRef` referring to the specified unnamed `interface{..}`.
+func TInterface(typeIface *TypeInterface) *TypeRef { return &TypeRef{Interface: typeIface} }
 
-// TrStruct constructs a `TypeRef` referring to the specified unnamed `struct{..}`.
-func TrStruct(typeStruct *TypeStruct) *TypeRef { return &TypeRef{Struct: typeStruct} }
+// TStruct constructs a `TypeRef` referring to the specified unnamed `struct{..}`.
+func TStruct(typeStruct *TypeStruct) *TypeRef { return &TypeRef{Struct: typeStruct} }
 
-// TrPtr constructs a `TypeRef` referring to a pointer to the specified type.
-func TrPtr(typeRef *TypeRef) *TypeRef {
+// TPointer constructs a `TypeRef` referring to a pointer to the specified type.
+func TPointer(typeRef *TypeRef) *TypeRef {
 	var tref TypeRef
 	tref.Pointer.Of = typeRef
 	return &tref
 }
 
-// TrArray constructs a `TypeRef` referring to an array of the specified type.
-func TrArray(numElems uint64, typeRef *TypeRef) *TypeRef {
+// TArray constructs a `TypeRef` referring to an array of the specified type.
+func TArray(numElems uint64, typeRef *TypeRef) *TypeRef {
 	var tref TypeRef
 	tref.ArrOrSlice.Of, tref.ArrOrSlice.IsFixedLen = typeRef, &numElems
 	return &tref
 }
 
-// TrChan constructs a `TypeRef` referring to the specified channel. TODO: TypeRef.emitTo implementation!
-func TrChan(of *TypeRef, dirRecv bool, dirSend bool) *TypeRef {
+// TChan constructs a `TypeRef` referring to the specified channel. TODO: TypeRef.emitTo implementation!
+func TChan(of *TypeRef, dirRecv bool, dirSend bool) *TypeRef {
 	var tref TypeRef
 	tref.Chan.Of, tref.Chan.DirRecv, tref.Chan.DirSend = of, dirRecv, dirSend
 	return &tref
 }
 
-// TrSlice constructs a `TypeRef` referring to a slice of the specified type.
-func TrSlice(typeRef *TypeRef) *TypeRef {
+// TSlice constructs a `TypeRef` referring to a slice of the specified type.
+func TSlice(typeRef *TypeRef) *TypeRef {
 	var tref TypeRef
 	tref.ArrOrSlice.Of = typeRef
 	return &tref
 }
 
-// TrNamed constructs a `TypeRef` referring to the specified named type.
-func TrNamed(pkgName string, typeName string) (this *TypeRef) {
+// TFrom constructs a `TypeRef` referring to the specified named type exported from the given package.
+func TFrom(pkgName string, typeName string) (this *TypeRef) {
 	this = &TypeRef{}
 	this.Named.PkgName, this.Named.TypeName = pkgName, typeName
 	return
 }
 
-// TrMap constructs a `TypeRef` referring to a map with the specified key and value types.
-func TrMap(ofKey *TypeRef, toVal *TypeRef) (this *TypeRef) {
+// TFrom constructs a `TypeRef` referring to the specified named type in the local package.
+func TLocal(typeName string) (this *TypeRef) {
+	this = &TypeRef{}
+	this.Named.TypeName = typeName
+	return
+}
+
+// TMap constructs a `TypeRef` referring to a map with the specified key and value types.
+func TMap(ofKey *TypeRef, toVal *TypeRef) (this *TypeRef) {
 	this = &TypeRef{}
 	this.Map.OfKey, this.Map.ToVal = ofKey, toVal
 	return
@@ -342,13 +349,13 @@ func Case(cond ISyn, thens ...ISyn) *SynCase {
 // Fn constructs a `SynFunc`. If `maybeRecv` has a `Type` set, `this` represents a method of that type.
 func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *SynFunc) {
 	this = &SynFunc{Recv: maybeRecv}
-	this.Body, this.Named.Name, this.Type = body, name, TrFunc(sig)
+	this.Body, this.Named.Name, this.Type = body, name, TFunc(sig)
 	return
 }
 
 // Func constructs a `SynFunc` with the given `name` and `args`.
 func Func(name string, args ...NamedTyped) *SynFunc {
-	return &SynFunc{NamedTyped: NamedTyped{Named: Named{Name: name}, Type: TrFunc(TdFn(args))}}
+	return &SynFunc{NamedTyped: NamedTyped{Named: Named{Name: name}, Type: TFunc(TdFn(args))}}
 }
 
 func synFrom(any IAny) ISyn {

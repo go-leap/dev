@@ -78,28 +78,34 @@ var (
 	Vars struct {
 		// `"err"`
 		Err NamedTyped
-		// `"this"`, suits method-receivers (Go style fetishists hate it though)
-		This Named
-		// `"self"`, Pythonic flavour of `this` (just as pretty and as disliked)
-		Self Named
-		// `"me"`, VB6-style `this`/`self` alternative that won't trigger golint
-		Me Named
-		// `"ok"`, common for type-asserts / lookups / predicates
+		// `"e"`, suits temporary/intermediate error vars
+		E Named
+		// `"ok"`, suitable for type-asserts / lookups / predicates
 		Ok Named
-		// `"r"`, common for a func's primary named `return` value
+		// `"r"`, suitable for a func's primary named `return` value
 		R Named
-		// `"s"`, common for a func's `string` arg
+		// `"s"`, suitable for a func's only `string` arg
 		S Named
+		// `"sl"`, suitable a func's only slice arg
+		Sl Named
 		// `"t"`, suitable for temporary intermediate vars
 		T Named
-		// `"i"`, common for iterations
+		// `"i"`, suitable for iterations
 		I Named
-		// `"j"`, common for sub-iterations
+		// `"j"`, suitable for sub-iterations
 		J Named
-		// `"k"`, common for key-value pairs, eg. in for..range iterations
+		// `"id"`, suitable for an ID
+		Id Named
+		// `"ids"`, suitable for IDs
+		Ids Named
+		// `"k"`, suitable for key-value pairs, eg. in for..range iterations
 		K Named
 		// `"v"`, for key-value pairs or func args (eg. `v interface{}`)
 		V Named
+		// `"kv"`, suitable for a key-value pair
+		KV Named
+		// `"kvs"`, suitable for collection of key-value pairs
+		KVs Named
 	}
 
 	// singletons for common type-refs
@@ -108,6 +114,7 @@ var (
 		Byte       *TypeRef
 		Complex64  *TypeRef
 		Complex128 *TypeRef
+		Error      *TypeRef
 		Float32    *TypeRef
 		Float64    *TypeRef
 		Int8       *TypeRef
@@ -146,6 +153,10 @@ var (
 		NoneToString TypeFunc
 	}
 )
+```
+
+```go
+var This = Named{"this"}
 ```
 
 #### type ExprCall
@@ -2076,13 +2087,19 @@ type PkgName string
 
 PkgName offers some handy methods on package import names.
 
-#### func (PkgName) Call
+#### func (PkgName) C
 
 ```go
-func (this PkgName) Call(funcName string, args ...IAny) *ExprCall
+func (this PkgName) C(funcName string, args ...IAny) *ExprCall
 ```
-Call constructs an `ExprCall` of the `funcName` exported by `this`
+C constructs an `ExprCall` of the `funcName` exported by `this`
 imported-package.
+
+#### func (PkgName) N
+
+```go
+func (this PkgName) N(exportedName string) OpDot
+```
 
 #### func (PkgName) T
 
@@ -2630,6 +2647,13 @@ func TdStructFld(name string, typeRef *TypeRef, tags map[string]string) (fld Syn
 ```
 TdStructFld constructs a `SynStructField` for `TypeStruct`s.
 
+#### func (*SynStructField) JsonName
+
+```go
+func (this *SynStructField) JsonName() (name string)
+```
+JsonName returns `this.Tags["json"][:semicolon]` or `this.Name`.
+
 #### type Syns
 
 ```go
@@ -2740,7 +2764,7 @@ TdFn constructs a `TypeFunc`,
 #### func  TdFunc
 
 ```go
-func TdFunc() *TypeFunc
+func TdFunc(args ...NamedTyped) *TypeFunc
 ```
 TdFunc constructs an initially-empty (arg-less and return-less) `TypeFunc`,
 
@@ -2750,13 +2774,6 @@ TdFunc constructs an initially-empty (arg-less and return-less) `TypeFunc`,
 func (this *TypeFunc) Arg(name string, typeRef *TypeRef) *TypeFunc
 ```
 Arg adds to `this.Args` and returns `this`.
-
-#### func (*TypeFunc) Ref
-
-```go
-func (this *TypeFunc) Ref() *TypeRef
-```
-Ref constructs a `TypeRef` whose `Func` points to `this`.
 
 #### func (*TypeFunc) Ret
 
@@ -2770,6 +2787,13 @@ Ret adds to `this.Rets` and returns `this`.
 ```go
 func (this *TypeFunc) Spreads() *TypeFunc
 ```
+
+#### func (*TypeFunc) T
+
+```go
+func (this *TypeFunc) T() *TypeRef
+```
+T constructs a `TypeRef` whose `Func` points to `this`.
 
 #### type TypeInterface
 
@@ -2827,72 +2851,81 @@ type TypeRef struct {
 TypeRef represents a reference to a type, such as used for func arguments' or
 struct fields' explicit type annotations.
 
-#### func  TrArray
+#### func  TArray
 
 ```go
-func TrArray(numElems uint64, typeRef *TypeRef) *TypeRef
+func TArray(numElems uint64, typeRef *TypeRef) *TypeRef
 ```
-TrArray constructs a `TypeRef` referring to an array of the specified type.
+TArray constructs a `TypeRef` referring to an array of the specified type.
 
-#### func  TrChan
+#### func  TChan
 
 ```go
-func TrChan(of *TypeRef, dirRecv bool, dirSend bool) *TypeRef
+func TChan(of *TypeRef, dirRecv bool, dirSend bool) *TypeRef
 ```
-TrChan constructs a `TypeRef` referring to the specified channel. TODO:
+TChan constructs a `TypeRef` referring to the specified channel. TODO:
 TypeRef.emitTo implementation!
 
-#### func  TrFunc
+#### func  TFrom
 
 ```go
-func TrFunc(typeFunc *TypeFunc) *TypeRef
+func TFrom(pkgName string, typeName string) (this *TypeRef)
 ```
-TrFunc constructs a `TypeRef` referring to the specified unnamed `func(..)(..)`
+TFrom constructs a `TypeRef` referring to the specified named type exported from
+the given package.
+
+#### func  TFunc
+
+```go
+func TFunc(typeFunc *TypeFunc) *TypeRef
+```
+TFunc constructs a `TypeRef` referring to the specified unnamed `func(..)(..)`
 signature.
 
-#### func  TrInterface
+#### func  TInterface
 
 ```go
-func TrInterface(typeIface *TypeInterface) *TypeRef
+func TInterface(typeIface *TypeInterface) *TypeRef
 ```
-TrInterface constructs a `TypeRef` referring to the specified unnamed
+TInterface constructs a `TypeRef` referring to the specified unnamed
 `interface{..}`.
 
-#### func  TrMap
+#### func  TLocal
 
 ```go
-func TrMap(ofKey *TypeRef, toVal *TypeRef) (this *TypeRef)
+func TLocal(typeName string) (this *TypeRef)
 ```
-TrMap constructs a `TypeRef` referring to a map with the specified key and value
+TFrom constructs a `TypeRef` referring to the specified named type in the local
+package.
+
+#### func  TMap
+
+```go
+func TMap(ofKey *TypeRef, toVal *TypeRef) (this *TypeRef)
+```
+TMap constructs a `TypeRef` referring to a map with the specified key and value
 types.
 
-#### func  TrNamed
+#### func  TPointer
 
 ```go
-func TrNamed(pkgName string, typeName string) (this *TypeRef)
+func TPointer(typeRef *TypeRef) *TypeRef
 ```
-TrNamed constructs a `TypeRef` referring to the specified named type.
+TPointer constructs a `TypeRef` referring to a pointer to the specified type.
 
-#### func  TrPtr
+#### func  TSlice
 
 ```go
-func TrPtr(typeRef *TypeRef) *TypeRef
+func TSlice(typeRef *TypeRef) *TypeRef
 ```
-TrPtr constructs a `TypeRef` referring to a pointer to the specified type.
+TSlice constructs a `TypeRef` referring to a slice of the specified type.
 
-#### func  TrSlice
+#### func  TStruct
 
 ```go
-func TrSlice(typeRef *TypeRef) *TypeRef
+func TStruct(typeStruct *TypeStruct) *TypeRef
 ```
-TrSlice constructs a `TypeRef` referring to a slice of the specified type.
-
-#### func  TrStruct
-
-```go
-func TrStruct(typeStruct *TypeStruct) *TypeRef
-```
-TrStruct constructs a `TypeRef` referring to the specified unnamed `struct{..}`.
+TStruct constructs a `TypeRef` referring to the specified unnamed `struct{..}`.
 
 #### func (*TypeRef) BitSizeIfBuiltInNumberType
 

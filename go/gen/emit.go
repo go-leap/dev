@@ -292,8 +292,10 @@ func (this *StmtConst) emitTo(w *writer) {
 func (this *StmtVar) emitTo(w *writer) {
 	w.WriteString("var ")
 	w.WriteString(this.Name)
-	w.WriteByte(' ')
-	if this.Type.emitTo(w); this.Expr != nil {
+	if w.WriteByte(' '); this.Type != nil {
+		this.Type.emitTo(w)
+	}
+	if this.Expr != nil {
 		w.WriteByte('=')
 		this.Expr.emitTo(w)
 	}
@@ -394,12 +396,12 @@ func (this Op) emit(w *writer, operator string) {
 				_, parens = this.Operands[i].(interface{ isOp() })
 				if parens {
 					switch this.Operands[i].(type) {
-					case OpIdx:
+					case OpIdx, OpDot:
 						parens = false
 					}
 				}
-				if (!parens) && i == last && operator == "." {
-					if _, parens = this.Operands[i].(*TypeRef); !parens {
+				if (!parens) && operator == "." {
+					if _, parens = this.Operands[i].(*TypeRef); (!parens) && i == last {
 						name, _ := this.Operands[i].(Named)
 						parens = name.Name == "type"
 					}
