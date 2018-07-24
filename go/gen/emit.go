@@ -13,7 +13,7 @@ type writer struct {
 	bytes.Buffer
 	emitNoOpFuncBodies        bool
 	pkgImportsRegistered      PkgImports
-	pkgImportsActuallyEmitted map[string]bool
+	pkgImportsActuallyEmitted map[PkgName]bool
 }
 
 func (this *writer) shouldEmitNoOpFuncBodies() bool { return this.emitNoOpFuncBodies }
@@ -145,7 +145,7 @@ func (this *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfIn
 		this.Map.ToVal.emitTo(w)
 	case this.Named.TypeName != "":
 		if this.Named.PkgName != "" {
-			w.pkgImportsActuallyEmitted[this.Named.PkgName] = true
+			w.pkgImportsActuallyEmitted[PkgName(this.Named.PkgName)] = true
 			w.WriteString(this.Named.PkgName)
 			w.WriteByte('.')
 		}
@@ -224,7 +224,7 @@ func (this *SynFunc) emitTo(w *writer) {
 
 	oldimps := w.pkgImportsActuallyEmitted
 	if this.EmitCommented {
-		w.pkgImportsActuallyEmitted = map[string]bool{}
+		w.pkgImportsActuallyEmitted = map[PkgName]bool{}
 		w.WriteString("/*\n")
 	}
 	if w.WriteString("func "); this.Recv.Type != nil {
@@ -284,7 +284,9 @@ func (this StmtGo) emitTo(w *writer) {
 func (this *StmtConst) emitTo(w *writer) {
 	w.WriteString("const ")
 	w.WriteString(this.Name)
-	this.Type.emitTo(w)
+	if w.WriteByte(' '); this.Type != nil {
+		this.Type.emitTo(w)
+	}
 	w.WriteByte('=')
 	this.Expr.emitTo(w)
 }
@@ -452,7 +454,7 @@ func (this OpColon) emitTo(w *writer) { this.Op.emit(w, ":") }
 func (this OpDot) emitTo(w *writer) {
 	if pref := PkgImportNamePrefix; len(this.Operands) > 1 {
 		if n, ok := this.Operands[0].(Named); ok && len(n.Name) > len(pref) && (len(pref) == 0 || n.Name[:len(pref)] == string(pref)) {
-			w.pkgImportsActuallyEmitted[n.Name] = true
+			w.pkgImportsActuallyEmitted[PkgName(n.Name)] = true
 		}
 		this.Op.emit(w, ".")
 	}
@@ -575,8 +577,28 @@ func (this *StmtLabel) emitTo(w *writer) {
 	this.SynBlock.emit(w, false, ';', false)
 }
 
-func (this SynRaw) emitTo(w *writer) {
-	w.Write(this)
+func (this *SynRaw) emitTo(w *writer) {
+	for pkgname, pkgpath := range this.ImportsUsed {
+		if pkgimpname := w.pkgImportsRegistered[pkgpath]; pkgimpname == "" {
+			w.pkgImportsRegistered[pkgpath] = pkgname
+		} else if pkgimpname != pkgname {
+			panic("SynRaw package-imports conflict: uses package import '" + pkgpath + "' named '" + string(pkgname) + "' but current output file has it registered with name '" + string(pkgimpname) + "'")
+		}
+		if !this.EmitCommented {
+			w.pkgImportsActuallyEmitted[pkgname] = true
+		} else {
+			w.WriteString(" /*")
+			w.WriteString(string(pkgname))
+			w.WriteString(strconv.Quote(pkgpath))
+			w.WriteString("*/ ")
+		}
+	}
+	if this.EmitCommented {
+		w.WriteString("/*")
+	}
+	if w.Write(this.Src); this.EmitCommented {
+		w.WriteString("*/")
+	}
 }
 
 // CodeGen generates the code via `this.CodeGenPlain()`, and then optionally `go/format`s it.
@@ -598,7 +620,7 @@ func (this *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNam
 
 // CodeGenPlain generates the code represented by `this` into `src`, without `go/format`ting it.
 func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool) []byte {
-	wdecls := writer{emitNoOpFuncBodies: emitNoOpFuncBodies, pkgImportsRegistered: pkgImportPathsToNames, pkgImportsActuallyEmitted: map[string]bool{}}
+	wdecls := writer{emitNoOpFuncBodies: emitNoOpFuncBodies, pkgImportsRegistered: pkgImportPathsToNames, pkgImportsActuallyEmitted: make(map[PkgName]bool, len(pkgImportPathsToNames))}
 	this.SynBlock.emit(&wdecls, false, '\n', false)
 
 	var wmain writer
@@ -612,7 +634,7 @@ func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPaths
 
 	pkgimports := make(PkgImports, len(wdecls.pkgImportsActuallyEmitted))
 	for pkgpath, pkgname := range pkgImportPathsToNames {
-		if wdecls.pkgImportsActuallyEmitted[string(pkgname)] {
+		if wdecls.pkgImportsActuallyEmitted[pkgname] {
 			pkgimports[pkgpath] = pkgname
 		}
 	}

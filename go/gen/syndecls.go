@@ -187,8 +187,8 @@ type StmtGo struct {
 type StmtConst struct {
 	// Name is required, Type optional
 	NamedTyped
-	// required literal constant
-	Expr ExprLit
+	// required literal constant, should be ExprLit or OpDot usually
+	Expr ISyn
 }
 
 // StmtVar represents Go's `var` keyword.
@@ -350,4 +350,10 @@ type ExprCall struct {
 
 // SynRaw is an `ISyn` that at codegen time simply emits its self-contained raw Go
 // source-code (perhaps hardcoded or via `text/template`s or other means) directly.
-type SynRaw []byte
+type SynRaw struct {
+	Src         []byte
+	ImportsUsed map[PkgName]string
+
+	// if true, emitted inside /* comment */
+	EmitCommented bool
+}

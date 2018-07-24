@@ -198,9 +198,9 @@ func TSlice(typeRef *TypeRef) *TypeRef {
 }
 
 // TFrom constructs a `TypeRef` referring to the specified named type exported from the given package.
-func TFrom(pkgName string, typeName string) (this *TypeRef) {
+func TFrom(pkgName PkgName, typeName string) (this *TypeRef) {
 	this = &TypeRef{}
-	this.Named.PkgName, this.Named.TypeName = pkgName, typeName
+	this.Named.PkgName, this.Named.TypeName = string(pkgName), typeName
 	return
 }
 
@@ -251,8 +251,8 @@ func C(callee IAny, args ...IAny) *ExprCall {
 }
 
 // Const constructs a `StmtConst`.
-func Const(name string, maybeType *TypeRef, exprLit ExprLit) (this *StmtConst) {
-	this = &StmtConst{Expr: exprLit}
+func Const(name string, maybeType *TypeRef, expr ISyn) (this *StmtConst) {
+	this = &StmtConst{Expr: expr}
 	this.Name, this.Type = name, maybeType
 	return
 }

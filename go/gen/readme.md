@@ -2098,7 +2098,7 @@ imported-package.
 #### func (PkgName) N
 
 ```go
-func (this PkgName) N(exportedName string) OpDot
+func (this PkgName) N(exportedName string) ISyn
 ```
 
 #### func (PkgName) T
@@ -2190,8 +2190,8 @@ StmtBreak represents Go's `break` keyword.
 type StmtConst struct {
 	// Name is required, Type optional
 	NamedTyped
-	// required literal constant
-	Expr ExprLit
+	// required literal constant, should be ExprLit or OpDot usually
+	Expr ISyn
 }
 ```
 
@@ -2200,7 +2200,7 @@ StmtConst represents Go's `const` keyword.
 #### func  Const
 
 ```go
-func Const(name string, maybeType *TypeRef, exprLit ExprLit) (this *StmtConst)
+func Const(name string, maybeType *TypeRef, expr ISyn) (this *StmtConst)
 ```
 Const constructs a `StmtConst`.
 
@@ -2621,7 +2621,13 @@ func (this *SynFunc) Spreads() *SynFunc
 #### type SynRaw
 
 ```go
-type SynRaw []byte
+type SynRaw struct {
+	Src         []byte
+	ImportsUsed map[PkgName]string
+
+	// if true, emitted inside /* comment */
+	EmitCommented bool
+}
 ```
 
 SynRaw is an `ISyn` that at codegen time simply emits its self-contained raw Go
@@ -2869,7 +2875,7 @@ TypeRef.emitTo implementation!
 #### func  TFrom
 
 ```go
-func TFrom(pkgName string, typeName string) (this *TypeRef)
+func TFrom(pkgName PkgName, typeName string) (this *TypeRef)
 ```
 TFrom constructs a `TypeRef` referring to the specified named type exported from
 the given package.

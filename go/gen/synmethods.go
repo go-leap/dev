@@ -98,11 +98,16 @@ func (this PkgName) C(funcName string, args ...IAny) *ExprCall {
 	}
 }
 
-func (this PkgName) N(exportedName string) OpDot { return N(string(this)).D(exportedName) }
+func (this PkgName) N(exportedName string) ISyn {
+	if this == "" {
+		return N(exportedName)
+	}
+	return N(string(this)).D(exportedName)
+}
 
 // T constructs a `TypeRef` with `Named` referring to `this PkgName` and `typeName`.
 func (this PkgName) T(typeName string) *TypeRef {
-	return TFrom(string(this), typeName)
+	return TFrom(this, typeName)
 }
 
 // Tª constructs a `TypeRef` with its `Pointer`'s `Named` referring to `this PkgName` and `typeName`.

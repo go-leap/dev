@@ -53,15 +53,17 @@ type PkgImports map[string]PkgName
 // `pkg__encoding_json` for `encoding/json` and stores it, assuming
 // that `PkgImportNamePrefix` is set to "pkg__", its default value).
 func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName) {
-	self := *this
-	if self == nil {
-		self = map[string]PkgName{}
+	if pkgImportPath != "" {
+		self := *this
+		if self == nil {
+			self = map[string]PkgName{}
+		}
+		if pkgImportName = self[pkgImportPath]; pkgImportName == "" {
+			pkgImportName = PkgImportNamePrefix + PkgName(ustr.ReplB(pkgImportPath, '/', '_', '.', '_', '-', '_'))
+			self[pkgImportPath] = pkgImportName
+		}
+		*this = self
 	}
-	if pkgImportName = self[pkgImportPath]; pkgImportName == "" {
-		pkgImportName = PkgImportNamePrefix + PkgName(ustr.ReplB(pkgImportPath, '/', '_', '.', '_', '-', '_'))
-		self[pkgImportPath] = pkgImportName
-	}
-	*this = self
 	return
 }
 
