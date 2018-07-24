@@ -605,13 +605,12 @@ func (this *SynRaw) emitTo(w *writer) {
 // Any `error` returned is from `go/format`, and if so, `src` will instead contain the original
 // (non-formatted) generated code that was given to `go/format` to aid investigating the issue.
 func (this *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool, goFmt bool) (src []byte, goFmtTimeTaken time.Duration, goFmtErr error) {
-	orig := this.CodeGenPlain(codeGenCommentNotice, pkgImportPathsToNames, emitNoOpFuncBodies)
-	if !goFmt {
+	if orig := this.CodeGenPlain(codeGenCommentNotice, pkgImportPathsToNames, emitNoOpFuncBodies); !goFmt {
 		src = orig
 	} else {
-		timestarted := time.Now()
+		timegofmtstart := time.Now()
 		src, goFmtErr = format.Source(orig)
-		if goFmtTimeTaken = time.Since(timestarted); goFmtErr != nil {
+		if goFmtTimeTaken = time.Since(timegofmtstart); goFmtErr != nil {
 			src = orig
 		}
 	}
