@@ -177,9 +177,9 @@ func TPointer(typeRef *TypeRef) *TypeRef {
 }
 
 // TArray constructs a `TypeRef` referring to an array of the specified type.
-func TArray(numElems uint64, typeRef *TypeRef) *TypeRef {
+func TArray(numElems ISyn, typeRef *TypeRef) *TypeRef {
 	var tref TypeRef
-	tref.ArrOrSlice.Of, tref.ArrOrSlice.IsFixedLen = typeRef, &numElems
+	tref.ArrOrSlice.Of, tref.ArrOrSlice.IsFixedLen = typeRef, numElems
 	return &tref
 }
 

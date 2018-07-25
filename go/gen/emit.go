@@ -133,7 +133,7 @@ func (this *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfIn
 		} else {
 			w.WriteByte('[')
 			if this.ArrOrSlice.IsFixedLen != nil {
-				w.WriteString(strconv.FormatUint(*this.ArrOrSlice.IsFixedLen, 10))
+				this.ArrOrSlice.IsFixedLen.emitTo(w)
 			}
 			w.WriteByte(']')
 		}

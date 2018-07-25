@@ -86,7 +86,7 @@ type TypeRef struct {
 	}
 	ArrOrSlice struct {
 		Of         *TypeRef
-		IsFixedLen *uint64
+		IsFixedLen ISyn
 		IsEllipsis bool
 	}
 	Map struct { // etc...

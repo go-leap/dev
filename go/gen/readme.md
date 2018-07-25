@@ -2832,7 +2832,7 @@ type TypeRef struct {
 	}
 	ArrOrSlice struct {
 		Of         *TypeRef
-		IsFixedLen *uint64
+		IsFixedLen ISyn
 		IsEllipsis bool
 	}
 	Map struct {
@@ -2860,7 +2860,7 @@ struct fields' explicit type annotations.
 #### func  TArray
 
 ```go
-func TArray(numElems uint64, typeRef *TypeRef) *TypeRef
+func TArray(numElems ISyn, typeRef *TypeRef) *TypeRef
 ```
 TArray constructs a `TypeRef` referring to an array of the specified type.
 
