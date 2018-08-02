@@ -258,10 +258,17 @@ func (this *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch {
 }
 
 // Field returns the `SynStructField` in `this.Fields` matching `name`.
-func (this *TypeStruct) Field(name string) (fld *SynStructField) {
+func (this *TypeStruct) Field(name string, tryJsonNamesToo bool) (fld *SynStructField) {
 	for i := range this.Fields {
 		if this.Fields[i].Name == name {
 			return &this.Fields[i]
+		}
+	}
+	if tryJsonNamesToo {
+		for i := range this.Fields {
+			if this.Fields[i].JsonName() == name {
+				return &this.Fields[i]
+			}
 		}
 	}
 	return nil

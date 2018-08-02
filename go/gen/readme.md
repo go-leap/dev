@@ -2997,7 +2997,7 @@ TdStruct constructs a `TypeStruct`.
 #### func (*TypeStruct) Field
 
 ```go
-func (this *TypeStruct) Field(name string) (fld *SynStructField)
+func (this *TypeStruct) Field(name string, tryJsonNamesToo bool) (fld *SynStructField)
 ```
 Field returns the `SynStructField` in `this.Fields` matching `name`.
 
