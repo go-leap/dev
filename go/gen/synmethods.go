@@ -1,13 +1,21 @@
 package udevgogen
 
 import (
-	"strings"
+	"github.com/go-leap/str"
 )
 
 // OfType returns a `NamedTyped` with `this.Name` and `typeRef`.
 func (this Named) OfType(typeRef *TypeRef) (nt NamedTyped) {
 	nt.Named, nt.Type = this, typeRef
 	return
+}
+
+func (this NamedsTypeds) Names() []interface{} {
+	slice := make([]interface{}, len(this))
+	for i := range this {
+		slice[i] = this[i].Named
+	}
+	return slice
 }
 
 // AllNamed returns whether all `NamedTyped`s in `this` have a `Name` set.
@@ -53,6 +61,20 @@ func (this *TypeRef) BitSizeIfBuiltInNumberType() int {
 	return 0
 }
 
+func (this *TypeRef) IsntZeroish(exprOfThisType ISyn, canLen bool, canNum bool) (expr ISyn) {
+	switch {
+	case this.Named == T.Bool.Named:
+		expr = exprOfThisType
+	case this.Named == T.Error.Named || this.Func != nil || this.Pointer.Of != nil || this.Interface != nil || this.Chan.Of != nil:
+		expr = Neq(exprOfThisType, B.Nil)
+	case canLen || this.Named == T.String.Named || this.ArrOrSlice.Of != nil || (this.Map.OfKey != nil && this.Map.ToVal != nil):
+		expr = Gt(Call(B.Len, exprOfThisType), L(0))
+	case canNum || this.Named.PkgName == "" && this.Named.TypeName != "" && (this.Named.TypeName == T.Byte.Named.TypeName || this.Named.TypeName == T.Complex128.Named.TypeName || this.Named.TypeName == T.Complex64.Named.TypeName || this.Named.TypeName == T.Float32.Named.TypeName || this.Named.TypeName == T.Float64.Named.TypeName || this.Named.TypeName == T.Int.Named.TypeName || this.Named.TypeName == T.Int16.Named.TypeName || this.Named.TypeName == T.Int32.Named.TypeName || this.Named.TypeName == T.Int64.Named.TypeName || this.Named.TypeName == T.Int8.Named.TypeName || this.Named.TypeName == T.Rune.Named.TypeName || this.Named.TypeName == T.Uint.Named.TypeName || this.Named.TypeName == T.Uint16.Named.TypeName || this.Named.TypeName == T.Uint32.Named.TypeName || this.Named.TypeName == T.Uint64.Named.TypeName || this.Named.TypeName == T.Uint8.Named.TypeName):
+		expr = Neq(exprOfThisType, L(0))
+	}
+	return
+}
+
 // IsBuiltinPrimType returns whether `this` refers to one of Go's built-in primitive-types such as `bool`, `string` etc.
 // (If `orIsUnderlyingBuiltinPrimType`, it walks the `ArrOrSlice` / `Pointer` / `Map` / `Chan` as applicable.)
 func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool {
@@ -73,6 +95,29 @@ func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool 
 		}
 	}
 	return false
+}
+
+func (this *TypeRef) IsNamedAndPublic() bool {
+	return this.Named.PkgName != "" || (this.Named.TypeName != "" && ustr.BeginsUpper(this.Named.TypeName))
+}
+
+func (this *TypeRef) UltimateElemType() (tEl *TypeRef) {
+	switch {
+	case this.ArrOrSlice.Of != nil:
+		tEl = this.ArrOrSlice.Of
+	case this.Pointer.Of != nil:
+		tEl = this.Pointer.Of
+	case this.Chan.Of != nil:
+		tEl = this.Pointer.Of
+	case this.Map.ToVal != nil:
+		tEl = this.Map.ToVal
+	}
+	if tEl == nil {
+		tEl = this
+	} else {
+		tEl = tEl.UltimateElemType()
+	}
+	return
 }
 
 // Defer constructs a `StmtDefer` of `this` call.
@@ -258,26 +303,26 @@ func (this *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch {
 }
 
 // Field returns the `SynStructField` in `this.Fields` matching `name`.
-func (this *TypeStruct) Field(name string, tryJsonNamesToo bool) (fld *SynStructField) {
+func (this *TypeStruct) Field(name string /*, tryJsonNamesToo bool*/) (fld *SynStructField) {
 	for i := range this.Fields {
 		if this.Fields[i].Name == name {
 			return &this.Fields[i]
 		}
 	}
-	if tryJsonNamesToo {
-		for i := range this.Fields {
-			if this.Fields[i].JsonName() == name {
-				return &this.Fields[i]
-			}
-		}
-	}
+	// if tryJsonNamesToo {
+	// 	for i := range this.Fields {
+	// 		if this.Fields[i].JsonName() == name {
+	// 			return &this.Fields[i]
+	// 		}
+	// 	}
+	// }
 	return nil
 }
 
 // JsonName returns `this.Tags["json"][:semicolon]` or `this.Name`.
 func (this *SynStructField) JsonName() (name string) {
 	if name = this.Tags["json"]; name != "" {
-		if i := strings.IndexRune(name, ';'); i >= 0 {
+		if i := ustr.IdxR(name, ';'); i >= 0 {
 			name = name[:i]
 		}
 	}

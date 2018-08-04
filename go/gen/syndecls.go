@@ -34,6 +34,23 @@ func (this *NamedsTypeds) Add(name string, typeRef *TypeRef) {
 	*this = append(*this, NamedTyped{Type: typeRef, Named: Named{Name: name}})
 }
 
+func (this NamedsTypeds) IfUntypedUse(typeRef *TypeRef) NamedsTypeds {
+	for i := range this {
+		if this[i].Type == nil {
+			clone := make(NamedsTypeds, len(this))
+			copy(clone, this)
+			clone[i].Type = typeRef
+			for j := i + 1; j < len(clone); j++ {
+				if this[j].Type == nil {
+					this[j].Type = typeRef
+				}
+			}
+			return clone
+		}
+	}
+	return this
+}
+
 // TypeFunc represents a func signature.
 type TypeFunc struct {
 	// func arguments

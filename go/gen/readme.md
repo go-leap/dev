@@ -850,6 +850,18 @@ func (this NamedsTypeds) AllTyped() bool
 AllTyped returns whether all `NamedTyped`s in `this` have a `Type` set. If
 `this` is empty, `false` is returned.
 
+#### func (NamedsTypeds) IfUntypedUse
+
+```go
+func (this NamedsTypeds) IfUntypedUse(typeRef *TypeRef) NamedsTypeds
+```
+
+#### func (NamedsTypeds) Names
+
+```go
+func (this NamedsTypeds) Names() []interface{}
+```
+
 #### type Op
 
 ```go
@@ -2961,6 +2973,18 @@ primitive-types such as `bool`, `string` etc. (If
 `orIsUnderlyingBuiltinPrimType`, it walks the `ArrOrSlice` / `Pointer` / `Map` /
 `Chan` as applicable.)
 
+#### func (*TypeRef) IsNamedAndPublic
+
+```go
+func (this *TypeRef) IsNamedAndPublic() bool
+```
+
+#### func (*TypeRef) IsntZeroish
+
+```go
+func (this *TypeRef) IsntZeroish(exprOfThisType ISyn, canLen bool, canNum bool) (expr ISyn)
+```
+
 #### func (*TypeRef) Method
 
 ```go
@@ -2975,6 +2999,12 @@ Method constructs a `SynFunc` with the given `name` and `args` plus a
 func (this *TypeRef) N(name string) NamedTyped
 ```
 N constructs a `NamedTyped` based on `name` and `this` type.
+
+#### func (*TypeRef) UltimateElemType
+
+```go
+func (this *TypeRef) UltimateElemType() (tEl *TypeRef)
+```
 
 #### type TypeStruct
 
@@ -2997,7 +3027,7 @@ TdStruct constructs a `TypeStruct`.
 #### func (*TypeStruct) Field
 
 ```go
-func (this *TypeStruct) Field(name string, tryJsonNamesToo bool) (fld *SynStructField)
+func (this *TypeStruct) Field(name string) (fld *SynStructField)
 ```
 Field returns the `SynStructField` in `this.Fields` matching `name`.
 
