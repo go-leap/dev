@@ -74,8 +74,10 @@ type TypeInterface struct {
 // TypeStruct represents Go's `struct{..}` construct.
 type TypeStruct struct {
 	// named fields and un-named ones ("embeds")
-	Fields []SynStructField
+	Fields SynStructFields
 }
+
+type SynStructFields []SynStructField
 
 // SynStructField represents one of a `TypeStruct`'s `Fields`.
 type SynStructField struct {

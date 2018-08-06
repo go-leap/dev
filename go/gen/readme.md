@@ -2672,6 +2672,19 @@ func (this *SynStructField) JsonName() (name string)
 ```
 JsonName returns `this.Tags["json"][:semicolon]` or `this.Name`.
 
+#### type SynStructFields
+
+```go
+type SynStructFields []SynStructField
+```
+
+
+#### func (SynStructFields) NTs
+
+```go
+func (this SynStructFields) NTs() (nts NamedsTypeds)
+```
+
 #### type Syns
 
 ```go
@@ -3011,7 +3024,7 @@ func (this *TypeRef) UltimateElemType() (tEl *TypeRef)
 ```go
 type TypeStruct struct {
 	// named fields and un-named ones ("embeds")
-	Fields []SynStructField
+	Fields SynStructFields
 }
 ```
 

@@ -331,3 +331,11 @@ func (this *SynStructField) JsonName() (name string) {
 	}
 	return
 }
+
+func (this SynStructFields) NTs() (nts NamedsTypeds) {
+	nts = make(NamedsTypeds, len(this))
+	for i := range this {
+		nts[i] = this[i].NamedTyped
+	}
+	return
+}
