@@ -143,9 +143,15 @@ func (this PkgName) C(funcName string, args ...IAny) *ExprCall {
 	}
 }
 
-func (this PkgName) N(exportedName string) ISyn {
+func (this PkgName) N(exportedName string, maybeFurtherDotOperands ...IAny) IExprDottish {
 	if this == "" {
+		if len(maybeFurtherDotOperands) > 0 {
+			return N(exportedName).D(maybeFurtherDotOperands...)
+		}
 		return N(exportedName)
+	}
+	if len(maybeFurtherDotOperands) > 0 {
+		return N(string(this)).D(append([]IAny{N(exportedName)}, maybeFurtherDotOperands...)...)
 	}
 	return N(string(this)).D(exportedName)
 }

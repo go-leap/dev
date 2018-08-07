@@ -6,7 +6,7 @@ type IExprDottish interface {
 	ISyn
 
 	C(string, ...IAny) *ExprCall
-	D() OpDot
+	D(...IAny) OpDot
 }
 
 // IExprDeclish is implemented by `IExprVarish`s that also wish
@@ -149,10 +149,10 @@ func (this Named) D(operands ...IAny) OpDot {
 	return D(append([]ISyn{this}, synsFrom(nil, operands...)...)...)
 }
 
-// Set implements `IExprVar`.
+// Set implements `IExprVarish`.
 func (this Named) Set(operand IAny) OpSet { return Set(this, synFrom(operand)) }
 
-// Let implements `IExprVar`.
+// Let implements `IExprVarish`.
 func (this Named) Let(operand IAny) OpDecl { return Decl(this, synFrom(operand)) }
 
 // Addr implements `IExprVarish`.
@@ -382,10 +382,10 @@ func (this OpNeq) Or(operand IAny) OpOr { return Or(this, synFrom(operand)) }
 // Not implements `IExprBoolish`.
 func (this OpNeq) Not() OpNot { return Not(this) }
 
-// Set implements `IExprVar`.
+// Set implements `IExprVarish`.
 func (this OpComma) Set(operand IAny) OpSet { return Set(this, synFrom(operand)) }
 
-// Let implements `IExprVar`.
+// Let implements `IExprVarish`.
 func (this OpComma) Let(operand IAny) OpDecl { return Decl(this, synFrom(operand)) }
 
 // Eq implements `IExprEqualish`.
@@ -443,7 +443,7 @@ func (this OpIdx) D(operands ...IAny) OpDot {
 	return D(append([]ISyn{this}, synsFrom(nil, operands...)...)...)
 }
 
-// Set implements `IExprVar`.
+// Set implements `IExprVarish`.
 func (this OpIdx) Set(operand IAny) OpSet { return Set(this, synFrom(operand)) }
 
 // Addr implements `IExprVarish`.
@@ -524,7 +524,7 @@ func (this OpDot) D(operands ...IAny) OpDot {
 	return D(append([]ISyn{this}, synsFrom(nil, operands...)...)...)
 }
 
-// Set implements `IExprVar`.
+// Set implements `IExprVarish`.
 func (this OpDot) Set(operand IAny) OpSet { return Set(this, synFrom(operand)) }
 
 // Addr implements `IExprVarish`.
@@ -605,7 +605,7 @@ func (this OpDeref) D(operands ...IAny) OpDot {
 	return D(append([]ISyn{this}, synsFrom(nil, operands...)...)...)
 }
 
-// Set implements `IExprVar`.
+// Set implements `IExprVarish`.
 func (this OpDeref) Set(operand IAny) OpSet { return Set(this, synFrom(operand)) }
 
 // Deref implements `IExprContainish`.

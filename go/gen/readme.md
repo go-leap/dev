@@ -455,7 +455,7 @@ type IExprDottish interface {
 	ISyn
 
 	C(string, ...IAny) *ExprCall
-	D() OpDot
+	D(...IAny) OpDot
 }
 ```
 
@@ -706,7 +706,7 @@ Leq implements `IExprOrdish`.
 ```go
 func (this Named) Let(operand IAny) OpDecl
 ```
-Let implements `IExprVar`.
+Let implements `IExprVarish`.
 
 #### func (Named) Lt
 
@@ -783,7 +783,7 @@ Plus implements `IExprNumerish`.
 ```go
 func (this Named) Set(operand IAny) OpSet
 ```
-Set implements `IExprVar`.
+Set implements `IExprVarish`.
 
 #### func (Named) Sl
 
@@ -1003,14 +1003,14 @@ Tup constructs an `OpComma`.
 ```go
 func (this OpComma) Let(operand IAny) OpDecl
 ```
-Let implements `IExprVar`.
+Let implements `IExprVarish`.
 
 #### func (OpComma) Set
 
 ```go
 func (this OpComma) Set(operand IAny) OpSet
 ```
-Set implements `IExprVar`.
+Set implements `IExprVarish`.
 
 #### type OpDecl
 
@@ -1194,7 +1194,7 @@ Plus implements `IExprNumerish`.
 ```go
 func (this OpDeref) Set(operand IAny) OpSet
 ```
-Set implements `IExprVar`.
+Set implements `IExprVarish`.
 
 #### func (OpDeref) Sl
 
@@ -1399,7 +1399,7 @@ Plus implements `IExprNumerish`.
 ```go
 func (this OpDot) Set(operand IAny) OpSet
 ```
-Set implements `IExprVar`.
+Set implements `IExprVarish`.
 
 #### func (OpDot) Sl
 
@@ -1739,7 +1739,7 @@ Plus implements `IExprNumerish`.
 ```go
 func (this OpIdx) Set(operand IAny) OpSet
 ```
-Set implements `IExprVar`.
+Set implements `IExprVarish`.
 
 #### func (OpIdx) Sl
 
@@ -2110,7 +2110,7 @@ imported-package.
 #### func (PkgName) N
 
 ```go
-func (this PkgName) N(exportedName string) ISyn
+func (this PkgName) N(exportedName string, maybeFurtherDotOperands ...IAny) IExprDottish
 ```
 
 #### func (PkgName) T
@@ -2766,7 +2766,7 @@ TypeDecl represents a type-definition declaration or type-alias declaration.
 #### func  TDecl
 
 ```go
-func TDecl(name string, typeRef *TypeRef, isAlias bool) (this TypeDecl)
+func TDecl(name string, typeRef *TypeRef, isAlias bool) (this *TypeDecl)
 ```
 TDecl constructs a named `TypeDecl` of the specified underlying type.
 

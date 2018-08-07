@@ -129,8 +129,9 @@ func Set(operands ...ISyn) OpSet { return OpSet{Op: Op{Operands: operands}} }
 func Sub(operands ...ISyn) OpSub { return OpSub{Op: Op{Operands: operands}} }
 
 // TDecl constructs a named `TypeDecl` of the specified underlying type.
-func TDecl(name string, typeRef *TypeRef, isAlias bool) (this TypeDecl) {
-	this.IsAlias, this.Name, this.Type = isAlias, name, typeRef
+func TDecl(name string, typeRef *TypeRef, isAlias bool) (this *TypeDecl) {
+	this = &TypeDecl{IsAlias: isAlias}
+	this.Name, this.Type = name, typeRef
 	return
 }
 

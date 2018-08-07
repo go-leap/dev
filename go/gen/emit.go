@@ -159,7 +159,7 @@ func (this *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfIn
 	}
 }
 
-func (this TypeDecl) emitTo(w *writer) {
+func (this *TypeDecl) emitTo(w *writer) {
 	w.WriteString("type ")
 	if w.WriteString(this.Name); this.IsAlias {
 		w.WriteByte('=')
