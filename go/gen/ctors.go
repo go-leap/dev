@@ -248,7 +248,7 @@ func C(callee IAny, args ...IAny) *ExprCall {
 	case string:
 		syn = N(c)
 	}
-	return &ExprCall{Callee: syn, Args: synsFrom(nil, args...)}
+	return &ExprCall{Callee: syn, Args: SynsFrom(nil, args...)}
 }
 
 // Const constructs a `StmtConst`.
@@ -301,11 +301,11 @@ func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
 	if len(ifThensAndMaybeAnElse) > 0 || ifThensAndMaybeAnElse[0] != nil {
 		this = &StmtIf{IfThens: make(SynCases, 0, 1+len(ifThensAndMaybeAnElse)/2)}
 		if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
-			this.Else.Body = synsFrom(ifThensAndMaybeAnElse[l-1])
+			this.Else.Body = SynsFrom(ifThensAndMaybeAnElse[l-1])
 			ifThensAndMaybeAnElse = ifThensAndMaybeAnElse[:l-1]
 		}
 		for i := 1; i < len(ifThensAndMaybeAnElse); i += 2 {
-			cond, body := ifThensAndMaybeAnElse[i-1], synsFrom(ifThensAndMaybeAnElse[i])
+			cond, body := ifThensAndMaybeAnElse[i-1], SynsFrom(ifThensAndMaybeAnElse[i])
 			this.IfThens = append(this.IfThens, SynCase{Cond: cond, SynBlock: SynBlock{Body: body}})
 		}
 	}
@@ -325,11 +325,11 @@ func Ret(retExpr ISyn) (this StmtRet) {
 func Switch(maybeScrutinee ISyn, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch) {
 	this = &StmtSwitch{Scrutinee: maybeScrutinee, Cases: make(SynCases, 0, 1+len(caseCondsAndBlocksPlusMaybeDefaultBlock)/2)}
 	if l := len(caseCondsAndBlocksPlusMaybeDefaultBlock); l%2 != 0 {
-		this.Default.Body = synsFrom(caseCondsAndBlocksPlusMaybeDefaultBlock[l-1])
+		this.Default.Body = SynsFrom(caseCondsAndBlocksPlusMaybeDefaultBlock[l-1])
 		caseCondsAndBlocksPlusMaybeDefaultBlock = caseCondsAndBlocksPlusMaybeDefaultBlock[:l-1]
 	}
 	for i := 1; i < len(caseCondsAndBlocksPlusMaybeDefaultBlock); i += 2 {
-		body := synsFrom(caseCondsAndBlocksPlusMaybeDefaultBlock[i])
+		body := SynsFrom(caseCondsAndBlocksPlusMaybeDefaultBlock[i])
 		this.Cases = append(this.Cases, SynCase{Cond: caseCondsAndBlocksPlusMaybeDefaultBlock[i-1], SynBlock: SynBlock{Body: body}})
 	}
 	return
@@ -366,7 +366,19 @@ func synFrom(any IAny) ISyn {
 	return ExprLit{Val: any}
 }
 
-func synsFrom(eitherSyn ISyn, orThings ...IAny) Syns {
+func synsFrom(preferNamesOverStringLits bool, things ...IAny) Syns {
+	if preferNamesOverStringLits {
+		for i := range things {
+			switch s := things[i].(type) {
+			case string:
+				things[i] = N(s)
+			}
+		}
+	}
+	return SynsFrom(nil, things...)
+}
+
+func SynsFrom(eitherSyn ISyn, orThings ...IAny) Syns {
 	if eitherSyn == nil {
 		var syns Syns
 		if len(orThings) > 0 {

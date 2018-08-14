@@ -45,12 +45,12 @@ func GEN_IF(check bool, stmts ...ISyn) Syns {
 }
 
 // GEN_BYCASE is like a codegen-time `switch..case` construct:
-// it returns `unless[true]` if present, else `byDefault`.
-func GEN_BYCASE(byDefault USUALLY, unless UNLESS) ISyn {
+// it returns `unless[true]` if present, else `usually`.
+func GEN_BYCASE(usually USUALLY, unless UNLESS) ISyn {
 	if then, ok := unless[true]; ok {
 		return then
 	}
-	return byDefault
+	return usually
 }
 
 // GEN_FOR_IN is a codegen-time iterating `Syns`-builder. It calls `do` once per

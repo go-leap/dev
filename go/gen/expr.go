@@ -136,17 +136,12 @@ type IExprCallish interface {
 
 // C implements `IExprDottish`.
 func (this Named) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall {
-	return Call(D(this, N(dotCalleeName)), synsFrom(nil, dotCallArgs...)...)
+	return Call(D(this, N(dotCalleeName)), SynsFrom(nil, dotCallArgs...)...)
 }
 
 // D implements `IExprDottish`.
 func (this Named) D(operands ...IAny) OpDot {
-	for i := range operands {
-		if str, ok := operands[i].(string); ok {
-			operands[i] = N(str)
-		}
-	}
-	return D(append([]ISyn{this}, synsFrom(nil, operands...)...)...)
+	return D(append([]ISyn{this}, synsFrom(true, operands...)...)...)
 }
 
 // Set implements `IExprVarish`.
@@ -221,16 +216,16 @@ func (this Named) Not() OpNot { return Not(this) }
 func (this Named) Neg() OpSub { return Neg(this) }
 
 // Of implements `IExprCallish`.
-func (this Named) Of(args ...IAny) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
+func (this Named) Of(args ...IAny) *ExprCall { return Call(this, SynsFrom(nil, args...)...) }
 
 // C implements `IExprDottish`.
 func (this *ExprCall) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall {
-	return Call(D(this, N(dotCalleeName)), synsFrom(nil, dotCallArgs...)...)
+	return Call(D(this, N(dotCalleeName)), SynsFrom(nil, dotCallArgs...)...)
 }
 
 // D implements `IExprDottish`.
 func (this *ExprCall) D(operands ...IAny) OpDot {
-	return D(append([]ISyn{this}, synsFrom(nil, operands...)...)...)
+	return D(append([]ISyn{this}, synsFrom(true, operands...)...)...)
 }
 
 // Deref implements `IExprContainish`.
@@ -290,7 +285,7 @@ func (this *ExprCall) Not() OpNot { return Not(this) }
 func (this *ExprCall) Neg() OpSub { return Neg(this) }
 
 // Of implements `IExprCallish`.
-func (this *ExprCall) Of(args ...IAny) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
+func (this *ExprCall) Of(args ...IAny) *ExprCall { return Call(this, SynsFrom(nil, args...)...) }
 
 // Eq implements `IExprEqualish`.
 func (this OpGeq) Eq(operand IAny) OpEq { return Eq(this, synFrom(operand)) }
@@ -435,12 +430,12 @@ func (this OpNot) Not() OpNot { return Not(this) }
 
 // C implements `IExprDottish`.
 func (this OpIdx) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall {
-	return Call(D(this, N(dotCalleeName)), synsFrom(nil, dotCallArgs...)...)
+	return Call(D(this, N(dotCalleeName)), SynsFrom(nil, dotCallArgs...)...)
 }
 
 // D implements `IExprDottish`.
 func (this OpIdx) D(operands ...IAny) OpDot {
-	return D(append([]ISyn{this}, synsFrom(nil, operands...)...)...)
+	return D(append([]ISyn{this}, synsFrom(true, operands...)...)...)
 }
 
 // Set implements `IExprVarish`.
@@ -512,16 +507,16 @@ func (this OpIdx) Not() OpNot { return Not(this) }
 func (this OpIdx) Neg() OpSub { return Neg(this) }
 
 // Of implements `IExprCallish`.
-func (this OpIdx) Of(args ...IAny) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
+func (this OpIdx) Of(args ...IAny) *ExprCall { return Call(this, SynsFrom(nil, args...)...) }
 
 // C implements `IExprDottish`.
 func (this OpDot) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall {
-	return Call(D(this, N(dotCalleeName)), synsFrom(nil, dotCallArgs...)...)
+	return Call(D(this, N(dotCalleeName)), SynsFrom(nil, dotCallArgs...)...)
 }
 
 // D implements `IExprDottish`.
 func (this OpDot) D(operands ...IAny) OpDot {
-	return D(append([]ISyn{this}, synsFrom(nil, operands...)...)...)
+	return D(append([]ISyn{this}, synsFrom(true, operands...)...)...)
 }
 
 // Set implements `IExprVarish`.
@@ -593,16 +588,16 @@ func (this OpDot) Not() OpNot { return Not(this) }
 func (this OpDot) Neg() OpSub { return Neg(this) }
 
 // Of implements `IExprCallish`.
-func (this OpDot) Of(args ...IAny) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
+func (this OpDot) Of(args ...IAny) *ExprCall { return Call(this, SynsFrom(nil, args...)...) }
 
 // C implements `IExprDottish`.
 func (this OpDeref) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall {
-	return Call(D(this, N(dotCalleeName)), synsFrom(nil, dotCallArgs...)...)
+	return Call(D(this, N(dotCalleeName)), SynsFrom(nil, dotCallArgs...)...)
 }
 
 // D implements `IExprDottish`.
 func (this OpDeref) D(operands ...IAny) OpDot {
-	return D(append([]ISyn{this}, synsFrom(nil, operands...)...)...)
+	return D(append([]ISyn{this}, synsFrom(true, operands...)...)...)
 }
 
 // Set implements `IExprVarish`.
@@ -671,4 +666,8 @@ func (this OpDeref) Not() OpNot { return Not(this) }
 func (this OpDeref) Neg() OpSub { return Neg(this) }
 
 // Of implements `IExprCallish`.
-func (this OpDeref) Of(args ...IAny) *ExprCall { return Call(this, synsFrom(nil, args...)...) }
+func (this OpDeref) Of(args ...IAny) *ExprCall { return Call(this, SynsFrom(nil, args...)...) }
+
+func (this OpAdd) Plus(operand IAny) OpAdd {
+	return Add(append(this.Operands, synFrom(operand))...)
+}

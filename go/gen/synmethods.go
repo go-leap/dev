@@ -10,12 +10,62 @@ func (this Named) OfType(typeRef *TypeRef) (nt NamedTyped) {
 	return
 }
 
-func (this NamedsTypeds) Names() []interface{} {
+func (this NamedsTypeds) Names(strLits bool) []interface{} {
 	slice := make([]interface{}, len(this))
 	for i := range this {
-		slice[i] = this[i].Named
+		if strLits {
+			slice[i] = this[i].Name
+		} else {
+			slice[i] = this[i].Named
+		}
 	}
 	return slice
+}
+
+func (this NamedsTypeds) ToAnys(transform func(*NamedTyped) IAny) (transformed []IAny) {
+	transformed = make([]IAny, len(this))
+	for i := range transformed {
+		if transform != nil {
+			transformed[i] = transform(&this[i])
+		} else {
+			transformed[i] = this[i]
+		}
+	}
+	return
+}
+
+func (this NamedsTypeds) ToSyns(transform func(*NamedTyped) ISyn) (transformed Syns) {
+	transformed = make(Syns, len(this))
+	for i := range transformed {
+		if transform != nil {
+			transformed[i] = transform(&this[i])
+		} else {
+			transformed[i] = this[i]
+		}
+	}
+	return
+}
+
+func (this NamedsTypeds) LastEllipsisIfSlice() (r NamedsTypeds) {
+	if r = this; len(r) > 0 {
+		if last := &r[len(r)-1]; last.Type != nil && last.Type.ArrOrSlice.Of != nil && last.Type.ArrOrSlice.IsFixedLen == nil && !last.Type.ArrOrSlice.IsEllipsis {
+			r = make(NamedsTypeds, len(this))
+			copy(r, this)
+			typecopy := *r[len(r)-1].Type
+			typecopy.ArrOrSlice.IsEllipsis = true
+			r[len(r)-1].Type = &typecopy
+		}
+	}
+	return
+}
+
+func (this NamedsTypeds) Renamed(rename func(string) string) (renamed NamedsTypeds) {
+	renamed = make(NamedsTypeds, len(this))
+	copy(renamed, this)
+	for i := range renamed {
+		renamed[i].Name = rename(renamed[i].Name)
+	}
+	return
 }
 
 // AllNamed returns whether all `NamedTyped`s in `this` have a `Name` set.
@@ -59,6 +109,10 @@ func (this *TypeRef) BitSizeIfBuiltInNumberType() int {
 		}
 	}
 	return 0
+}
+
+func (this *TypeRef) IsZeroish(exprOfThisType ISyn, canLen bool, canNum bool) ISyn {
+	return Not(this.IsntZeroish(exprOfThisType, canLen, canNum))
 }
 
 func (this *TypeRef) IsntZeroish(exprOfThisType ISyn, canLen bool, canNum bool) (expr ISyn) {
@@ -120,6 +174,33 @@ func (this *TypeRef) UltimateElemType() (tEl *TypeRef) {
 	return
 }
 
+func (this *TypeRef) String() string {
+	switch {
+	case this.Named.TypeName != "":
+		if this.Named.PkgName != "" {
+			return this.Named.PkgName + "." + this.Named.TypeName
+		}
+		return this.Named.TypeName
+	case this.ArrOrSlice.Of != nil && this.ArrOrSlice.IsEllipsis:
+		return "..." + this.ArrOrSlice.Of.String()
+	case this.ArrOrSlice.Of != nil && this.ArrOrSlice.IsFixedLen != nil:
+		return "[_]" + this.ArrOrSlice.Of.String()
+	case this.ArrOrSlice.Of != nil && this.ArrOrSlice.IsFixedLen == nil:
+		return "[]" + this.ArrOrSlice.Of.String()
+	case this.Chan.Of != nil:
+		return "chan " + this.Chan.Of.String()
+	case this.Interface != nil:
+		return "interface{..}"
+	case this.Map.OfKey != nil && this.Map.ToVal != nil:
+		return "map[" + this.Map.OfKey.String() + "]" + this.Map.ToVal.String()
+	case this.Pointer.Of != nil:
+		return "*" + this.Pointer.Of.String()
+	case this.Struct != nil:
+		return "struct{..}"
+	}
+	panic(this)
+}
+
 // Defer constructs a `StmtDefer` of `this` call.
 func (this *ExprCall) Defer() StmtDefer {
 	return StmtDefer{StmtUnary: StmtUnary{Expr: this}}
@@ -139,7 +220,7 @@ func (this *ExprCall) Spreads() *ExprCall {
 func (this PkgName) C(funcName string, args ...IAny) *ExprCall {
 	return &ExprCall{
 		Callee: OpDot{Op: Op{Operands: Syns{Named{Name: string(this)}, Named{Name: funcName}}}},
-		Args:   synsFrom(nil, args...),
+		Args:   SynsFrom(nil, args...),
 	}
 }
 
@@ -182,9 +263,9 @@ func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc {
 
 var This = Named{"this"}
 
-// Conv constructs an `ExprCall` that represents a conversion of `expr` into `this` type.
-// (Go's conversion syntax, eg. `int(myexpr)`, is covered by `ExprCall` due to identical emitting logic.)
-func (this *TypeRef) Conv(expr ISyn) *ExprCall { return &ExprCall{Callee: this, Args: Syns{expr}} }
+// From constructs an `ExprCall` that represents a conversion of `expr` into `this` type.
+// (Returns `ExprCall` because Go's conversion syntax, eg. `int(myexpr)`, is covered by it due to the same emitting logic.)
+func (this *TypeRef) From(expr ISyn) *ExprCall { return &ExprCall{Callee: this, Args: Syns{expr}} }
 
 // N constructs a `NamedTyped` based on `name` and `this` type.
 func (this *TypeRef) N(name string) NamedTyped {
@@ -219,6 +300,13 @@ func (this *SynFunc) Args(args ...NamedTyped) *SynFunc {
 	return this
 }
 
+func (this *SynFunc) ArgIf(onlyIf bool, arg NamedTyped) *SynFunc {
+	if onlyIf {
+		this.Type.Func.Args = append(this.Type.Func.Args, arg)
+	}
+	return this
+}
+
 // Arg adds to `this.Type.Func.Args` and returns `this`.
 func (this *SynFunc) Arg(name string, typeRef *TypeRef) *SynFunc {
 	this.Type.Func.Args = append(this.Type.Func.Args, NamedTyped{Named: Named{Name: name}, Type: typeRef})
@@ -233,6 +321,11 @@ func (this *SynFunc) Spreads() *SynFunc {
 // Code adds to `this.SynBlock.Body` and returns `this`.
 func (this *SynFunc) Code(stmts ...ISyn) *SynFunc {
 	this.Body = append(this.Body, stmts...)
+	return this
+}
+
+func (this *SynFunc) EmitsCommented(emitCommented bool) *SynFunc {
+	this.EmitCommented = emitCommented
 	return this
 }
 
@@ -290,7 +383,7 @@ func (this *StmtSwitch) CasesFrom(areAllSynCases bool, synCasesOrCondsAndThens .
 		}
 	} else {
 		for i := 1; i < len(synCasesOrCondsAndThens); i += 2 {
-			this.Cases = append(this.Cases, SynCase{Cond: synCasesOrCondsAndThens[i-1], SynBlock: SynBlock{Body: synsFrom(synCasesOrCondsAndThens[i])}})
+			this.Cases = append(this.Cases, SynCase{Cond: synCasesOrCondsAndThens[i-1], SynBlock: SynBlock{Body: SynsFrom(synCasesOrCondsAndThens[i])}})
 		}
 	}
 	return this
@@ -309,19 +402,19 @@ func (this *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch {
 }
 
 // Field returns the `SynStructField` in `this.Fields` matching `name`.
-func (this *TypeStruct) Field(name string /*, tryJsonNamesToo bool*/) (fld *SynStructField) {
+func (this *TypeStruct) Field(name string, tryJsonNamesToo bool) (fld *SynStructField) {
 	for i := range this.Fields {
 		if this.Fields[i].Name == name {
 			return &this.Fields[i]
 		}
 	}
-	// if tryJsonNamesToo {
-	// 	for i := range this.Fields {
-	// 		if this.Fields[i].JsonName() == name {
-	// 			return &this.Fields[i]
-	// 		}
-	// 	}
-	// }
+	if tryJsonNamesToo {
+		for i := range this.Fields {
+			if this.Fields[i].JsonName() == name {
+				return &this.Fields[i]
+			}
+		}
+	}
 	return nil
 }
 
@@ -334,6 +427,45 @@ func (this *SynStructField) JsonName() (name string) {
 	}
 	if name == "" {
 		name = this.Name
+	}
+	return
+}
+
+func (this SynStructFields) Exists(ok func(*SynStructField) bool) bool {
+	for i := range this {
+		if ok(&this[i]) {
+			return true
+		}
+	}
+	return false
+}
+
+func (this SynStructFields) IndicesWhere(ok func(*SynStructField) bool) (indices []int) {
+	indices = make([]int, 0, len(this))
+	for i := range this {
+		if ok(&this[i]) {
+			indices = append(indices, i)
+		}
+	}
+	return
+}
+
+func (this SynStructFields) NamedOnly() (named SynStructFields) {
+	named = this
+	var needcopy bool
+	for i := range named {
+		if needcopy = (named[i].Name == ""); needcopy {
+			break
+		}
+	}
+	if needcopy {
+		named = make(SynStructFields, len(this))
+		copy(named, this)
+		for i := 0; i < len(named); i++ {
+			if named[i].Name == "" {
+				i, named = i-1, append(named[:i], named[i+1:]...)
+			}
+		}
 	}
 	return
 }

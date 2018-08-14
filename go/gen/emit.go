@@ -447,7 +447,13 @@ func (this OpSet) emitTo(w *writer) {
 
 func (this OpDecl) emitTo(w *writer) { this.Op.emit(w, ":=") }
 
-func (this OpComma) emitTo(w *writer) { this.Op.emit(w, ",") }
+func (this OpComma) emitTo(w *writer) {
+	if len(this.Operands) == 1 {
+		this.Operands[0].emitTo(w)
+	} else {
+		this.Op.emit(w, ",")
+	}
+}
 
 func (this OpColon) emitTo(w *writer) { this.Op.emit(w, ":") }
 

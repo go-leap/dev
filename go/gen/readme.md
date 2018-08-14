@@ -36,7 +36,8 @@ cost there.
 ```go
 var (
 	// see `PkgImports.Ensure(string) string` for details
-	PkgImportNamePrefix PkgName = "pkg__"
+	PkgImportNamePrefix               PkgName = "pkg__"
+	PkgImportNameTrimPathsPrefixPrior string
 
 	// intended to remain zero-valued (Name="" and Type=nil)
 	NoMethodRecv NamedTyped
@@ -573,10 +574,10 @@ funcs, calls, keywords, operators, ...
 #### func  GEN_BYCASE
 
 ```go
-func GEN_BYCASE(byDefault USUALLY, unless UNLESS) ISyn
+func GEN_BYCASE(usually USUALLY, unless UNLESS) ISyn
 ```
 GEN_BYCASE is like a codegen-time `switch..case` construct: it returns
-`unless[true]` if present, else `byDefault`.
+`unless[true]` if present, else `usually`.
 
 #### func  GEN_EITHER
 
@@ -856,10 +857,34 @@ AllTyped returns whether all `NamedTyped`s in `this` have a `Type` set. If
 func (this NamedsTypeds) IfUntypedUse(typeRef *TypeRef) NamedsTypeds
 ```
 
+#### func (NamedsTypeds) LastEllipsisIfSlice
+
+```go
+func (this NamedsTypeds) LastEllipsisIfSlice() (r NamedsTypeds)
+```
+
 #### func (NamedsTypeds) Names
 
 ```go
-func (this NamedsTypeds) Names() []interface{}
+func (this NamedsTypeds) Names(strLits bool) []interface{}
+```
+
+#### func (NamedsTypeds) Renamed
+
+```go
+func (this NamedsTypeds) Renamed(rename func(string) string) (renamed NamedsTypeds)
+```
+
+#### func (NamedsTypeds) ToAnys
+
+```go
+func (this NamedsTypeds) ToAnys(transform func(*NamedTyped) IAny) (transformed []IAny)
+```
+
+#### func (NamedsTypeds) ToSyns
+
+```go
+func (this NamedsTypeds) ToSyns(transform func(*NamedTyped) ISyn) (transformed Syns)
 ```
 
 #### type Op
@@ -888,6 +913,12 @@ OpAdd represents one or more `+` subtractions.
 func Add(operands ...ISyn) OpAdd
 ```
 Add constructs an `OpAdd`.
+
+#### func (OpAdd) Plus
+
+```go
+func (this OpAdd) Plus(operand IAny) OpAdd
+```
 
 #### type OpAddr
 
@@ -2582,6 +2613,12 @@ func (this *SynFunc) Arg(name string, typeRef *TypeRef) *SynFunc
 ```
 Arg adds to `this.Type.Func.Args` and returns `this`.
 
+#### func (*SynFunc) ArgIf
+
+```go
+func (this *SynFunc) ArgIf(onlyIf bool, arg NamedTyped) *SynFunc
+```
+
 #### func (*SynFunc) Args
 
 ```go
@@ -2602,6 +2639,12 @@ Code adds to `this.SynBlock.Body` and returns `this`.
 func (this *SynFunc) Doc(docCommentLines ...string) *SynFunc
 ```
 Doc adds to `this.Docs` and returns `this`.
+
+#### func (*SynFunc) EmitsCommented
+
+```go
+func (this *SynFunc) EmitsCommented(emitCommented bool) *SynFunc
+```
 
 #### func (*SynFunc) Ret
 
@@ -2679,10 +2722,28 @@ type SynStructFields []SynStructField
 ```
 
 
+#### func (SynStructFields) Exists
+
+```go
+func (this SynStructFields) Exists(ok func(*SynStructField) bool) bool
+```
+
+#### func (SynStructFields) IndicesWhere
+
+```go
+func (this SynStructFields) IndicesWhere(ok func(*SynStructField) bool) (indices []int)
+```
+
 #### func (SynStructFields) NTs
 
 ```go
 func (this SynStructFields) NTs() (nts NamedsTypeds)
+```
+
+#### func (SynStructFields) NamedOnly
+
+```go
+func (this SynStructFields) NamedOnly() (named SynStructFields)
 ```
 
 #### type Syns
@@ -2734,6 +2795,12 @@ and one returns
 
 - otherwise: if `check` is `true`, all `stmts` are returned, else `nil` is
 returned
+
+#### func  SynsFrom
+
+```go
+func SynsFrom(eitherSyn ISyn, orThings ...IAny) Syns
+```
 
 #### func  Then
 
@@ -2967,14 +3034,14 @@ BitSizeIfBuiltInNumberType returns 8 for `int8`, `byte`, `uint8`, or 16, 32, 64,
 128 as applicable, recognizing only direct `Named` refs to Go' native `builtin`
 number types (no type-alias dereferencing yet).
 
-#### func (*TypeRef) Conv
+#### func (*TypeRef) From
 
 ```go
-func (this *TypeRef) Conv(expr ISyn) *ExprCall
+func (this *TypeRef) From(expr ISyn) *ExprCall
 ```
-Conv constructs an `ExprCall` that represents a conversion of `expr` into `this`
-type. (Go's conversion syntax, eg. `int(myexpr)`, is covered by `ExprCall` due
-to identical emitting logic.)
+From constructs an `ExprCall` that represents a conversion of `expr` into `this`
+type. (Returns `ExprCall` because Go's conversion syntax, eg. `int(myexpr)`, is
+covered by it due to the same emitting logic.)
 
 #### func (*TypeRef) IsBuiltinPrimType
 
@@ -2990,6 +3057,12 @@ primitive-types such as `bool`, `string` etc. (If
 
 ```go
 func (this *TypeRef) IsNamedAndPublic() bool
+```
+
+#### func (*TypeRef) IsZeroish
+
+```go
+func (this *TypeRef) IsZeroish(exprOfThisType ISyn, canLen bool, canNum bool) ISyn
 ```
 
 #### func (*TypeRef) IsntZeroish
@@ -3012,6 +3085,12 @@ Method constructs a `SynFunc` with the given `name` and `args` plus a
 func (this *TypeRef) N(name string) NamedTyped
 ```
 N constructs a `NamedTyped` based on `name` and `this` type.
+
+#### func (*TypeRef) String
+
+```go
+func (this *TypeRef) String() string
+```
 
 #### func (*TypeRef) UltimateElemType
 
@@ -3040,7 +3119,7 @@ TdStruct constructs a `TypeStruct`.
 #### func (*TypeStruct) Field
 
 ```go
-func (this *TypeStruct) Field(name string) (fld *SynStructField)
+func (this *TypeStruct) Field(name string, tryJsonNamesToo bool) (fld *SynStructField)
 ```
 Field returns the `SynStructField` in `this.Fields` matching `name`.
 

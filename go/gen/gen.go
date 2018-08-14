@@ -59,7 +59,8 @@ func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName) {
 			self = map[string]PkgName{}
 		}
 		if pkgImportName = self[pkgImportPath]; pkgImportName == "" {
-			pkgImportName = PkgImportNamePrefix + PkgName(ustr.ReplB(pkgImportPath, '/', '_', '.', '_', '-', '_'))
+			pkgimpname := ustr.TrimPref(pkgImportPath, PkgImportNameTrimPathsPrefixPrior)
+			pkgImportName = PkgImportNamePrefix + PkgName(ustr.ReplB(pkgimpname, '/', '_', '.', '_', '-', '_'))
 			self[pkgImportPath] = pkgImportName
 		}
 		*this = self
@@ -69,7 +70,8 @@ func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName) {
 
 var (
 	// see `PkgImports.Ensure(string) string` for details
-	PkgImportNamePrefix PkgName = "pkg__"
+	PkgImportNamePrefix               PkgName = "pkg__"
+	PkgImportNameTrimPathsPrefixPrior string
 
 	// intended to remain zero-valued (Name="" and Type=nil)
 	NoMethodRecv NamedTyped
