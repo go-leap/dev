@@ -3037,7 +3037,7 @@ number types (no type-alias dereferencing yet).
 #### func (*TypeRef) From
 
 ```go
-func (this *TypeRef) From(expr ISyn) *ExprCall
+func (this *TypeRef) From(expr IAny) *ExprCall
 ```
 From constructs an `ExprCall` that represents a conversion of `expr` into `this`
 type. (Returns `ExprCall` because Go's conversion syntax, eg. `int(myexpr)`, is

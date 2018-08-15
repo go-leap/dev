@@ -265,7 +265,9 @@ var This = Named{"this"}
 
 // From constructs an `ExprCall` that represents a conversion of `expr` into `this` type.
 // (Returns `ExprCall` because Go's conversion syntax, eg. `int(myexpr)`, is covered by it due to the same emitting logic.)
-func (this *TypeRef) From(expr ISyn) *ExprCall { return &ExprCall{Callee: this, Args: Syns{expr}} }
+func (this *TypeRef) From(expr IAny) *ExprCall {
+	return &ExprCall{Callee: this, Args: Syns{synFrom(expr)}}
+}
 
 // N constructs a `NamedTyped` based on `name` and `this` type.
 func (this *TypeRef) N(name string) NamedTyped {
