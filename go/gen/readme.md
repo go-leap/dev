@@ -2817,6 +2817,12 @@ func (this *Syns) Add(syns ...ISyn)
 ```
 Add is a convenience short-hand for `append`.
 
+#### func (Syns) Transform
+
+```go
+func (this Syns) Transform(transform func(ISyn) ISyn) Syns
+```
+
 #### type TypeDecl
 
 ```go

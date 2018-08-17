@@ -4,6 +4,13 @@ import (
 	"github.com/go-leap/str"
 )
 
+func (this Syns) Transform(transform func(ISyn) ISyn) Syns {
+	for i := range this {
+		this[i] = transform(this[i])
+	}
+	return this
+}
+
 // OfType returns a `NamedTyped` with `this.Name` and `typeRef`.
 func (this Named) OfType(typeRef *TypeRef) (nt NamedTyped) {
 	nt.Named, nt.Type = this, typeRef
