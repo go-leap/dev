@@ -2831,6 +2831,8 @@ type TypeDecl struct {
 	NamedTyped
 	// denotes whether alias (`=`) or not
 	IsAlias bool
+	// doc comments for this type declaration
+	Docs SingleLineDocCommentParagraphs
 }
 ```
 
@@ -2842,6 +2844,19 @@ TypeDecl represents a type-definition declaration or type-alias declaration.
 func TDecl(name string, typeRef *TypeRef, isAlias bool) (this *TypeDecl)
 ```
 TDecl constructs a named `TypeDecl` of the specified underlying type.
+
+#### func (*TypeDecl) Doc
+
+```go
+func (this *TypeDecl) Doc(docCommentLines ...string) *TypeDecl
+```
+Doc adds to `this.Docs` and returns `this`.
+
+#### func (*TypeDecl) DocIf
+
+```go
+func (this *TypeDecl) DocIf(ok bool, docCommentLines ...string) *TypeDecl
+```
 
 #### type TypeFunc
 

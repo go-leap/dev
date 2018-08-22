@@ -160,6 +160,7 @@ func (this *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfIn
 }
 
 func (this *TypeDecl) emitTo(w *writer) {
+	this.Docs.emitTo(w)
 	w.WriteString("type ")
 	if w.WriteString(this.Name); this.IsAlias {
 		w.WriteByte('=')
@@ -200,6 +201,21 @@ func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep byte, addFinalR
 	}
 }
 
+func (this SingleLineDocCommentParagraphs) emitTo(w *writer) {
+	if len(this) > 0 {
+		w.WriteString("\n\n")
+		for i, doccommentpara := range this {
+			if i > 0 {
+				w.WriteString("// \n")
+			}
+			w.WriteString("// ")
+			w.WriteString(doccommentpara)
+			w.WriteByte('\n')
+		}
+	}
+
+}
+
 func (this *SynFunc) emitTo(w *writer) {
 	doc, noop, hasfinalret, hasnamedrets := this.Docs, w.shouldEmitNoOpFuncBodies(), false, this.Type.Func.Rets.AllNamed()
 	if len(this.Type.Func.Rets) > 0 && len(this.Body) > 0 {
@@ -210,17 +226,7 @@ func (this *SynFunc) emitTo(w *writer) {
 	if noop = noop && (len(this.Type.Func.Rets) == 0 || hasnamedrets); noop {
 		doc = append(doc, "As per your current (and presumably temporary) go-gent code-gen settings, this method is effectively a no-op (so each of its return values will always equal its type's zero-value).")
 	}
-	if len(doc) > 0 {
-		w.WriteString("\n\n")
-		for i, doccommentpara := range doc {
-			if i > 0 {
-				w.WriteString("// \n")
-			}
-			w.WriteString("// ")
-			w.WriteString(doccommentpara)
-			w.WriteByte('\n')
-		}
-	}
+	doc.emitTo(w)
 
 	oldimps := w.pkgImportsActuallyEmitted
 	if this.EmitCommented {

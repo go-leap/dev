@@ -94,6 +94,8 @@ type TypeDecl struct {
 	NamedTyped
 	// denotes whether alias (`=`) or not
 	IsAlias bool
+	// doc comments for this type declaration
+	Docs SingleLineDocCommentParagraphs
 }
 
 // TypeRef represents a reference to a  type,

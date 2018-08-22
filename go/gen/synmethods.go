@@ -344,6 +344,19 @@ func (this *SynFunc) Doc(docCommentLines ...string) *SynFunc {
 	return this
 }
 
+// Doc adds to `this.Docs` and returns `this`.
+func (this *TypeDecl) Doc(docCommentLines ...string) *TypeDecl {
+	this.Docs = append(this.Docs, docCommentLines...)
+	return this
+}
+
+func (this *TypeDecl) DocIf(ok bool, docCommentLines ...string) *TypeDecl {
+	if !ok {
+		return this
+	}
+	return this.Doc(docCommentLines...)
+}
+
 // Rets sets `this.Type.Func.Rets` and returns `this`.
 func (this *SynFunc) Rets(rets ...NamedTyped) *SynFunc {
 	this.Type.Func.Rets = rets
