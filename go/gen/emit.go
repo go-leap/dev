@@ -160,7 +160,7 @@ func (this *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfIn
 }
 
 func (this *TypeDecl) emitTo(w *writer) {
-	this.Docs.emitTo(w)
+	this.Docs.emit(w, false)
 	w.WriteString("type ")
 	if w.WriteString(this.Name); this.IsAlias {
 		w.WriteByte('=')
@@ -201,9 +201,11 @@ func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep byte, addFinalR
 	}
 }
 
-func (this SingleLineDocCommentParagraphs) emitTo(w *writer) {
+func (this SingleLineDocCommentParagraphs) emit(w *writer, isPkgDoc bool) {
 	if len(this) > 0 {
-		w.WriteString("\n\n")
+		if !isPkgDoc {
+			w.WriteString("\n\n")
+		}
 		for i, doccommentpara := range this {
 			if i > 0 {
 				w.WriteString("// \n")
@@ -213,7 +215,6 @@ func (this SingleLineDocCommentParagraphs) emitTo(w *writer) {
 			w.WriteByte('\n')
 		}
 	}
-
 }
 
 func (this *SynFunc) emitTo(w *writer) {
@@ -226,7 +227,7 @@ func (this *SynFunc) emitTo(w *writer) {
 	if noop = noop && (len(this.Type.Func.Rets) == 0 || hasnamedrets); noop {
 		doc = append(doc, "As per your current (and presumably temporary) go-gent code-gen settings, this method is effectively a no-op (so each of its return values will always equal its type's zero-value).")
 	}
-	doc.emitTo(w)
+	doc.emit(w, false)
 
 	oldimps := w.pkgImportsActuallyEmitted
 	if this.EmitCommented {
@@ -393,8 +394,13 @@ func (this *StmtFor) emitLoop(w *writer) {
 }
 
 func (this Op) emit(w *writer, operator string) {
-	last, unary := len(this.Operands), len(this.Operands) == 1
-	parens, canparens := false, operator != "=" && operator != ":="
+	last, unary, canparens, andor :=
+		len(this.Operands), len(this.Operands) == 1, (operator != "=" && operator != ":="), (operator == " && " || operator == " || ")
+	parens := canparens && andor
+
+	if andor {
+		w.WriteByte('(')
+	}
 	for i := range this.Operands {
 		if i > 0 || unary {
 			w.WriteString(operator)
@@ -423,6 +429,9 @@ func (this Op) emit(w *writer, operator string) {
 				w.WriteByte(')')
 			}
 		}
+	}
+	if andor {
+		w.WriteByte(')')
 	}
 }
 
@@ -635,6 +644,7 @@ func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPaths
 	this.SynBlock.emit(&wdecls, false, '\n', false)
 
 	var wmain writer
+	this.DocComments.emit(&wmain, true)
 	wmain.WriteString("package ")
 	wmain.WriteString(this.PkgName)
 	if len(codeGenCommentNotice) > 0 {

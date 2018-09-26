@@ -37,6 +37,8 @@ type SourceFile struct {
 	// package name
 	PkgName string
 
+	DocComments SingleLineDocCommentParagraphs
+
 	// top-level definition declarations
 	SynBlock
 }
