@@ -1,7 +1,7 @@
 // Package `github.com/go-leap/dev/go/gen` provides AST nodes for generating Go code.
 // These are by design simpler and more lightweight than `go/ast`, given that the latter
 // is designed to represent existing-and-parsed code (keeping track of much housekeeping),
-// while this package only focuses on ad-hoc assemblage of newly-to-be-emitted Go sources.
+// while the `udevgogen` package only focuses on ad-hoc assemblage of newly-to-be-emitted Go sources.
 //
 // As a noteworthy goodie, all `func`s that have named return values automatically get a final
 // `return` statement appended to their `Body` at code-gen time, if they don't already have one.
@@ -51,12 +51,12 @@ type PkgName string
 type PkgImports map[string]PkgName
 
 // Ensure returns the `pkgImportName` for the given `pkgImportPath`
-// as stored in `this` (or if missing, devises one in the form of eg.
+// as stored in `me` (or if missing, devises one in the form of eg.
 // `pkg__encoding_json` for `encoding/json` and stores it, assuming
 // that `PkgImportNamePrefix` is set to "pkg__", its default value).
-func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName) {
+func (me *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName) {
 	if pkgImportPath != "" {
-		self := *this
+		self := *me
 		if self == nil {
 			self = map[string]PkgName{}
 		}
@@ -65,7 +65,7 @@ func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName) {
 			pkgImportName = PkgImportNamePrefix + PkgName(ustr.ReplB(pkgimpname, '/', '_', '.', '_', '-', '_'))
 			self[pkgImportPath] = pkgImportName
 		}
-		*this = self
+		*me = self
 	}
 	return
 }

@@ -16,86 +16,86 @@ type writer struct {
 	pkgImportsActuallyEmitted map[PkgName]bool
 }
 
-func (this *writer) shouldEmitNoOpFuncBodies() bool { return this.emitNoOpFuncBodies }
+func (me *writer) shouldEmitNoOpFuncBodies() bool { return me.emitNoOpFuncBodies }
 
-func (this Named) emitTo(w *writer) {
-	w.WriteString(this.Name)
+func (me Named) emitTo(w *writer) {
+	w.WriteString(me.Name)
 }
 
-func (this Named) emit(w *writer, keywordPlusSpace string) {
+func (me Named) emit(w *writer, keywordPlusSpace string) {
 	w.WriteString(keywordPlusSpace)
-	w.WriteString(this.Name)
+	w.WriteString(me.Name)
 }
 
-func (this NamedTyped) emit(w *writer, noFuncKeywordBecauseInterfaceMethod bool, spread bool) {
-	if this.Name != "" {
-		w.WriteString(this.Name)
+func (me NamedTyped) emit(w *writer, noFuncKeywordBecauseInterfaceMethod bool, spread bool) {
+	if me.Name != "" {
+		w.WriteString(me.Name)
 		w.WriteByte(' ')
 	}
 	if spread {
 		w.WriteString("...")
 	}
-	this.Type.emit(w, noFuncKeywordBecauseInterfaceMethod)
+	me.Type.emit(w, noFuncKeywordBecauseInterfaceMethod)
 }
 
-func (this NamedsTypeds) emit(w *writer, sep byte, noFuncKeywordBecauseInterfaceMethods bool, lastSpreads bool) {
-	for i := range this {
+func (me NamedsTypeds) emit(w *writer, sep byte, noFuncKeywordBecauseInterfaceMethods bool, lastSpreads bool) {
+	for i := range me {
 		if i > 0 {
 			w.WriteByte(sep)
 		}
-		this[i].emit(w, noFuncKeywordBecauseInterfaceMethods, lastSpreads && i == len(this)-1)
+		me[i].emit(w, noFuncKeywordBecauseInterfaceMethods, lastSpreads && i == len(me)-1)
 	}
 }
 
-func (this *TypeFunc) emitTo(w *writer) {
-	this.emit(w, false)
+func (me *TypeFunc) emitTo(w *writer) {
+	me.emit(w, false)
 }
 
-func (this *TypeFunc) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
+func (me *TypeFunc) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
 	if !noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod {
 		w.WriteString("func")
 	}
 	w.WriteByte('(')
-	this.Args.emit(w, ',', false, this.LastArgSpreads)
+	me.Args.emit(w, ',', false, me.LastArgSpreads)
 	w.WriteByte(')')
-	if len(this.Rets) == 1 && this.Rets[0].Name == "" {
+	if len(me.Rets) == 1 && me.Rets[0].Name == "" {
 		w.WriteByte(' ')
-		this.Rets[0].Type.emitTo(w)
-	} else if len(this.Rets) > 0 {
+		me.Rets[0].Type.emitTo(w)
+	} else if len(me.Rets) > 0 {
 		w.WriteString(" (")
-		this.Rets.emit(w, ',', false, false)
+		me.Rets.emit(w, ',', false, false)
 		w.WriteByte(')')
 	}
 }
 
-func (this *TypeInterface) emitTo(w *writer) {
+func (me *TypeInterface) emitTo(w *writer) {
 	w.WriteString("interface{")
-	for i := range this.Embeds {
-		this.Embeds[i].emitTo(w)
+	for i := range me.Embeds {
+		me.Embeds[i].emitTo(w)
 		w.WriteByte(';')
 	}
-	this.Methods.emit(w, ';', true, false)
+	me.Methods.emit(w, ';', true, false)
 	w.WriteByte('}')
 }
 
-func (this *TypeStruct) emitTo(w *writer) {
+func (me *TypeStruct) emitTo(w *writer) {
 	w.WriteString("struct{")
-	for i := range this.Fields {
-		this.Fields[i].emitTo(w)
+	for i := range me.Fields {
+		me.Fields[i].emitTo(w)
 		w.WriteByte(';')
 	}
 	w.WriteByte('}')
 }
 
-func (this *SynStructField) emitTo(w *writer) {
-	this.NamedTyped.emit(w, false, false)
-	if len(this.Tags) > 0 {
-		if unconventional := this.Tags[""]; unconventional != "" && len(this.Tags) == 1 {
+func (me *SynStructField) emitTo(w *writer) {
+	me.NamedTyped.emit(w, false, false)
+	if len(me.Tags) > 0 {
+		if unconventional := me.Tags[""]; unconventional != "" && len(me.Tags) == 1 {
 			w.WriteString(strconv.Quote(unconventional))
 		} else {
 			w.WriteByte('`')
-			idx, sortednames := 0, make(sort.StringSlice, len(this.Tags))
-			for tagname := range this.Tags {
+			idx, sortednames := 0, make(sort.StringSlice, len(me.Tags))
+			for tagname := range me.Tags {
 				if tagname != "" {
 					idx, sortednames[idx] = idx+1, tagname
 				}
@@ -108,7 +108,7 @@ func (this *SynStructField) emitTo(w *writer) {
 				if tagname != "" {
 					w.WriteString(tagname)
 					w.WriteByte(':')
-					w.WriteString(strconv.Quote(this.Tags[tagname]))
+					w.WriteString(strconv.Quote(me.Tags[tagname]))
 				} else {
 					w.WriteString(unconventional)
 				}
@@ -118,79 +118,79 @@ func (this *SynStructField) emitTo(w *writer) {
 	}
 }
 
-func (this *TypeRef) emitTo(w *writer) {
-	this.emit(w, false)
+func (me *TypeRef) emitTo(w *writer) {
+	me.emit(w, false)
 }
 
-func (this *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
+func (me *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod bool) {
 	switch {
-	case this.Pointer.Of != nil:
+	case me.Pointer.Of != nil:
 		w.WriteByte('*')
-		this.Pointer.Of.emitTo(w)
-	case this.ArrOrSlice.Of != nil:
-		if this.ArrOrSlice.IsEllipsis {
+		me.Pointer.Of.emitTo(w)
+	case me.ArrOrSlice.Of != nil:
+		if me.ArrOrSlice.IsEllipsis {
 			w.WriteString("...")
 		} else {
 			w.WriteByte('[')
-			if this.ArrOrSlice.IsFixedLen != nil {
-				this.ArrOrSlice.IsFixedLen.emitTo(w)
+			if me.ArrOrSlice.IsFixedLen != nil {
+				me.ArrOrSlice.IsFixedLen.emitTo(w)
 			}
 			w.WriteByte(']')
 		}
-		this.ArrOrSlice.Of.emitTo(w)
-	case this.Map.OfKey != nil:
+		me.ArrOrSlice.Of.emitTo(w)
+	case me.Map.OfKey != nil:
 		w.WriteString("map[")
-		this.Map.OfKey.emitTo(w)
+		me.Map.OfKey.emitTo(w)
 		w.WriteByte(']')
-		this.Map.ToVal.emitTo(w)
-	case this.Named.TypeName != "":
-		if this.Named.PkgName != "" {
-			w.pkgImportsActuallyEmitted[PkgName(this.Named.PkgName)] = true
-			w.WriteString(this.Named.PkgName)
+		me.Map.ToVal.emitTo(w)
+	case me.Named.TypeName != "":
+		if me.Named.PkgName != "" {
+			w.pkgImportsActuallyEmitted[PkgName(me.Named.PkgName)] = true
+			w.WriteString(me.Named.PkgName)
 			w.WriteByte('.')
 		}
-		w.WriteString(this.Named.TypeName)
-	case this.Func != nil:
-		this.Func.emit(w, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod)
-	case this.Interface != nil:
-		this.Interface.emitTo(w)
-	case this.Struct != nil:
-		this.Struct.emitTo(w)
+		w.WriteString(me.Named.TypeName)
+	case me.Func != nil:
+		me.Func.emit(w, noFuncKeywordBecauseSigPartOfFullBodyOrOfInterfaceMethod)
+	case me.Interface != nil:
+		me.Interface.emitTo(w)
+	case me.Struct != nil:
+		me.Struct.emitTo(w)
 	}
 }
 
-func (this *TypeDecl) emitTo(w *writer) {
-	this.Docs.emit(w, false)
+func (me *TypeDecl) emitTo(w *writer) {
+	me.Docs.emit(w, false)
 	w.WriteString("type ")
-	if w.WriteString(this.Name); this.IsAlias {
+	if w.WriteString(me.Name); me.IsAlias {
 		w.WriteByte('=')
 	}
 	w.WriteByte(' ')
-	this.Type.emitTo(w)
+	me.Type.emitTo(w)
 }
 
-func (this Syns) emitTo(w *writer) {
-	if len(this) == 1 {
-		this[0].emitTo(w)
+func (me Syns) emitTo(w *writer) {
+	if len(me) == 1 {
+		me[0].emitTo(w)
 	} else {
-		for i := range this {
-			this[i].emitTo(w)
+		for i := range me {
+			me[i].emitTo(w)
 			w.WriteByte(';')
 		}
 	}
 }
 
-func (this SynBlock) emitTo(w *writer) {
-	this.emit(w, true, ';', false)
+func (me SynBlock) emitTo(w *writer) {
+	me.emit(w, true, ';', false)
 	w.WriteByte(';')
 }
 
-func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep byte, addFinalRet bool) {
+func (me SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep byte, addFinalRet bool) {
 	if wrapInCurlyBraces {
 		w.WriteByte('{')
 	}
-	for i := range this.Body {
-		this.Body[i].emitTo(w)
+	for i := range me.Body {
+		me.Body[i].emitTo(w)
 		w.WriteByte(sep)
 	}
 	if addFinalRet {
@@ -201,12 +201,12 @@ func (this SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep byte, addFinalR
 	}
 }
 
-func (this SingleLineDocCommentParagraphs) emit(w *writer, isPkgDoc bool) {
-	if len(this) > 0 {
+func (me SingleLineDocCommentParagraphs) emit(w *writer, isPkgDoc bool) {
+	if len(me) > 0 {
 		if !isPkgDoc {
 			w.WriteString("\n\n")
 		}
-		for i, doccommentpara := range this {
+		for i, doccommentpara := range me {
 			if i > 0 {
 				w.WriteString("// \n")
 			}
@@ -217,206 +217,206 @@ func (this SingleLineDocCommentParagraphs) emit(w *writer, isPkgDoc bool) {
 	}
 }
 
-func (this *SynFunc) emitTo(w *writer) {
-	doc, noop, hasfinalret, hasnamedrets := this.Docs, w.shouldEmitNoOpFuncBodies(), false, this.Type.Func.Rets.AllNamed()
-	if len(this.Type.Func.Rets) > 0 && len(this.Body) > 0 {
-		if _, hasfinalret = this.Body[len(this.Body)-1].(*StmtRet); !hasfinalret {
-			_, hasfinalret = this.Body[len(this.Body)-1].(StmtRet)
+func (me *SynFunc) emitTo(w *writer) {
+	doc, noop, hasfinalret, hasnamedrets := me.Docs, w.shouldEmitNoOpFuncBodies(), false, me.Type.Func.Rets.AllNamed()
+	if len(me.Type.Func.Rets) > 0 && len(me.Body) > 0 {
+		if _, hasfinalret = me.Body[len(me.Body)-1].(*StmtRet); !hasfinalret {
+			_, hasfinalret = me.Body[len(me.Body)-1].(StmtRet)
 		}
 	}
-	if noop = noop && (len(this.Type.Func.Rets) == 0 || hasnamedrets); noop {
+	if noop = noop && (len(me.Type.Func.Rets) == 0 || hasnamedrets); noop {
 		doc = append(doc, "As per your current (and presumably temporary) go-gent code-gen settings, this method is effectively a no-op (so each of its return values will always equal its type's zero-value).")
 	}
 	doc.emit(w, false)
 
 	oldimps := w.pkgImportsActuallyEmitted
-	if this.EmitCommented {
+	if me.EmitCommented {
 		w.pkgImportsActuallyEmitted = map[PkgName]bool{}
 		w.WriteString("/*\n")
 	}
-	if w.WriteString("func "); this.Recv.Type != nil {
+	if w.WriteString("func "); me.Recv.Type != nil {
 		w.WriteByte('(')
-		w.WriteString(this.Recv.Name)
+		w.WriteString(me.Recv.Name)
 		w.WriteByte(' ')
-		this.Recv.Type.emitTo(w)
+		me.Recv.Type.emitTo(w)
 		w.WriteByte(')')
 	}
-	w.WriteString(this.Named.Name)
-	if this.Type.emit(w, true); !noop {
-		this.SynBlock.emit(w, true, ';', hasnamedrets && !hasfinalret)
+	w.WriteString(me.Named.Name)
+	if me.Type.emit(w, true); !noop {
+		me.SynBlock.emit(w, true, ';', hasnamedrets && !hasfinalret)
 	} else {
 		w.WriteByte('{')
 		K.Return.emitTo(w)
 		w.WriteByte('}')
 	}
-	if this.Name != "" {
+	if me.Name != "" {
 		w.WriteByte('\n')
 	}
-	if this.EmitCommented {
+	if me.EmitCommented {
 		w.WriteString("*/\n")
 		w.pkgImportsActuallyEmitted = oldimps
 	}
 }
 
-func (this StmtBreak) emitTo(w *writer) {
-	Named(this).emit(w, "break ")
+func (me StmtBreak) emitTo(w *writer) {
+	Named(me).emit(w, "break ")
 }
 
-func (this StmtContinue) emitTo(w *writer) {
-	Named(this).emit(w, "continue ")
+func (me StmtContinue) emitTo(w *writer) {
+	Named(me).emit(w, "continue ")
 }
 
-func (this StmtGoTo) emitTo(w *writer) {
-	Named(this).emit(w, "goto ")
+func (me StmtGoTo) emitTo(w *writer) {
+	Named(me).emit(w, "goto ")
 }
 
-func (this StmtUnary) emit(w *writer, keywordPlusSpace string) {
-	if w.WriteString(keywordPlusSpace); this.Expr != nil {
-		this.Expr.emitTo(w)
+func (me StmtUnary) emit(w *writer, keywordPlusSpace string) {
+	if w.WriteString(keywordPlusSpace); me.Expr != nil {
+		me.Expr.emitTo(w)
 	}
 }
 
-func (this StmtRet) emitTo(w *writer) {
-	this.StmtUnary.emit(w, "return ")
+func (me StmtRet) emitTo(w *writer) {
+	me.StmtUnary.emit(w, "return ")
 }
 
-func (this StmtDefer) emitTo(w *writer) {
-	this.StmtUnary.emit(w, "defer ")
+func (me StmtDefer) emitTo(w *writer) {
+	me.StmtUnary.emit(w, "defer ")
 }
 
-func (this StmtGo) emitTo(w *writer) {
-	this.StmtUnary.emit(w, "go ")
+func (me StmtGo) emitTo(w *writer) {
+	me.StmtUnary.emit(w, "go ")
 }
 
-func (this *StmtConst) emitTo(w *writer) {
+func (me *StmtConst) emitTo(w *writer) {
 	w.WriteString("const ")
-	w.WriteString(this.Name)
-	if w.WriteByte(' '); this.Type != nil {
-		this.Type.emitTo(w)
+	w.WriteString(me.Name)
+	if w.WriteByte(' '); me.Type != nil {
+		me.Type.emitTo(w)
 	}
 	w.WriteByte('=')
-	this.Expr.emitTo(w)
+	me.Expr.emitTo(w)
 }
 
-func (this *StmtVar) emitTo(w *writer) {
+func (me *StmtVar) emitTo(w *writer) {
 	w.WriteString("var ")
-	w.WriteString(this.Name)
-	if w.WriteByte(' '); this.Type != nil {
-		this.Type.emitTo(w)
+	w.WriteString(me.Name)
+	if w.WriteByte(' '); me.Type != nil {
+		me.Type.emitTo(w)
 	}
-	if this.Expr != nil {
+	if me.Expr != nil {
 		w.WriteByte('=')
-		this.Expr.emitTo(w)
+		me.Expr.emitTo(w)
 	}
 }
 
-func (this *StmtIf) emitTo(w *writer) {
-	if this == nil || len(this.IfThens) == 0 || this.IfThens[0].Cond == nil {
+func (me *StmtIf) emitTo(w *writer) {
+	if me == nil || len(me.IfThens) == 0 || me.IfThens[0].Cond == nil {
 		return
 	}
-	finali, finalelse := len(this.IfThens)-1, len(this.Else.Body) > 0
-	for i := range this.IfThens {
+	finali, finalelse := len(me.IfThens)-1, len(me.Else.Body) > 0
+	for i := range me.IfThens {
 		w.WriteString("if ")
-		this.IfThens[i].Cond.emitTo(w)
-		this.IfThens[i].SynBlock.emit(w, true, ';', false)
+		me.IfThens[i].Cond.emitTo(w)
+		me.IfThens[i].SynBlock.emit(w, true, ';', false)
 		if i != finali || finalelse {
 			w.WriteString(" else ")
 		}
 	}
 	if finalelse {
-		this.Else.emit(w, true, ';', false)
+		me.Else.emit(w, true, ';', false)
 	}
 }
 
-func (this *SynCase) emitTo(w *writer) {
+func (me *SynCase) emitTo(w *writer) {
 	w.WriteString("case ")
-	this.Cond.emitTo(w)
+	me.Cond.emitTo(w)
 	w.WriteByte(':')
-	this.SynBlock.emit(w, false, ';', false)
+	me.SynBlock.emit(w, false, ';', false)
 }
 
-func (this *StmtSwitch) emitTo(w *writer) {
+func (me *StmtSwitch) emitTo(w *writer) {
 	w.WriteString("switch ")
-	if this.Scrutinee != nil {
-		this.Scrutinee.emitTo(w)
+	if me.Scrutinee != nil {
+		me.Scrutinee.emitTo(w)
 	}
 	w.WriteByte('{')
-	for i := range this.Cases {
-		this.Cases[i].emitTo(w)
+	for i := range me.Cases {
+		me.Cases[i].emitTo(w)
 	}
-	if len(this.Default.Body) > 0 {
+	if len(me.Default.Body) > 0 {
 		w.WriteString("default: ")
-		this.Default.emit(w, false, ';', false)
+		me.Default.emit(w, false, ';', false)
 	}
 	w.WriteByte('}')
 }
 
-func (this *StmtFor) emitTo(w *writer) {
-	if this.Range.Over != nil {
-		this.emitRange(w)
+func (me *StmtFor) emitTo(w *writer) {
+	if me.Range.Over != nil {
+		me.emitRange(w)
 	} else {
-		this.emitLoop(w)
+		me.emitLoop(w)
 	}
 }
 
-func (this *StmtFor) emitRange(w *writer) {
+func (me *StmtFor) emitRange(w *writer) {
 	w.WriteString("for ")
-	if this.Range.Key.Name != "" || this.Range.Val.Name != "" {
-		if this.Range.Key.Name == "" {
+	if me.Range.Key.Name != "" || me.Range.Val.Name != "" {
+		if me.Range.Key.Name == "" {
 			w.WriteByte('_')
 		} else {
-			this.Range.Key.emitTo(w)
+			me.Range.Key.emitTo(w)
 		}
-		if this.Range.Val.Name != "" {
+		if me.Range.Val.Name != "" {
 			w.WriteByte(',')
-			this.Range.Val.emitTo(w)
+			me.Range.Val.emitTo(w)
 		}
 		w.WriteString(" := ")
 	}
 	w.WriteString("range ")
-	this.Range.Over.emitTo(w)
-	this.emit(w, true, ';', false)
+	me.Range.Over.emitTo(w)
+	me.emit(w, true, ';', false)
 }
-func (this *StmtFor) emitLoop(w *writer) {
+func (me *StmtFor) emitLoop(w *writer) {
 	w.WriteString("for ")
-	if this.Loop.Init != nil {
-		this.Loop.Init.emitTo(w)
+	if me.Loop.Init != nil {
+		me.Loop.Init.emitTo(w)
 	}
 	w.WriteByte(';')
-	if this.Loop.Cond != nil {
-		this.Loop.Cond.emitTo(w)
+	if me.Loop.Cond != nil {
+		me.Loop.Cond.emitTo(w)
 	}
 	w.WriteByte(';')
-	if this.Loop.Step != nil {
-		this.Loop.Step.emitTo(w)
+	if me.Loop.Step != nil {
+		me.Loop.Step.emitTo(w)
 	}
-	this.emit(w, true, ';', false)
+	me.emit(w, true, ';', false)
 }
 
-func (this Op) emit(w *writer, operator string) {
+func (me Op) emit(w *writer, operator string) {
 	last, unary, canparens, andor :=
-		len(this.Operands), len(this.Operands) == 1, (operator != "=" && operator != ":="), (operator == " && " || operator == " || ")
+		len(me.Operands), len(me.Operands) == 1, (operator != "=" && operator != ":="), (operator == " && " || operator == " || ")
 	parens := canparens && andor
 
 	if andor {
 		w.WriteByte('(')
 	}
-	for i := range this.Operands {
+	for i := range me.Operands {
 		if i > 0 || unary {
 			w.WriteString(operator)
 		}
-		if this.Operands[i] != nil {
+		if me.Operands[i] != nil {
 			if canparens {
-				_, parens = this.Operands[i].(interface{ isOp() })
+				_, parens = me.Operands[i].(interface{ isOp() })
 				if parens {
-					switch this.Operands[i].(type) {
+					switch me.Operands[i].(type) {
 					case OpIdx, OpDot:
 						parens = false
 					}
 				}
 				if (!parens) && operator == "." {
-					if _, parens = this.Operands[i].(*TypeRef); (!parens) && i == last {
-						name, _ := this.Operands[i].(Named)
+					if _, parens = me.Operands[i].(*TypeRef); (!parens) && i == last {
+						name, _ := me.Operands[i].(Named)
 						parens = name.Name == "type"
 					}
 				}
@@ -424,7 +424,7 @@ func (this Op) emit(w *writer, operator string) {
 			if parens {
 				w.WriteByte('(')
 			}
-			this.Operands[i].emitTo(w)
+			me.Operands[i].emitTo(w)
 			if parens {
 				w.WriteByte(')')
 			}
@@ -437,9 +437,9 @@ func (this Op) emit(w *writer, operator string) {
 
 func (Op) isOp() {}
 
-func (this OpSet) emitTo(w *writer) {
-	if len(this.Operands) == 2 { // goodie: turn `foo=foo-1` into `foo--` ...
-		if lname, lnok := this.Operands[0].(Named); lnok { // ... and same for `+`
+func (me OpSet) emitTo(w *writer) {
+	if len(me.Operands) == 2 { // goodie: turn `foo=foo-1` into `foo--` ...
+		if lname, lnok := me.Operands[0].(Named); lnok { // ... and same for `+`
 			try := func(operands Syns, opop string) bool {
 				if rname, rnok := operands[0].(Named); rnok && rname.Name == lname.Name {
 					if rlit, rlok := operands[1].(ExprLit); rlok && rlit.Val == 1 {
@@ -450,86 +450,86 @@ func (this OpSet) emitTo(w *writer) {
 				}
 				return false
 			}
-			if rsub, rsok := this.Operands[1].(OpSub); rsok && len(rsub.Operands) == 2 && try(rsub.Operands, "--") {
+			if rsub, rsok := me.Operands[1].(OpSub); rsok && len(rsub.Operands) == 2 && try(rsub.Operands, "--") {
 				return
-			} else if radd, raok := this.Operands[1].(OpAdd); raok && len(radd.Operands) == 2 && try(radd.Operands, "++") {
+			} else if radd, raok := me.Operands[1].(OpAdd); raok && len(radd.Operands) == 2 && try(radd.Operands, "++") {
 				return
 			}
 		}
 	}
-	this.Op.emit(w, "=")
+	me.Op.emit(w, "=")
 }
 
-func (this OpDecl) emitTo(w *writer) { this.Op.emit(w, ":=") }
+func (me OpDecl) emitTo(w *writer) { me.Op.emit(w, ":=") }
 
-func (this OpComma) emitTo(w *writer) {
-	if len(this.Operands) == 1 {
-		this.Operands[0].emitTo(w)
+func (me OpComma) emitTo(w *writer) {
+	if len(me.Operands) == 1 {
+		me.Operands[0].emitTo(w)
 	} else {
-		this.Op.emit(w, ",")
+		me.Op.emit(w, ",")
 	}
 }
 
-func (this OpColon) emitTo(w *writer) { this.Op.emit(w, ":") }
+func (me OpColon) emitTo(w *writer) { me.Op.emit(w, ":") }
 
-func (this OpDot) emitTo(w *writer) {
-	if pref := PkgImportNamePrefix; len(this.Operands) > 1 {
-		if n, ok := this.Operands[0].(Named); ok && len(n.Name) > len(pref) && (len(pref) == 0 || n.Name[:len(pref)] == string(pref)) {
+func (me OpDot) emitTo(w *writer) {
+	if pref := PkgImportNamePrefix; len(me.Operands) > 1 {
+		if n, ok := me.Operands[0].(Named); ok && len(n.Name) > len(pref) && (len(pref) == 0 || n.Name[:len(pref)] == string(pref)) {
 			w.pkgImportsActuallyEmitted[PkgName(n.Name)] = true
 		}
-		this.Op.emit(w, ".")
+		me.Op.emit(w, ".")
 	}
 }
 
-func (this OpAnd) emitTo(w *writer) { this.Op.emit(w, " && ") }
+func (me OpAnd) emitTo(w *writer) { me.Op.emit(w, " && ") }
 
-func (this OpOr) emitTo(w *writer) { this.Op.emit(w, " || ") }
+func (me OpOr) emitTo(w *writer) { me.Op.emit(w, " || ") }
 
-func (this OpEq) emitTo(w *writer) { this.Op.emit(w, " == ") }
+func (me OpEq) emitTo(w *writer) { me.Op.emit(w, " == ") }
 
-func (this OpNeq) emitTo(w *writer) { this.Op.emit(w, " != ") }
+func (me OpNeq) emitTo(w *writer) { me.Op.emit(w, " != ") }
 
-func (this OpGeq) emitTo(w *writer) { this.Op.emit(w, " >= ") }
+func (me OpGeq) emitTo(w *writer) { me.Op.emit(w, " >= ") }
 
-func (this OpLeq) emitTo(w *writer) { this.Op.emit(w, " <= ") }
+func (me OpLeq) emitTo(w *writer) { me.Op.emit(w, " <= ") }
 
-func (this OpGt) emitTo(w *writer) { this.Op.emit(w, " > ") }
+func (me OpGt) emitTo(w *writer) { me.Op.emit(w, " > ") }
 
-func (this OpLt) emitTo(w *writer) { this.Op.emit(w, " < ") }
+func (me OpLt) emitTo(w *writer) { me.Op.emit(w, " < ") }
 
-func (this OpAdd) emitTo(w *writer) { this.Op.emit(w, "+") }
+func (me OpAdd) emitTo(w *writer) { me.Op.emit(w, "+") }
 
-func (this OpSub) emitTo(w *writer) { this.Op.emit(w, "-") }
+func (me OpSub) emitTo(w *writer) { me.Op.emit(w, "-") }
 
-func (this OpMul) emitTo(w *writer) { this.Op.emit(w, "*") }
+func (me OpMul) emitTo(w *writer) { me.Op.emit(w, "*") }
 
-func (this OpDiv) emitTo(w *writer) { this.Op.emit(w, "/") }
+func (me OpDiv) emitTo(w *writer) { me.Op.emit(w, "/") }
 
-func (this OpMod) emitTo(w *writer) { this.Op.emit(w, "%") }
+func (me OpMod) emitTo(w *writer) { me.Op.emit(w, "%") }
 
-func (this OpAddr) emitTo(w *writer) { this.Op.emit(w, "&") }
+func (me OpAddr) emitTo(w *writer) { me.Op.emit(w, "&") }
 
-func (this OpDeref) emitTo(w *writer) { this.Op.emit(w, "*") }
+func (me OpDeref) emitTo(w *writer) { me.Op.emit(w, "*") }
 
-func (this OpNot) emitTo(w *writer) { this.Op.emit(w, "!") }
+func (me OpNot) emitTo(w *writer) { me.Op.emit(w, "!") }
 
-func (this OpIdx) emitTo(w *writer) {
-	for i := range this.Operands {
+func (me OpIdx) emitTo(w *writer) {
+	for i := range me.Operands {
 		if i > 0 {
 			w.WriteByte('[')
 		}
-		this.Operands[i].emitTo(w)
+		me.Operands[i].emitTo(w)
 		if i > 0 {
 			w.WriteByte(']')
 		}
 	}
 }
 
-func (this ExprLit) emitTo(w *writer) {
-	this.emit(w, this.Val)
+func (me ExprLit) emitTo(w *writer) {
+	me.emit(w, me.Val)
 }
 
-func (this ExprLit) emit(w *writer, val IAny) {
+func (me ExprLit) emit(w *writer, val IAny) {
 	if val == nil {
 		w.WriteString("nil")
 		return
@@ -563,7 +563,7 @@ func (this ExprLit) emit(w *writer, val IAny) {
 		}
 		w.WriteByte('{')
 		for i := range v {
-			this.emit(w, v[i])
+			me.emit(w, v[i])
 			w.WriteByte(',')
 		}
 		w.WriteByte('}')
@@ -572,18 +572,18 @@ func (this ExprLit) emit(w *writer, val IAny) {
 	}
 }
 
-func (this *ExprCall) emitTo(w *writer) {
-	_, calleeistyperef := this.Callee.(*TypeRef)
+func (me *ExprCall) emitTo(w *writer) {
+	_, calleeistyperef := me.Callee.(*TypeRef)
 	if calleeistyperef {
 		w.WriteByte('(')
 	}
-	this.Callee.emitTo(w)
+	me.Callee.emitTo(w)
 	if calleeistyperef {
 		w.WriteByte(')')
 	}
 	w.WriteByte('(')
-	for i := range this.Args {
-		if this.Args[i].emitTo(w); i == len(this.Args)-1 && this.LastArgSpreads {
+	for i := range me.Args {
+		if me.Args[i].emitTo(w); i == len(me.Args)-1 && me.LastArgSpreads {
 			w.WriteString("...")
 		} else {
 			w.WriteByte(',')
@@ -592,20 +592,20 @@ func (this *ExprCall) emitTo(w *writer) {
 	w.WriteByte(')')
 }
 
-func (this *StmtLabel) emitTo(w *writer) {
-	this.Named.emitTo(w)
+func (me *StmtLabel) emitTo(w *writer) {
+	me.Named.emitTo(w)
 	w.WriteByte(':')
-	this.SynBlock.emit(w, false, ';', false)
+	me.SynBlock.emit(w, false, ';', false)
 }
 
-func (this *SynRaw) emitTo(w *writer) {
-	for pkgname, pkgpath := range this.ImportsUsed {
+func (me *SynRaw) emitTo(w *writer) {
+	for pkgname, pkgpath := range me.ImportsUsed {
 		if pkgimpname := w.pkgImportsRegistered[pkgpath]; pkgimpname == "" {
 			w.pkgImportsRegistered[pkgpath] = pkgname
 		} else if pkgimpname != pkgname {
 			panic("SynRaw package-imports conflict: uses package import '" + pkgpath + "' named '" + string(pkgname) + "' but current output file has it registered with name '" + string(pkgimpname) + "'")
 		}
-		if !this.EmitCommented {
+		if !me.EmitCommented {
 			w.pkgImportsActuallyEmitted[pkgname] = true
 		} else {
 			w.WriteString(" /*")
@@ -614,19 +614,19 @@ func (this *SynRaw) emitTo(w *writer) {
 			w.WriteString("*/ ")
 		}
 	}
-	if this.EmitCommented {
+	if me.EmitCommented {
 		w.WriteString("/*")
 	}
-	if w.Write(this.Src); this.EmitCommented {
+	if w.Write(me.Src); me.EmitCommented {
 		w.WriteString("*/")
 	}
 }
 
-// CodeGen generates the code via `this.CodeGenPlain()`, and then optionally `go/format`s it.
+// CodeGen generates the code via `me.CodeGenPlain()`, and then optionally `go/format`s it.
 // Any `error` returned is from `go/format`, and if so, `src` will instead contain the original
 // (non-formatted) generated code that was given to `go/format` to aid investigating the issue.
-func (this *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool, goFmt bool) (src []byte, goFmtTimeTaken time.Duration, goFmtErr error) {
-	if orig := this.CodeGenPlain(codeGenCommentNotice, pkgImportPathsToNames, emitNoOpFuncBodies); !goFmt {
+func (me *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool, goFmt bool) (src []byte, goFmtTimeTaken time.Duration, goFmtErr error) {
+	if orig := me.CodeGenPlain(codeGenCommentNotice, pkgImportPathsToNames, emitNoOpFuncBodies); !goFmt {
 		src = orig
 	} else {
 		timegofmtstart := time.Now()
@@ -638,15 +638,15 @@ func (this *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNam
 	return
 }
 
-// CodeGenPlain generates the code represented by `this` into `src`, without `go/format`ting it.
-func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool) []byte {
+// CodeGenPlain generates the code represented by `me` into `src`, without `go/format`ting it.
+func (me *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool) []byte {
 	wdecls := writer{emitNoOpFuncBodies: emitNoOpFuncBodies, pkgImportsRegistered: pkgImportPathsToNames, pkgImportsActuallyEmitted: make(map[PkgName]bool, len(pkgImportPathsToNames))}
-	this.SynBlock.emit(&wdecls, false, '\n', false)
+	me.SynBlock.emit(&wdecls, false, '\n', false)
 
 	var wmain writer
-	this.DocComments.emit(&wmain, true)
+	me.DocComments.emit(&wmain, true)
 	wmain.WriteString("package ")
-	wmain.WriteString(this.PkgName)
+	wmain.WriteString(me.PkgName)
 	if len(codeGenCommentNotice) > 0 {
 		wmain.WriteString("\n\n// ")
 		wmain.WriteString(codeGenCommentNotice)

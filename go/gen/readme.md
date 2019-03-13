@@ -5,8 +5,8 @@
 Package `github.com/go-leap/dev/go/gen` provides AST nodes for generating Go
 code. These are by design simpler and more lightweight than `go/ast`, given that
 the latter is designed to represent existing-and-parsed code (keeping track of
-much housekeeping), while this package only focuses on ad-hoc assemblage of
-newly-to-be-emitted Go sources.
+much housekeeping), while the `udevgogen` package only focuses on ad-hoc
+assemblage of newly-to-be-emitted Go sources.
 
 As a noteworthy goodie, all `func`s that have named return values automatically
 get a final `return` statement appended to their `Body` at code-gen time, if
@@ -157,7 +157,7 @@ var (
 ```
 
 ```go
-var This = Named{"this"}
+var Self = Named{"this"}
 ```
 
 #### type ExprCall
@@ -189,167 +189,167 @@ Call constructs an `ExprCall`.
 #### func (*ExprCall) And
 
 ```go
-func (this *ExprCall) And(operand IAny) OpAnd
+func (me *ExprCall) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (*ExprCall) At
 
 ```go
-func (this *ExprCall) At(operand IAny) OpIdx
+func (me *ExprCall) At(operand IAny) OpIdx
 ```
 At implements `IExprContainish`.
 
 #### func (*ExprCall) C
 
 ```go
-func (this *ExprCall) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
+func (me *ExprCall) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
 ```
 C implements `IExprDottish`.
 
 #### func (*ExprCall) D
 
 ```go
-func (this *ExprCall) D(operands ...IAny) OpDot
+func (me *ExprCall) D(operands ...IAny) OpDot
 ```
 D implements `IExprDottish`.
 
 #### func (*ExprCall) Defer
 
 ```go
-func (this *ExprCall) Defer() StmtDefer
+func (me *ExprCall) Defer() StmtDefer
 ```
-Defer constructs a `StmtDefer` of `this` call.
+Defer constructs a `StmtDefer` of `me` call.
 
 #### func (*ExprCall) Deref
 
 ```go
-func (this *ExprCall) Deref() OpDeref
+func (me *ExprCall) Deref() OpDeref
 ```
 Deref implements `IExprContainish`.
 
 #### func (*ExprCall) Div
 
 ```go
-func (this *ExprCall) Div(operand IAny) OpDiv
+func (me *ExprCall) Div(operand IAny) OpDiv
 ```
 Div implements `IExprNumerish`.
 
 #### func (*ExprCall) Eq
 
 ```go
-func (this *ExprCall) Eq(operand IAny) OpEq
+func (me *ExprCall) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (*ExprCall) Geq
 
 ```go
-func (this *ExprCall) Geq(operand IAny) IExprBoolish
+func (me *ExprCall) Geq(operand IAny) IExprBoolish
 ```
 Geq implements `IExprOrdish`.
 
 #### func (*ExprCall) Go
 
 ```go
-func (this *ExprCall) Go() StmtGo
+func (me *ExprCall) Go() StmtGo
 ```
-Go constructs a `StmtGo` on `this` call.
+Go constructs a `StmtGo` on `me` call.
 
 #### func (*ExprCall) Gt
 
 ```go
-func (this *ExprCall) Gt(operand IAny) IExprBoolish
+func (me *ExprCall) Gt(operand IAny) IExprBoolish
 ```
 Gt implements `IExprOrdish`.
 
 #### func (*ExprCall) Leq
 
 ```go
-func (this *ExprCall) Leq(operand IAny) IExprBoolish
+func (me *ExprCall) Leq(operand IAny) IExprBoolish
 ```
 Leq implements `IExprOrdish`.
 
 #### func (*ExprCall) Lt
 
 ```go
-func (this *ExprCall) Lt(operand IAny) IExprBoolish
+func (me *ExprCall) Lt(operand IAny) IExprBoolish
 ```
 Lt implements `IExprOrdish`.
 
 #### func (*ExprCall) Minus
 
 ```go
-func (this *ExprCall) Minus(operand IAny) OpSub
+func (me *ExprCall) Minus(operand IAny) OpSub
 ```
 Minus implements `IExprNumerish`.
 
 #### func (*ExprCall) Mod
 
 ```go
-func (this *ExprCall) Mod(operand IAny) OpMod
+func (me *ExprCall) Mod(operand IAny) OpMod
 ```
 Mod implements `IExprNumerish`.
 
 #### func (*ExprCall) Neg
 
 ```go
-func (this *ExprCall) Neg() OpSub
+func (me *ExprCall) Neg() OpSub
 ```
 Neg implements `IExprNumerish`.
 
 #### func (*ExprCall) Neq
 
 ```go
-func (this *ExprCall) Neq(operand IAny) OpNeq
+func (me *ExprCall) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (*ExprCall) Not
 
 ```go
-func (this *ExprCall) Not() OpNot
+func (me *ExprCall) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (*ExprCall) Of
 
 ```go
-func (this *ExprCall) Of(args ...IAny) *ExprCall
+func (me *ExprCall) Of(args ...IAny) *ExprCall
 ```
 Of implements `IExprCallish`.
 
 #### func (*ExprCall) Or
 
 ```go
-func (this *ExprCall) Or(operand IAny) OpOr
+func (me *ExprCall) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
 #### func (*ExprCall) Plus
 
 ```go
-func (this *ExprCall) Plus(operand IAny) OpAdd
+func (me *ExprCall) Plus(operand IAny) OpAdd
 ```
 Plus implements `IExprNumerish`.
 
 #### func (*ExprCall) Sl
 
 ```go
-func (this *ExprCall) Sl(startIndex IAny, stopIndex IAny) OpIdx
+func (me *ExprCall) Sl(startIndex IAny, stopIndex IAny) OpIdx
 ```
 Sl implements `IExprContainish`.
 
 #### func (*ExprCall) Spreads
 
 ```go
-func (this *ExprCall) Spreads() *ExprCall
+func (me *ExprCall) Spreads() *ExprCall
 ```
 
 #### func (*ExprCall) Times
 
 ```go
-func (this *ExprCall) Times(operand IAny) OpMul
+func (me *ExprCall) Times(operand IAny) OpMul
 ```
 Times implements `IExprNumerish`.
 
@@ -614,189 +614,189 @@ N constructs a `Named`.
 #### func (Named) Addr
 
 ```go
-func (this Named) Addr() OpAddr
+func (me Named) Addr() OpAddr
 ```
 Addr implements `IExprVarish`.
 
 #### func (Named) And
 
 ```go
-func (this Named) And(operand IAny) OpAnd
+func (me Named) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (Named) At
 
 ```go
-func (this Named) At(operand IAny) OpIdx
+func (me Named) At(operand IAny) OpIdx
 ```
 At implements `IExprContainish`.
 
 #### func (Named) C
 
 ```go
-func (this Named) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
+func (me Named) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
 ```
 C implements `IExprDottish`.
 
 #### func (Named) D
 
 ```go
-func (this Named) D(operands ...IAny) OpDot
+func (me Named) D(operands ...IAny) OpDot
 ```
 D implements `IExprDottish`.
 
 #### func (Named) Decr1
 
 ```go
-func (this Named) Decr1() OpSet
+func (me Named) Decr1() OpSet
 ```
 Decr1 implements `IExprVarish`.
 
 #### func (Named) Deref
 
 ```go
-func (this Named) Deref() OpDeref
+func (me Named) Deref() OpDeref
 ```
 Deref implements `IExprContainish`.
 
 #### func (Named) Div
 
 ```go
-func (this Named) Div(operand IAny) OpDiv
+func (me Named) Div(operand IAny) OpDiv
 ```
 Div implements `IExprNumerish`.
 
 #### func (Named) Eq
 
 ```go
-func (this Named) Eq(operand IAny) OpEq
+func (me Named) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (Named) Geq
 
 ```go
-func (this Named) Geq(operand IAny) IExprBoolish
+func (me Named) Geq(operand IAny) IExprBoolish
 ```
 Geq implements `IExprOrdish`.
 
 #### func (Named) Gt
 
 ```go
-func (this Named) Gt(operand IAny) IExprBoolish
+func (me Named) Gt(operand IAny) IExprBoolish
 ```
 Gt implements `IExprOrdish`.
 
 #### func (Named) Incr1
 
 ```go
-func (this Named) Incr1() OpSet
+func (me Named) Incr1() OpSet
 ```
 Incr1 implements `IExprVarish`.
 
 #### func (Named) Leq
 
 ```go
-func (this Named) Leq(operand IAny) IExprBoolish
+func (me Named) Leq(operand IAny) IExprBoolish
 ```
 Leq implements `IExprOrdish`.
 
 #### func (Named) Let
 
 ```go
-func (this Named) Let(operand IAny) OpDecl
+func (me Named) Let(operand IAny) OpDecl
 ```
 Let implements `IExprVarish`.
 
 #### func (Named) Lt
 
 ```go
-func (this Named) Lt(operand IAny) IExprBoolish
+func (me Named) Lt(operand IAny) IExprBoolish
 ```
 Lt implements `IExprOrdish`.
 
 #### func (Named) Minus
 
 ```go
-func (this Named) Minus(operand IAny) OpSub
+func (me Named) Minus(operand IAny) OpSub
 ```
 Minus implements `IExprNumerish`.
 
 #### func (Named) Mod
 
 ```go
-func (this Named) Mod(operand IAny) OpMod
+func (me Named) Mod(operand IAny) OpMod
 ```
 Mod implements `IExprNumerish`.
 
 #### func (Named) Neg
 
 ```go
-func (this Named) Neg() OpSub
+func (me Named) Neg() OpSub
 ```
 Neg implements `IExprNumerish`.
 
 #### func (Named) Neq
 
 ```go
-func (this Named) Neq(operand IAny) OpNeq
+func (me Named) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (Named) Not
 
 ```go
-func (this Named) Not() OpNot
+func (me Named) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (Named) Of
 
 ```go
-func (this Named) Of(args ...IAny) *ExprCall
+func (me Named) Of(args ...IAny) *ExprCall
 ```
 Of implements `IExprCallish`.
 
 #### func (Named) OfType
 
 ```go
-func (this Named) OfType(typeRef *TypeRef) (nt NamedTyped)
+func (me Named) OfType(typeRef *TypeRef) (nt NamedTyped)
 ```
-OfType returns a `NamedTyped` with `this.Name` and `typeRef`.
+OfType returns a `NamedTyped` with `me.Name` and `typeRef`.
 
 #### func (Named) Or
 
 ```go
-func (this Named) Or(operand IAny) OpOr
+func (me Named) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
 #### func (Named) Plus
 
 ```go
-func (this Named) Plus(operand IAny) OpAdd
+func (me Named) Plus(operand IAny) OpAdd
 ```
 Plus implements `IExprNumerish`.
 
 #### func (Named) Set
 
 ```go
-func (this Named) Set(operand IAny) OpSet
+func (me Named) Set(operand IAny) OpSet
 ```
 Set implements `IExprVarish`.
 
 #### func (Named) Sl
 
 ```go
-func (this Named) Sl(startIndex IAny, stopIndex IAny) OpIdx
+func (me Named) Sl(startIndex IAny, stopIndex IAny) OpIdx
 ```
 Sl implements `IExprContainish`.
 
 #### func (Named) Times
 
 ```go
-func (this Named) Times(operand IAny) OpMul
+func (me Named) Times(operand IAny) OpMul
 ```
 Times implements `IExprNumerish`.
 
@@ -815,10 +815,10 @@ return values, struct fields etc.
 #### func (NamedTyped) Method
 
 ```go
-func (this NamedTyped) Method(name string, args ...NamedTyped) *SynFunc
+func (me NamedTyped) Method(name string, args ...NamedTyped) *SynFunc
 ```
-Method constructs a `SynFunc` with the given `name` and `args` plus `this` as
-its method `Recv`.
+Method constructs a `SynFunc` with the given `name` and `args` plus `me` as its
+method `Recv`.
 
 #### type NamedsTypeds
 
@@ -831,60 +831,60 @@ NamedsTypeds is a slice of 0-or-more `NamedTyped`s.
 #### func (*NamedsTypeds) Add
 
 ```go
-func (this *NamedsTypeds) Add(name string, typeRef *TypeRef)
+func (me *NamedsTypeds) Add(name string, typeRef *TypeRef)
 ```
 Add is a convenience short-hand for `append`.
 
 #### func (NamedsTypeds) AllNamed
 
 ```go
-func (this NamedsTypeds) AllNamed() bool
+func (me NamedsTypeds) AllNamed() bool
 ```
-AllNamed returns whether all `NamedTyped`s in `this` have a `Name` set. If
-`this` is empty, `false` is returned.
+AllNamed returns whether all `NamedTyped`s in `me` have a `Name` set. If `me` is
+empty, `false` is returned.
 
 #### func (NamedsTypeds) AllTyped
 
 ```go
-func (this NamedsTypeds) AllTyped() bool
+func (me NamedsTypeds) AllTyped() bool
 ```
-AllTyped returns whether all `NamedTyped`s in `this` have a `Type` set. If
-`this` is empty, `false` is returned.
+AllTyped returns whether all `NamedTyped`s in `me` have a `Type` set. If `me` is
+empty, `false` is returned.
 
 #### func (NamedsTypeds) IfUntypedUse
 
 ```go
-func (this NamedsTypeds) IfUntypedUse(typeRef *TypeRef) NamedsTypeds
+func (me NamedsTypeds) IfUntypedUse(typeRef *TypeRef) NamedsTypeds
 ```
 
 #### func (NamedsTypeds) LastEllipsisIfSlice
 
 ```go
-func (this NamedsTypeds) LastEllipsisIfSlice() (r NamedsTypeds)
+func (me NamedsTypeds) LastEllipsisIfSlice() (r NamedsTypeds)
 ```
 
 #### func (NamedsTypeds) Names
 
 ```go
-func (this NamedsTypeds) Names(strLits bool) []interface{}
+func (me NamedsTypeds) Names(strLits bool) []interface{}
 ```
 
 #### func (NamedsTypeds) Renamed
 
 ```go
-func (this NamedsTypeds) Renamed(rename func(string) string) (renamed NamedsTypeds)
+func (me NamedsTypeds) Renamed(rename func(string) string) (renamed NamedsTypeds)
 ```
 
 #### func (NamedsTypeds) ToAnys
 
 ```go
-func (this NamedsTypeds) ToAnys(transform func(*NamedTyped) IAny) (transformed []IAny)
+func (me NamedsTypeds) ToAnys(transform func(*NamedTyped) IAny) (transformed []IAny)
 ```
 
 #### func (NamedsTypeds) ToSyns
 
 ```go
-func (this NamedsTypeds) ToSyns(transform func(*NamedTyped) ISyn) (transformed Syns)
+func (me NamedsTypeds) ToSyns(transform func(*NamedTyped) ISyn) (transformed Syns)
 ```
 
 #### type Op
@@ -917,7 +917,7 @@ Add constructs an `OpAdd`.
 #### func (OpAdd) Plus
 
 ```go
-func (this OpAdd) Plus(operand IAny) OpAdd
+func (me OpAdd) Plus(operand IAny) OpAdd
 ```
 
 #### type OpAddr
@@ -953,35 +953,35 @@ And constructs an `OpAnd`.
 #### func (OpAnd) And
 
 ```go
-func (this OpAnd) And(operand IAny) OpAnd
+func (me OpAnd) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpAnd) Eq
 
 ```go
-func (this OpAnd) Eq(operand IAny) OpEq
+func (me OpAnd) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpAnd) Neq
 
 ```go
-func (this OpAnd) Neq(operand IAny) OpNeq
+func (me OpAnd) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (OpAnd) Not
 
 ```go
-func (this OpAnd) Not() OpNot
+func (me OpAnd) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (OpAnd) Or
 
 ```go
-func (this OpAnd) Or(operand IAny) OpOr
+func (me OpAnd) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1032,14 +1032,14 @@ Tup constructs an `OpComma`.
 #### func (OpComma) Let
 
 ```go
-func (this OpComma) Let(operand IAny) OpDecl
+func (me OpComma) Let(operand IAny) OpDecl
 ```
 Let implements `IExprVarish`.
 
 #### func (OpComma) Set
 
 ```go
-func (this OpComma) Set(operand IAny) OpSet
+func (me OpComma) Set(operand IAny) OpSet
 ```
 Set implements `IExprVarish`.
 
@@ -1076,168 +1076,168 @@ Deref constructs an `OpDeref`.
 #### func (OpDeref) And
 
 ```go
-func (this OpDeref) And(operand IAny) OpAnd
+func (me OpDeref) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpDeref) At
 
 ```go
-func (this OpDeref) At(operand IAny) OpIdx
+func (me OpDeref) At(operand IAny) OpIdx
 ```
 At implements `IExprContainish`.
 
 #### func (OpDeref) C
 
 ```go
-func (this OpDeref) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
+func (me OpDeref) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
 ```
 C implements `IExprDottish`.
 
 #### func (OpDeref) D
 
 ```go
-func (this OpDeref) D(operands ...IAny) OpDot
+func (me OpDeref) D(operands ...IAny) OpDot
 ```
 D implements `IExprDottish`.
 
 #### func (OpDeref) Decr1
 
 ```go
-func (this OpDeref) Decr1() OpSet
+func (me OpDeref) Decr1() OpSet
 ```
 Decr1 implements `IExprVarish`.
 
 #### func (OpDeref) Deref
 
 ```go
-func (this OpDeref) Deref() OpDeref
+func (me OpDeref) Deref() OpDeref
 ```
 Deref implements `IExprContainish`.
 
 #### func (OpDeref) Div
 
 ```go
-func (this OpDeref) Div(operand IAny) OpDiv
+func (me OpDeref) Div(operand IAny) OpDiv
 ```
 Div implements `IExprNumerish`.
 
 #### func (OpDeref) Eq
 
 ```go
-func (this OpDeref) Eq(operand IAny) OpEq
+func (me OpDeref) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpDeref) Geq
 
 ```go
-func (this OpDeref) Geq(operand IAny) IExprBoolish
+func (me OpDeref) Geq(operand IAny) IExprBoolish
 ```
 Geq implements `IExprOrdish`.
 
 #### func (OpDeref) Gt
 
 ```go
-func (this OpDeref) Gt(operand IAny) IExprBoolish
+func (me OpDeref) Gt(operand IAny) IExprBoolish
 ```
 Gt implements `IExprOrdish`.
 
 #### func (OpDeref) Incr1
 
 ```go
-func (this OpDeref) Incr1() OpSet
+func (me OpDeref) Incr1() OpSet
 ```
 Incr1 implements `IExprVarish`.
 
 #### func (OpDeref) Leq
 
 ```go
-func (this OpDeref) Leq(operand IAny) IExprBoolish
+func (me OpDeref) Leq(operand IAny) IExprBoolish
 ```
 Leq implements `IExprOrdish`.
 
 #### func (OpDeref) Lt
 
 ```go
-func (this OpDeref) Lt(operand IAny) IExprBoolish
+func (me OpDeref) Lt(operand IAny) IExprBoolish
 ```
 Lt implements `IExprOrdish`.
 
 #### func (OpDeref) Minus
 
 ```go
-func (this OpDeref) Minus(operand IAny) OpSub
+func (me OpDeref) Minus(operand IAny) OpSub
 ```
 Minus implements `IExprNumerish`.
 
 #### func (OpDeref) Mod
 
 ```go
-func (this OpDeref) Mod(operand IAny) OpMod
+func (me OpDeref) Mod(operand IAny) OpMod
 ```
 Mod implements `IExprNumerish`.
 
 #### func (OpDeref) Neg
 
 ```go
-func (this OpDeref) Neg() OpSub
+func (me OpDeref) Neg() OpSub
 ```
 Neg implements `IExprNumerish`.
 
 #### func (OpDeref) Neq
 
 ```go
-func (this OpDeref) Neq(operand IAny) OpNeq
+func (me OpDeref) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (OpDeref) Not
 
 ```go
-func (this OpDeref) Not() OpNot
+func (me OpDeref) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (OpDeref) Of
 
 ```go
-func (this OpDeref) Of(args ...IAny) *ExprCall
+func (me OpDeref) Of(args ...IAny) *ExprCall
 ```
 Of implements `IExprCallish`.
 
 #### func (OpDeref) Or
 
 ```go
-func (this OpDeref) Or(operand IAny) OpOr
+func (me OpDeref) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
 #### func (OpDeref) Plus
 
 ```go
-func (this OpDeref) Plus(operand IAny) OpAdd
+func (me OpDeref) Plus(operand IAny) OpAdd
 ```
 Plus implements `IExprNumerish`.
 
 #### func (OpDeref) Set
 
 ```go
-func (this OpDeref) Set(operand IAny) OpSet
+func (me OpDeref) Set(operand IAny) OpSet
 ```
 Set implements `IExprVarish`.
 
 #### func (OpDeref) Sl
 
 ```go
-func (this OpDeref) Sl(startIndex IAny, stopIndex IAny) OpIdx
+func (me OpDeref) Sl(startIndex IAny, stopIndex IAny) OpIdx
 ```
 Sl implements `IExprContainish`.
 
 #### func (OpDeref) Times
 
 ```go
-func (this OpDeref) Times(operand IAny) OpMul
+func (me OpDeref) Times(operand IAny) OpMul
 ```
 Times implements `IExprNumerish`.
 
@@ -1274,175 +1274,175 @@ D constructs an `OpDot`.
 #### func (OpDot) Addr
 
 ```go
-func (this OpDot) Addr() OpAddr
+func (me OpDot) Addr() OpAddr
 ```
 Addr implements `IExprVarish`.
 
 #### func (OpDot) And
 
 ```go
-func (this OpDot) And(operand IAny) OpAnd
+func (me OpDot) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpDot) At
 
 ```go
-func (this OpDot) At(operand IAny) OpIdx
+func (me OpDot) At(operand IAny) OpIdx
 ```
 At implements `IExprContainish`.
 
 #### func (OpDot) C
 
 ```go
-func (this OpDot) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
+func (me OpDot) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
 ```
 C implements `IExprDottish`.
 
 #### func (OpDot) D
 
 ```go
-func (this OpDot) D(operands ...IAny) OpDot
+func (me OpDot) D(operands ...IAny) OpDot
 ```
 D implements `IExprDottish`.
 
 #### func (OpDot) Decr1
 
 ```go
-func (this OpDot) Decr1() OpSet
+func (me OpDot) Decr1() OpSet
 ```
 Decr1 implements `IExprVarish`.
 
 #### func (OpDot) Deref
 
 ```go
-func (this OpDot) Deref() OpDeref
+func (me OpDot) Deref() OpDeref
 ```
 Deref implements `IExprContainish`.
 
 #### func (OpDot) Div
 
 ```go
-func (this OpDot) Div(operand IAny) OpDiv
+func (me OpDot) Div(operand IAny) OpDiv
 ```
 Div implements `IExprNumerish`.
 
 #### func (OpDot) Eq
 
 ```go
-func (this OpDot) Eq(operand IAny) OpEq
+func (me OpDot) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpDot) Geq
 
 ```go
-func (this OpDot) Geq(operand IAny) IExprBoolish
+func (me OpDot) Geq(operand IAny) IExprBoolish
 ```
 Geq implements `IExprOrdish`.
 
 #### func (OpDot) Gt
 
 ```go
-func (this OpDot) Gt(operand IAny) IExprBoolish
+func (me OpDot) Gt(operand IAny) IExprBoolish
 ```
 Gt implements `IExprOrdish`.
 
 #### func (OpDot) Incr1
 
 ```go
-func (this OpDot) Incr1() OpSet
+func (me OpDot) Incr1() OpSet
 ```
 Incr1 implements `IExprVarish`.
 
 #### func (OpDot) Leq
 
 ```go
-func (this OpDot) Leq(operand IAny) IExprBoolish
+func (me OpDot) Leq(operand IAny) IExprBoolish
 ```
 Leq implements `IExprOrdish`.
 
 #### func (OpDot) Lt
 
 ```go
-func (this OpDot) Lt(operand IAny) IExprBoolish
+func (me OpDot) Lt(operand IAny) IExprBoolish
 ```
 Lt implements `IExprOrdish`.
 
 #### func (OpDot) Minus
 
 ```go
-func (this OpDot) Minus(operand IAny) OpSub
+func (me OpDot) Minus(operand IAny) OpSub
 ```
 Minus implements `IExprNumerish`.
 
 #### func (OpDot) Mod
 
 ```go
-func (this OpDot) Mod(operand IAny) OpMod
+func (me OpDot) Mod(operand IAny) OpMod
 ```
 Mod implements `IExprNumerish`.
 
 #### func (OpDot) Neg
 
 ```go
-func (this OpDot) Neg() OpSub
+func (me OpDot) Neg() OpSub
 ```
 Neg implements `IExprNumerish`.
 
 #### func (OpDot) Neq
 
 ```go
-func (this OpDot) Neq(operand IAny) OpNeq
+func (me OpDot) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (OpDot) Not
 
 ```go
-func (this OpDot) Not() OpNot
+func (me OpDot) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (OpDot) Of
 
 ```go
-func (this OpDot) Of(args ...IAny) *ExprCall
+func (me OpDot) Of(args ...IAny) *ExprCall
 ```
 Of implements `IExprCallish`.
 
 #### func (OpDot) Or
 
 ```go
-func (this OpDot) Or(operand IAny) OpOr
+func (me OpDot) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
 #### func (OpDot) Plus
 
 ```go
-func (this OpDot) Plus(operand IAny) OpAdd
+func (me OpDot) Plus(operand IAny) OpAdd
 ```
 Plus implements `IExprNumerish`.
 
 #### func (OpDot) Set
 
 ```go
-func (this OpDot) Set(operand IAny) OpSet
+func (me OpDot) Set(operand IAny) OpSet
 ```
 Set implements `IExprVarish`.
 
 #### func (OpDot) Sl
 
 ```go
-func (this OpDot) Sl(startIndex IAny, stopIndex IAny) OpIdx
+func (me OpDot) Sl(startIndex IAny, stopIndex IAny) OpIdx
 ```
 Sl implements `IExprContainish`.
 
 #### func (OpDot) Times
 
 ```go
-func (this OpDot) Times(operand IAny) OpMul
+func (me OpDot) Times(operand IAny) OpMul
 ```
 Times implements `IExprNumerish`.
 
@@ -1464,35 +1464,35 @@ Eq constructs an `OpEq`.
 #### func (OpEq) And
 
 ```go
-func (this OpEq) And(operand IAny) OpAnd
+func (me OpEq) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpEq) Eq
 
 ```go
-func (this OpEq) Eq(operand IAny) OpEq
+func (me OpEq) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpEq) Neq
 
 ```go
-func (this OpEq) Neq(operand IAny) OpNeq
+func (me OpEq) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (OpEq) Not
 
 ```go
-func (this OpEq) Not() OpNot
+func (me OpEq) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (OpEq) Or
 
 ```go
-func (this OpEq) Or(operand IAny) OpOr
+func (me OpEq) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1514,35 +1514,35 @@ Geq constructs an `OpGeq`.
 #### func (OpGeq) And
 
 ```go
-func (this OpGeq) And(operand IAny) OpAnd
+func (me OpGeq) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpGeq) Eq
 
 ```go
-func (this OpGeq) Eq(operand IAny) OpEq
+func (me OpGeq) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpGeq) Neq
 
 ```go
-func (this OpGeq) Neq(operand IAny) OpNeq
+func (me OpGeq) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (OpGeq) Not
 
 ```go
-func (this OpGeq) Not() OpNot
+func (me OpGeq) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (OpGeq) Or
 
 ```go
-func (this OpGeq) Or(operand IAny) OpOr
+func (me OpGeq) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1564,35 +1564,35 @@ Gt constructs an `OpGt`.
 #### func (OpGt) And
 
 ```go
-func (this OpGt) And(operand IAny) OpAnd
+func (me OpGt) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpGt) Eq
 
 ```go
-func (this OpGt) Eq(operand IAny) OpEq
+func (me OpGt) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpGt) Neq
 
 ```go
-func (this OpGt) Neq(operand IAny) OpNeq
+func (me OpGt) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (OpGt) Not
 
 ```go
-func (this OpGt) Not() OpNot
+func (me OpGt) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (OpGt) Or
 
 ```go
-func (this OpGt) Or(operand IAny) OpOr
+func (me OpGt) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1614,175 +1614,175 @@ At constructs an `OpIdx`.
 #### func (OpIdx) Addr
 
 ```go
-func (this OpIdx) Addr() OpAddr
+func (me OpIdx) Addr() OpAddr
 ```
 Addr implements `IExprVarish`.
 
 #### func (OpIdx) And
 
 ```go
-func (this OpIdx) And(operand IAny) OpAnd
+func (me OpIdx) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpIdx) At
 
 ```go
-func (this OpIdx) At(operand IAny) OpIdx
+func (me OpIdx) At(operand IAny) OpIdx
 ```
 At implements `IExprContainish`.
 
 #### func (OpIdx) C
 
 ```go
-func (this OpIdx) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
+func (me OpIdx) C(dotCalleeName string, dotCallArgs ...IAny) *ExprCall
 ```
 C implements `IExprDottish`.
 
 #### func (OpIdx) D
 
 ```go
-func (this OpIdx) D(operands ...IAny) OpDot
+func (me OpIdx) D(operands ...IAny) OpDot
 ```
 D implements `IExprDottish`.
 
 #### func (OpIdx) Decr1
 
 ```go
-func (this OpIdx) Decr1() OpSet
+func (me OpIdx) Decr1() OpSet
 ```
 Decr1 implements `IExprVarish`.
 
 #### func (OpIdx) Deref
 
 ```go
-func (this OpIdx) Deref() OpDeref
+func (me OpIdx) Deref() OpDeref
 ```
 Deref implements `IExprContainish`.
 
 #### func (OpIdx) Div
 
 ```go
-func (this OpIdx) Div(operand IAny) OpDiv
+func (me OpIdx) Div(operand IAny) OpDiv
 ```
 Div implements `IExprNumerish`.
 
 #### func (OpIdx) Eq
 
 ```go
-func (this OpIdx) Eq(operand IAny) OpEq
+func (me OpIdx) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpIdx) Geq
 
 ```go
-func (this OpIdx) Geq(operand IAny) IExprBoolish
+func (me OpIdx) Geq(operand IAny) IExprBoolish
 ```
 Geq implements `IExprOrdish`.
 
 #### func (OpIdx) Gt
 
 ```go
-func (this OpIdx) Gt(operand IAny) IExprBoolish
+func (me OpIdx) Gt(operand IAny) IExprBoolish
 ```
 Gt implements `IExprOrdish`.
 
 #### func (OpIdx) Incr1
 
 ```go
-func (this OpIdx) Incr1() OpSet
+func (me OpIdx) Incr1() OpSet
 ```
 Incr1 implements `IExprVarish`.
 
 #### func (OpIdx) Leq
 
 ```go
-func (this OpIdx) Leq(operand IAny) IExprBoolish
+func (me OpIdx) Leq(operand IAny) IExprBoolish
 ```
 Leq implements `IExprOrdish`.
 
 #### func (OpIdx) Lt
 
 ```go
-func (this OpIdx) Lt(operand IAny) IExprBoolish
+func (me OpIdx) Lt(operand IAny) IExprBoolish
 ```
 Lt implements `IExprOrdish`.
 
 #### func (OpIdx) Minus
 
 ```go
-func (this OpIdx) Minus(operand IAny) OpSub
+func (me OpIdx) Minus(operand IAny) OpSub
 ```
 Minus implements `IExprNumerish`.
 
 #### func (OpIdx) Mod
 
 ```go
-func (this OpIdx) Mod(operand IAny) OpMod
+func (me OpIdx) Mod(operand IAny) OpMod
 ```
 Mod implements `IExprNumerish`.
 
 #### func (OpIdx) Neg
 
 ```go
-func (this OpIdx) Neg() OpSub
+func (me OpIdx) Neg() OpSub
 ```
 Neg implements `IExprNumerish`.
 
 #### func (OpIdx) Neq
 
 ```go
-func (this OpIdx) Neq(operand IAny) OpNeq
+func (me OpIdx) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (OpIdx) Not
 
 ```go
-func (this OpIdx) Not() OpNot
+func (me OpIdx) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (OpIdx) Of
 
 ```go
-func (this OpIdx) Of(args ...IAny) *ExprCall
+func (me OpIdx) Of(args ...IAny) *ExprCall
 ```
 Of implements `IExprCallish`.
 
 #### func (OpIdx) Or
 
 ```go
-func (this OpIdx) Or(operand IAny) OpOr
+func (me OpIdx) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
 #### func (OpIdx) Plus
 
 ```go
-func (this OpIdx) Plus(operand IAny) OpAdd
+func (me OpIdx) Plus(operand IAny) OpAdd
 ```
 Plus implements `IExprNumerish`.
 
 #### func (OpIdx) Set
 
 ```go
-func (this OpIdx) Set(operand IAny) OpSet
+func (me OpIdx) Set(operand IAny) OpSet
 ```
 Set implements `IExprVarish`.
 
 #### func (OpIdx) Sl
 
 ```go
-func (this OpIdx) Sl(startIndex IAny, stopIndex IAny) OpIdx
+func (me OpIdx) Sl(startIndex IAny, stopIndex IAny) OpIdx
 ```
 Sl implements `IExprContainish`.
 
 #### func (OpIdx) Times
 
 ```go
-func (this OpIdx) Times(operand IAny) OpMul
+func (me OpIdx) Times(operand IAny) OpMul
 ```
 Times implements `IExprNumerish`.
 
@@ -1804,35 +1804,35 @@ Leq constructs an `OpLeq`.
 #### func (OpLeq) And
 
 ```go
-func (this OpLeq) And(operand IAny) OpAnd
+func (me OpLeq) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpLeq) Eq
 
 ```go
-func (this OpLeq) Eq(operand IAny) OpEq
+func (me OpLeq) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpLeq) Neq
 
 ```go
-func (this OpLeq) Neq(operand IAny) OpNeq
+func (me OpLeq) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (OpLeq) Not
 
 ```go
-func (this OpLeq) Not() OpNot
+func (me OpLeq) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (OpLeq) Or
 
 ```go
-func (this OpLeq) Or(operand IAny) OpOr
+func (me OpLeq) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1854,35 +1854,35 @@ Lt constructs an `OpLt`.
 #### func (OpLt) And
 
 ```go
-func (this OpLt) And(operand IAny) OpAnd
+func (me OpLt) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpLt) Eq
 
 ```go
-func (this OpLt) Eq(operand IAny) OpEq
+func (me OpLt) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpLt) Neq
 
 ```go
-func (this OpLt) Neq(operand IAny) OpNeq
+func (me OpLt) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (OpLt) Not
 
 ```go
-func (this OpLt) Not() OpNot
+func (me OpLt) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (OpLt) Or
 
 ```go
-func (this OpLt) Or(operand IAny) OpOr
+func (me OpLt) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1934,35 +1934,35 @@ Neq constructs an `OpNeq`.
 #### func (OpNeq) And
 
 ```go
-func (this OpNeq) And(operand IAny) OpAnd
+func (me OpNeq) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpNeq) Eq
 
 ```go
-func (this OpNeq) Eq(operand IAny) OpEq
+func (me OpNeq) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpNeq) Neq
 
 ```go
-func (this OpNeq) Neq(operand IAny) OpNeq
+func (me OpNeq) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (OpNeq) Not
 
 ```go
-func (this OpNeq) Not() OpNot
+func (me OpNeq) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (OpNeq) Or
 
 ```go
-func (this OpNeq) Or(operand IAny) OpOr
+func (me OpNeq) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -1984,35 +1984,35 @@ Not constructs an `OpNot`.
 #### func (OpNot) And
 
 ```go
-func (this OpNot) And(operand IAny) OpAnd
+func (me OpNot) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpNot) Eq
 
 ```go
-func (this OpNot) Eq(operand IAny) OpEq
+func (me OpNot) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpNot) Neq
 
 ```go
-func (this OpNot) Neq(operand IAny) OpNeq
+func (me OpNot) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (OpNot) Not
 
 ```go
-func (this OpNot) Not() OpNot
+func (me OpNot) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (OpNot) Or
 
 ```go
-func (this OpNot) Or(operand IAny) OpOr
+func (me OpNot) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -2034,35 +2034,35 @@ Or constructs an `OpOr`.
 #### func (OpOr) And
 
 ```go
-func (this OpOr) And(operand IAny) OpAnd
+func (me OpOr) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
 #### func (OpOr) Eq
 
 ```go
-func (this OpOr) Eq(operand IAny) OpEq
+func (me OpOr) Eq(operand IAny) OpEq
 ```
 Eq implements `IExprEqualish`.
 
 #### func (OpOr) Neq
 
 ```go
-func (this OpOr) Neq(operand IAny) OpNeq
+func (me OpOr) Neq(operand IAny) OpNeq
 ```
 Neq implements `IExprEqualish`.
 
 #### func (OpOr) Not
 
 ```go
-func (this OpOr) Not() OpNot
+func (me OpOr) Not() OpNot
 ```
 Not implements `IExprBoolish`.
 
 #### func (OpOr) Or
 
 ```go
-func (this OpOr) Or(operand IAny) OpOr
+func (me OpOr) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
@@ -2115,10 +2115,10 @@ names.
 #### func (*PkgImports) Ensure
 
 ```go
-func (this *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName)
+func (me *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName)
 ```
 Ensure returns the `pkgImportName` for the given `pkgImportPath` as stored in
-`this` (or if missing, devises one in the form of eg. `pkg__encoding_json` for
+`me` (or if missing, devises one in the form of eg. `pkg__encoding_json` for
 `encoding/json` and stores it, assuming that `PkgImportNamePrefix` is set to
 "pkg__", its default value).
 
@@ -2133,32 +2133,30 @@ PkgName offers some handy methods on package import names.
 #### func (PkgName) C
 
 ```go
-func (this PkgName) C(funcName string, args ...IAny) *ExprCall
+func (me PkgName) C(funcName string, args ...IAny) *ExprCall
 ```
-C constructs an `ExprCall` of the `funcName` exported by `this`
-imported-package.
+C constructs an `ExprCall` of the `funcName` exported by `me` imported-package.
 
 #### func (PkgName) N
 
 ```go
-func (this PkgName) N(exportedName string, maybeFurtherDotOperands ...IAny) IExprDottish
+func (me PkgName) N(exportedName string, maybeFurtherDotOperands ...IAny) IExprDottish
 ```
 
 #### func (PkgName) T
 
 ```go
-func (this PkgName) T(typeName string) *TypeRef
+func (me PkgName) T(typeName string) *TypeRef
 ```
-T constructs a `TypeRef` with `Named` referring to `this PkgName` and
-`typeName`.
+T constructs a `TypeRef` with `Named` referring to `PkgName` and `typeName`.
 
 #### func (PkgName) Tª
 
 ```go
-func (this PkgName) Tª(typeName string) *TypeRef
+func (me PkgName) Tª(typeName string) *TypeRef
 ```
-Tª constructs a `TypeRef` with its `Pointer`'s `Named` referring to `this
-PkgName` and `typeName`.
+Tª constructs a `TypeRef` with its `Pointer`'s `Named` referring to `PkgName`
+and `typeName`.
 
 #### type SingleLineDocCommentParagraphs
 
@@ -2173,7 +2171,7 @@ output will be separated from the next via an empty `// ` line.
 #### func (*SingleLineDocCommentParagraphs) Add
 
 ```go
-func (this *SingleLineDocCommentParagraphs) Add(docCommentLines ...string)
+func (me *SingleLineDocCommentParagraphs) Add(docCommentLines ...string)
 ```
 Add is a convenience short-hand for `append`.
 
@@ -2206,9 +2204,9 @@ File constructs a `SourceFile`.
 #### func (*SourceFile) CodeGen
 
 ```go
-func (this *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool, goFmt bool) (src []byte, goFmtTimeTaken time.Duration, goFmtErr error)
+func (me *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool, goFmt bool) (src []byte, goFmtTimeTaken time.Duration, goFmtErr error)
 ```
-CodeGen generates the code via `this.CodeGenPlain()`, and then optionally
+CodeGen generates the code via `me.CodeGenPlain()`, and then optionally
 `go/format`s it. Any `error` returned is from `go/format`, and if so, `src` will
 instead contain the original (non-formatted) generated code that was given to
 `go/format` to aid investigating the issue.
@@ -2216,9 +2214,9 @@ instead contain the original (non-formatted) generated code that was given to
 #### func (*SourceFile) CodeGenPlain
 
 ```go
-func (this *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool) []byte
+func (me *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool) []byte
 ```
-CodeGenPlain generates the code represented by `this` into `src`, without
+CodeGenPlain generates the code represented by `me` into `src`, without
 `go/format`ting it.
 
 #### type StmtBreak
@@ -2245,7 +2243,7 @@ StmtConst represents Go's `const` keyword.
 #### func  Const
 
 ```go
-func Const(name string, maybeType *TypeRef, expr ISyn) (this *StmtConst)
+func Const(name string, maybeType *TypeRef, expr ISyn) (me *StmtConst)
 ```
 Const constructs a `StmtConst`.
 
@@ -2270,7 +2268,7 @@ StmtDefer represents Go's `defer` keyword.
 #### func  Defer
 
 ```go
-func Defer(call *ExprCall) (this StmtDefer)
+func Defer(call *ExprCall) (me StmtDefer)
 ```
 Defer constructs a `StmtDefer`.
 
@@ -2308,23 +2306,23 @@ StmtFor represents either a `for .. range` loop or a classical `for` (not
 #### func  For
 
 ```go
-func For(maybeInit ISyn, maybeCond ISyn, maybeStep ISyn, body ...ISyn) (this *StmtFor)
+func For(maybeInit ISyn, maybeCond ISyn, maybeStep ISyn, body ...ISyn) (me *StmtFor)
 ```
 For constructs a `StmtFor` that emits a classical `for` (not `range`) loop.
 
 #### func  ForEach
 
 ```go
-func ForEach(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (this *StmtFor)
+func ForEach(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (me *StmtFor)
 ```
 ForEach constructs a `StmtFor` that emits a `for .. range` loop.
 
 #### func (*StmtFor) Code
 
 ```go
-func (this *StmtFor) Code(stmts ...ISyn) *StmtFor
+func (me *StmtFor) Code(stmts ...ISyn) *StmtFor
 ```
-Code sets `this.Body` and returns `this`.
+Code sets `me.Body` and returns `me`.
 
 #### type StmtGo
 
@@ -2339,7 +2337,7 @@ StmtGo represents Go's `go` keyword.
 #### func  Go
 
 ```go
-func Go(call *ExprCall) (this StmtGo)
+func Go(call *ExprCall) (me StmtGo)
 ```
 Go constructs a `StmtGo`.
 
@@ -2375,13 +2373,13 @@ StmtIf represents Go's `if .. else` construct.
 #### func  If
 
 ```go
-func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf)
+func If(ifThensAndMaybeAnElse ...ISyn) (me *StmtIf)
 ```
 If constructs a `StmtIf` with `ifThensAndMaybeAnElse` containing 0 or more
 alternating-pairs of `if` conditions and corresponding `then` branches, plus
 optionally a final `else` branch.
 
-Should any of the `if` conditions be `nil`, then `this` will return as `nil`.
+Should any of the `if` conditions be `nil`, then `me` will return as `nil`.
 
 #### type StmtLabel
 
@@ -2415,7 +2413,7 @@ StmtRet represents Go's `return` keyword.
 #### func  Ret
 
 ```go
-func Ret(retExpr ISyn) (this StmtRet)
+func Ret(retExpr ISyn) (me StmtRet)
 ```
 Ret constructs a `StmtRet`. To have it generate `return nil`, your `retExpr`
 should equal `B.Nil` (ie. an `ExprLit` with no `Val` set). If `nil` is passed
@@ -2439,38 +2437,38 @@ StmtSwitch represents Go's `switch .. case` construct.
 #### func  Switch
 
 ```go
-func Switch(maybeScrutinee ISyn, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch)
+func Switch(maybeScrutinee ISyn, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (me *StmtSwitch)
 ```
 Switch constructs a `StmtSwitch`.
 
 #### func (*StmtSwitch) Case
 
 ```go
-func (this *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch
+func (me *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch
 ```
-Case adds the given `case` branch to the `StmtSwitch.Cases` of `this`.
+Case adds the given `case` branch to the `StmtSwitch.Cases` of `me`.
 
 #### func (*StmtSwitch) CasesFrom
 
 ```go
-func (this *StmtSwitch) CasesFrom(areAllSynCases bool, synCasesOrCondsAndThens ...ISyn) *StmtSwitch
+func (me *StmtSwitch) CasesFrom(areAllSynCases bool, synCasesOrCondsAndThens ...ISyn) *StmtSwitch
 ```
-CasesFrom adds to `this.Cases` and returns `this`. If `areAllSynCases`, each
-`ISyn` is expected to be a `*SynCase` and added. Otherwise,
-`synCasesOrCondsAndThens` are alternating pairs of `Cond`s-and-thens that are
-used to construct the individual `SynCase`s to add.
+CasesFrom adds to `me.Cases` and returns `me`. If `areAllSynCases`, each `ISyn`
+is expected to be a `*SynCase` and added. Otherwise, `synCasesOrCondsAndThens`
+are alternating pairs of `Cond`s-and-thens that are used to construct the
+individual `SynCase`s to add.
 
 #### func (*StmtSwitch) CasesOf
 
 ```go
-func (this *StmtSwitch) CasesOf(cases ...SynCase) *StmtSwitch
+func (me *StmtSwitch) CasesOf(cases ...SynCase) *StmtSwitch
 ```
-CasesOf adds the given `case` branches to the `StmtSwitch.Cases` of `this`.
+CasesOf adds the given `case` branches to the `StmtSwitch.Cases` of `me`.
 
 #### func (*StmtSwitch) DefaultCase
 
 ```go
-func (this *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch
+func (me *StmtSwitch) DefaultCase(stmts ...ISyn) *StmtSwitch
 ```
 DefaultCase sets the `default` branch of this `StmtSwitch`.
 
@@ -2503,7 +2501,7 @@ StmtVar represents Go's `var` keyword.
 #### func  Var
 
 ```go
-func Var(name string, maybeType *TypeRef, maybeExpr ISyn) (this *StmtVar)
+func Var(name string, maybeType *TypeRef, maybeExpr ISyn) (me *StmtVar)
 ```
 Var constructs a `StmtVar`.
 
@@ -2521,16 +2519,16 @@ separated by `;` (pre-`gofmt`).
 #### func  Block
 
 ```go
-func Block(body ...ISyn) (this SynBlock)
+func Block(body ...ISyn) (me SynBlock)
 ```
 Block constructs a `SynBlock`.
 
 #### func (*SynBlock) Add
 
 ```go
-func (this *SynBlock) Add(stmts ...ISyn)
+func (me *SynBlock) Add(stmts ...ISyn)
 ```
-Add is a convenience short-hand for `this.Body = append(this.Body,..)`.
+Add is a convenience short-hand for `me.Body = append(me.Body,..)`.
 
 #### type SynCase
 
@@ -2564,7 +2562,7 @@ SynCases is a slice of `SynCase`s.
 #### func (*SynCases) Add
 
 ```go
-func (this *SynCases) Add(cond ISyn, thens ...ISyn)
+func (me *SynCases) Add(cond ISyn, thens ...ISyn)
 ```
 Add is a convenience short-hand for `append`.
 
@@ -2596,9 +2594,9 @@ anonymous func expression.
 #### func  Fn
 
 ```go
-func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *SynFunc)
+func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (me *SynFunc)
 ```
-Fn constructs a `SynFunc`. If `maybeRecv` has a `Type` set, `this` represents a
+Fn constructs a `SynFunc`. If `maybeRecv` has a `Type` set, `me` represents a
 method of that type.
 
 #### func  Func
@@ -2611,68 +2609,68 @@ Func constructs a `SynFunc` with the given `name` and `args`.
 #### func (*SynFunc) Arg
 
 ```go
-func (this *SynFunc) Arg(name string, typeRef *TypeRef) *SynFunc
+func (me *SynFunc) Arg(name string, typeRef *TypeRef) *SynFunc
 ```
-Arg adds to `this.Type.Func.Args` and returns `this`.
+Arg adds to `me.Type.Func.Args` and returns `me`.
 
 #### func (*SynFunc) ArgIf
 
 ```go
-func (this *SynFunc) ArgIf(onlyIf bool, arg NamedTyped) *SynFunc
+func (me *SynFunc) ArgIf(onlyIf bool, arg NamedTyped) *SynFunc
 ```
 
 #### func (*SynFunc) Args
 
 ```go
-func (this *SynFunc) Args(args ...NamedTyped) *SynFunc
+func (me *SynFunc) Args(args ...NamedTyped) *SynFunc
 ```
-Args sets `this.Type.Func.Args` and returns `this`.
+Args sets `me.Type.Func.Args` and returns `me`.
 
 #### func (*SynFunc) Code
 
 ```go
-func (this *SynFunc) Code(stmts ...ISyn) *SynFunc
+func (me *SynFunc) Code(stmts ...ISyn) *SynFunc
 ```
-Code adds to `this.SynBlock.Body` and returns `this`.
+Code adds to `me.SynBlock.Body` and returns `me`.
 
 #### func (*SynFunc) Doc
 
 ```go
-func (this *SynFunc) Doc(docCommentLines ...string) *SynFunc
+func (me *SynFunc) Doc(docCommentLines ...string) *SynFunc
 ```
-Doc adds to `this.Docs` and returns `this`.
+Doc adds to `me.Docs` and returns `me`.
 
 #### func (*SynFunc) EmitsCommented
 
 ```go
-func (this *SynFunc) EmitsCommented(emitCommented bool) *SynFunc
+func (me *SynFunc) EmitsCommented(emitCommented bool) *SynFunc
 ```
 
 #### func (*SynFunc) Ret
 
 ```go
-func (this *SynFunc) Ret(name string, typeRef *TypeRef) *SynFunc
+func (me *SynFunc) Ret(name string, typeRef *TypeRef) *SynFunc
 ```
-Ret adds to `this.Type.Func.Rets` and returns `this`.
+Ret adds to `me.Type.Func.Rets` and returns `me`.
 
 #### func (*SynFunc) Rets
 
 ```go
-func (this *SynFunc) Rets(rets ...NamedTyped) *SynFunc
+func (me *SynFunc) Rets(rets ...NamedTyped) *SynFunc
 ```
-Rets sets `this.Type.Func.Rets` and returns `this`.
+Rets sets `me.Type.Func.Rets` and returns `me`.
 
 #### func (*SynFunc) Sig
 
 ```go
-func (this *SynFunc) Sig(sig *TypeFunc) *SynFunc
+func (me *SynFunc) Sig(sig *TypeFunc) *SynFunc
 ```
-Sig sets `this.Type.Func` to `sig` and returns `this`.
+Sig sets `me.Type.Func` to `sig` and returns `me`.
 
 #### func (*SynFunc) Spreads
 
 ```go
-func (this *SynFunc) Spreads() *SynFunc
+func (me *SynFunc) Spreads() *SynFunc
 ```
 
 #### type SynRaw
@@ -2713,9 +2711,9 @@ TdStructFld constructs a `SynStructField` for `TypeStruct`s.
 #### func (*SynStructField) JsonName
 
 ```go
-func (this *SynStructField) JsonName() (name string)
+func (me *SynStructField) JsonName() (name string)
 ```
-JsonName returns `this.Tags["json"][:semicolon]` or `this.Name`.
+JsonName returns `me.Tags["json"][:semicolon]` or `me.Name`.
 
 #### type SynStructFields
 
@@ -2727,25 +2725,25 @@ type SynStructFields []SynStructField
 #### func (SynStructFields) Exists
 
 ```go
-func (this SynStructFields) Exists(ok func(*SynStructField) bool) bool
+func (me SynStructFields) Exists(ok func(*SynStructField) bool) bool
 ```
 
 #### func (SynStructFields) IndicesWhere
 
 ```go
-func (this SynStructFields) IndicesWhere(ok func(*SynStructField) bool) (indices []int)
+func (me SynStructFields) IndicesWhere(ok func(*SynStructField) bool) (indices []int)
 ```
 
 #### func (SynStructFields) NTs
 
 ```go
-func (this SynStructFields) NTs() (nts NamedsTypeds)
+func (me SynStructFields) NTs() (nts NamedsTypeds)
 ```
 
 #### func (SynStructFields) NamedOnly
 
 ```go
-func (this SynStructFields) NamedOnly() (named SynStructFields)
+func (me SynStructFields) NamedOnly() (named SynStructFields)
 ```
 
 #### type Syns
@@ -2815,14 +2813,14 @@ for use in `If` (or `GEN_IF`) calls.
 #### func (*Syns) Add
 
 ```go
-func (this *Syns) Add(syns ...ISyn)
+func (me *Syns) Add(syns ...ISyn)
 ```
 Add is a convenience short-hand for `append`.
 
 #### func (Syns) Transform
 
 ```go
-func (this Syns) Transform(transform func(ISyn) ISyn) Syns
+func (me Syns) Transform(transform func(ISyn) ISyn) Syns
 ```
 
 #### type TypeDecl
@@ -2843,21 +2841,21 @@ TypeDecl represents a type-definition declaration or type-alias declaration.
 #### func  TDecl
 
 ```go
-func TDecl(name string, typeRef *TypeRef, isAlias bool) (this *TypeDecl)
+func TDecl(name string, typeRef *TypeRef, isAlias bool) (me *TypeDecl)
 ```
 TDecl constructs a named `TypeDecl` of the specified underlying type.
 
 #### func (*TypeDecl) Doc
 
 ```go
-func (this *TypeDecl) Doc(docCommentLines ...string) *TypeDecl
+func (me *TypeDecl) Doc(docCommentLines ...string) *TypeDecl
 ```
-Doc adds to `this.Docs` and returns `this`.
+Doc adds to `me.Docs` and returns `me`.
 
 #### func (*TypeDecl) DocIf
 
 ```go
-func (this *TypeDecl) DocIf(ok bool, docCommentLines ...string) *TypeDecl
+func (me *TypeDecl) DocIf(ok bool, docCommentLines ...string) *TypeDecl
 ```
 
 #### type TypeFunc
@@ -2892,29 +2890,29 @@ TdFunc constructs an initially-empty (arg-less and return-less) `TypeFunc`,
 #### func (*TypeFunc) Arg
 
 ```go
-func (this *TypeFunc) Arg(name string, typeRef *TypeRef) *TypeFunc
+func (me *TypeFunc) Arg(name string, typeRef *TypeRef) *TypeFunc
 ```
-Arg adds to `this.Args` and returns `this`.
+Arg adds to `me.Args` and returns `me`.
 
 #### func (*TypeFunc) Ret
 
 ```go
-func (this *TypeFunc) Ret(name string, typeRef *TypeRef) *TypeFunc
+func (me *TypeFunc) Ret(name string, typeRef *TypeRef) *TypeFunc
 ```
-Ret adds to `this.Rets` and returns `this`.
+Ret adds to `me.Rets` and returns `me`.
 
 #### func (*TypeFunc) Spreads
 
 ```go
-func (this *TypeFunc) Spreads() *TypeFunc
+func (me *TypeFunc) Spreads() *TypeFunc
 ```
 
 #### func (*TypeFunc) T
 
 ```go
-func (this *TypeFunc) T() *TypeRef
+func (me *TypeFunc) T() *TypeRef
 ```
-T constructs a `TypeRef` whose `Func` points to `this`.
+T constructs a `TypeRef` whose `Func` points to `me`.
 
 #### type TypeInterface
 
@@ -2990,7 +2988,7 @@ TypeRef.emitTo implementation!
 #### func  TFrom
 
 ```go
-func TFrom(pkgName PkgName, typeName string) (this *TypeRef)
+func TFrom(pkgName PkgName, typeName string) (me *TypeRef)
 ```
 TFrom constructs a `TypeRef` referring to the specified named type exported from
 the given package.
@@ -3014,7 +3012,7 @@ TInterface constructs a `TypeRef` referring to the specified unnamed
 #### func  TLocal
 
 ```go
-func TLocal(typeName string) (this *TypeRef)
+func TLocal(typeName string) (me *TypeRef)
 ```
 TFrom constructs a `TypeRef` referring to the specified named type in the local
 package.
@@ -3022,7 +3020,7 @@ package.
 #### func  TMap
 
 ```go
-func TMap(ofKey *TypeRef, toVal *TypeRef) (this *TypeRef)
+func TMap(ofKey *TypeRef, toVal *TypeRef) (me *TypeRef)
 ```
 TMap constructs a `TypeRef` referring to a map with the specified key and value
 types.
@@ -3051,7 +3049,7 @@ TStruct constructs a `TypeRef` referring to the specified unnamed `struct{..}`.
 #### func (*TypeRef) BitSizeIfBuiltInNumberType
 
 ```go
-func (this *TypeRef) BitSizeIfBuiltInNumberType() int
+func (me *TypeRef) BitSizeIfBuiltInNumberType() int
 ```
 BitSizeIfBuiltInNumberType returns 8 for `int8`, `byte`, `uint8`, or 16, 32, 64,
 128 as applicable, recognizing only direct `Named` refs to Go' native `builtin`
@@ -3060,18 +3058,18 @@ number types (no type-alias dereferencing yet).
 #### func (*TypeRef) From
 
 ```go
-func (this *TypeRef) From(expr IAny) *ExprCall
+func (me *TypeRef) From(expr IAny) *ExprCall
 ```
-From constructs an `ExprCall` that represents a conversion of `expr` into `this`
+From constructs an `ExprCall` that represents a conversion of `expr` into `me`
 type. (Returns `ExprCall` because Go's conversion syntax, eg. `int(myexpr)`, is
 covered by it due to the same emitting logic.)
 
 #### func (*TypeRef) IsBuiltinPrimType
 
 ```go
-func (this *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool
+func (me *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool
 ```
-IsBuiltinPrimType returns whether `this` refers to one of Go's built-in
+IsBuiltinPrimType returns whether `me` refers to one of Go's built-in
 primitive-types such as `bool`, `string` etc. (If
 `orIsUnderlyingBuiltinPrimType`, it walks the `ArrOrSlice` / `Pointer` / `Map` /
 `Chan` as applicable.)
@@ -3079,46 +3077,46 @@ primitive-types such as `bool`, `string` etc. (If
 #### func (*TypeRef) IsNamedAndPublic
 
 ```go
-func (this *TypeRef) IsNamedAndPublic() bool
+func (me *TypeRef) IsNamedAndPublic() bool
 ```
 
 #### func (*TypeRef) IsZeroish
 
 ```go
-func (this *TypeRef) IsZeroish(exprOfThisType ISyn, canLen bool, canNum bool) ISyn
+func (me *TypeRef) IsZeroish(exprOfThisType ISyn, canLen bool, canNum bool) ISyn
 ```
 
 #### func (*TypeRef) IsntZeroish
 
 ```go
-func (this *TypeRef) IsntZeroish(exprOfThisType ISyn, canLen bool, canNum bool) (expr ISyn)
+func (me *TypeRef) IsntZeroish(exprOfThisType ISyn, canLen bool, canNum bool) (expr ISyn)
 ```
 
 #### func (*TypeRef) Method
 
 ```go
-func (this *TypeRef) Method(name string, args ...NamedTyped) *SynFunc
+func (me *TypeRef) Method(name string, args ...NamedTyped) *SynFunc
 ```
-Method constructs a `SynFunc` with the given `name` and `args` plus a
-`this`-typed method `Recv` also named `"this"`.
+Method constructs a `SynFunc` with the given `name` and `args` plus a `me`-typed
+method `Recv` named after `Self`.
 
 #### func (*TypeRef) N
 
 ```go
-func (this *TypeRef) N(name string) NamedTyped
+func (me *TypeRef) N(name string) NamedTyped
 ```
-N constructs a `NamedTyped` based on `name` and `this` type.
+N constructs a `NamedTyped` based on `name` and `me` type.
 
 #### func (*TypeRef) String
 
 ```go
-func (this *TypeRef) String() string
+func (me *TypeRef) String() string
 ```
 
 #### func (*TypeRef) UltimateElemType
 
 ```go
-func (this *TypeRef) UltimateElemType() (tEl *TypeRef)
+func (me *TypeRef) UltimateElemType() (tEl *TypeRef)
 ```
 
 #### type TypeStruct
@@ -3142,9 +3140,9 @@ TdStruct constructs a `TypeStruct`.
 #### func (*TypeStruct) Field
 
 ```go
-func (this *TypeStruct) Field(name string, tryJsonNamesToo bool) (fld *SynStructField)
+func (me *TypeStruct) Field(name string, tryJsonNamesToo bool) (fld *SynStructField)
 ```
-Field returns the `SynStructField` in `this.Fields` matching `name`.
+Field returns the `SynStructField` in `me.Fields` matching `name`.
 
 #### type UNLESS
 

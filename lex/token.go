@@ -30,8 +30,8 @@ type Token struct {
 	flag int
 }
 
-func (this *Token) Kind() (kind TokenKind) {
-	if kind = this.flag; kind < TOKEN_STR {
+func (me *Token) Kind() (kind TokenKind) {
+	if kind = me.flag; kind < TOKEN_STR {
 		if kind < _TOKEN_STR_RAW {
 			kind = TOKEN_UINT
 		} else if kind == _TOKEN_COMMENT_LONG {
@@ -43,24 +43,24 @@ func (this *Token) Kind() (kind TokenKind) {
 	return
 }
 
-func (this *Token) IsCommentLong() bool {
-	return this.flag == _TOKEN_COMMENT_LONG
+func (me *Token) IsCommentLong() bool {
+	return me.flag == _TOKEN_COMMENT_LONG
 }
 
-func (this *Token) IsStrRaw() bool {
-	return this.flag == _TOKEN_STR_RAW
+func (me *Token) IsStrRaw() bool {
+	return me.flag == _TOKEN_STR_RAW
 }
 
-func (this *Token) Rune() (r rune) {
-	return rune(this.Uint)
+func (me *Token) Rune() (r rune) {
+	return rune(me.Uint)
 }
 
-func (this *Token) UintBase() int {
-	return this.flag
+func (me *Token) UintBase() int {
+	return me.flag
 }
 
-func (this *Token) String() string {
-	return this.Meta.Orig
+func (me *Token) String() string {
+	return me.Meta.Orig
 }
 
 type TokenMeta struct {
@@ -69,6 +69,6 @@ type TokenMeta struct {
 	Orig       string
 }
 
-func (this *TokenMeta) init(pos *scanner.Position, indent int, orig string) {
-	this.Position, this.LineIndent, this.Orig = *pos, indent, orig
+func (me *TokenMeta) init(pos *scanner.Position, indent int, orig string) {
+	me.Position, me.LineIndent, me.Orig = *pos, indent, orig
 }

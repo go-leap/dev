@@ -129,9 +129,9 @@ func Set(operands ...ISyn) OpSet { return OpSet{Op: Op{Operands: operands}} }
 func Sub(operands ...ISyn) OpSub { return OpSub{Op: Op{Operands: operands}} }
 
 // TDecl constructs a named `TypeDecl` of the specified underlying type.
-func TDecl(name string, typeRef *TypeRef, isAlias bool) (this *TypeDecl) {
-	this = &TypeDecl{IsAlias: isAlias}
-	this.Name, this.Type = name, typeRef
+func TDecl(name string, typeRef *TypeRef, isAlias bool) (me *TypeDecl) {
+	me = &TypeDecl{IsAlias: isAlias}
+	me.Name, me.Type = name, typeRef
 	return
 }
 
@@ -199,29 +199,29 @@ func TSlice(typeRef *TypeRef) *TypeRef {
 }
 
 // TFrom constructs a `TypeRef` referring to the specified named type exported from the given package.
-func TFrom(pkgName PkgName, typeName string) (this *TypeRef) {
-	this = &TypeRef{}
-	this.Named.PkgName, this.Named.TypeName = string(pkgName), typeName
+func TFrom(pkgName PkgName, typeName string) (me *TypeRef) {
+	me = &TypeRef{}
+	me.Named.PkgName, me.Named.TypeName = string(pkgName), typeName
 	return
 }
 
 // TFrom constructs a `TypeRef` referring to the specified named type in the local package.
-func TLocal(typeName string) (this *TypeRef) {
-	this = &TypeRef{}
-	this.Named.TypeName = typeName
+func TLocal(typeName string) (me *TypeRef) {
+	me = &TypeRef{}
+	me.Named.TypeName = typeName
 	return
 }
 
 // TMap constructs a `TypeRef` referring to a map with the specified key and value types.
-func TMap(ofKey *TypeRef, toVal *TypeRef) (this *TypeRef) {
-	this = &TypeRef{}
-	this.Map.OfKey, this.Map.ToVal = ofKey, toVal
+func TMap(ofKey *TypeRef, toVal *TypeRef) (me *TypeRef) {
+	me = &TypeRef{}
+	me.Map.OfKey, me.Map.ToVal = ofKey, toVal
 	return
 }
 
 // Block constructs a `SynBlock`.
-func Block(body ...ISyn) (this SynBlock) {
-	this.Body = body
+func Block(body ...ISyn) (me SynBlock) {
+	me.Body = body
 	return
 }
 
@@ -252,15 +252,15 @@ func C(callee IAny, args ...IAny) *ExprCall {
 }
 
 // Const constructs a `StmtConst`.
-func Const(name string, maybeType *TypeRef, expr ISyn) (this *StmtConst) {
-	this = &StmtConst{Expr: expr}
-	this.Name, this.Type = name, maybeType
+func Const(name string, maybeType *TypeRef, expr ISyn) (me *StmtConst) {
+	me = &StmtConst{Expr: expr}
+	me.Name, me.Type = name, maybeType
 	return
 }
 
 // Defer constructs a `StmtDefer`.
-func Defer(call *ExprCall) (this StmtDefer) {
-	this.Expr = call
+func Defer(call *ExprCall) (me StmtDefer) {
+	me.Expr = call
 	return
 }
 
@@ -273,22 +273,22 @@ func File(pkgName string, allocBodyCap int, topLevelDecls ...ISyn) *SourceFile {
 }
 
 // For constructs a `StmtFor` that emits a classical `for` (not `range`) loop.
-func For(maybeInit ISyn, maybeCond ISyn, maybeStep ISyn, body ...ISyn) (this *StmtFor) {
-	this = &StmtFor{}
-	this.Body, this.Loop.Init, this.Loop.Cond, this.Loop.Step = body, maybeInit, maybeCond, maybeStep
+func For(maybeInit ISyn, maybeCond ISyn, maybeStep ISyn, body ...ISyn) (me *StmtFor) {
+	me = &StmtFor{}
+	me.Body, me.Loop.Init, me.Loop.Cond, me.Loop.Step = body, maybeInit, maybeCond, maybeStep
 	return
 }
 
 // ForEach constructs a `StmtFor` that emits a `for .. range` loop.
-func ForEach(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (this *StmtFor) {
-	this = &StmtFor{}
-	this.Body, this.Range.Key, this.Range.Val, this.Range.Over = body, maybeIdx, maybeVal, iteree
+func ForEach(maybeIdx Named, maybeVal Named, iteree ISyn, body ...ISyn) (me *StmtFor) {
+	me = &StmtFor{}
+	me.Body, me.Range.Key, me.Range.Val, me.Range.Over = body, maybeIdx, maybeVal, iteree
 	return
 }
 
 // Go constructs a `StmtGo`.
-func Go(call *ExprCall) (this StmtGo) {
-	this.Expr = call
+func Go(call *ExprCall) (me StmtGo) {
+	me.Expr = call
 	return
 }
 
@@ -296,17 +296,17 @@ func Go(call *ExprCall) (this StmtGo) {
 // 0 or more alternating-pairs of `if` conditions and corresponding
 // `then` branches, plus optionally a final `else` branch.
 //
-// Should any of the `if` conditions be `nil`, then `this` will return as `nil`.
-func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
+// Should any of the `if` conditions be `nil`, then `me` will return as `nil`.
+func If(ifThensAndMaybeAnElse ...ISyn) (me *StmtIf) {
 	if len(ifThensAndMaybeAnElse) > 0 || ifThensAndMaybeAnElse[0] != nil {
-		this = &StmtIf{IfThens: make(SynCases, 0, 1+len(ifThensAndMaybeAnElse)/2)}
+		me = &StmtIf{IfThens: make(SynCases, 0, 1+len(ifThensAndMaybeAnElse)/2)}
 		if l := len(ifThensAndMaybeAnElse); l%2 != 0 {
-			this.Else.Body = SynsFrom(ifThensAndMaybeAnElse[l-1])
+			me.Else.Body = SynsFrom(ifThensAndMaybeAnElse[l-1])
 			ifThensAndMaybeAnElse = ifThensAndMaybeAnElse[:l-1]
 		}
 		for i := 1; i < len(ifThensAndMaybeAnElse); i += 2 {
 			cond, body := ifThensAndMaybeAnElse[i-1], SynsFrom(ifThensAndMaybeAnElse[i])
-			this.IfThens = append(this.IfThens, SynCase{Cond: cond, SynBlock: SynBlock{Body: body}})
+			me.IfThens = append(me.IfThens, SynCase{Cond: cond, SynBlock: SynBlock{Body: body}})
 		}
 	}
 	return
@@ -316,29 +316,29 @@ func If(ifThensAndMaybeAnElse ...ISyn) (this *StmtIf) {
 // To have it generate `return nil`, your `retExpr` should equal
 // `B.Nil` (ie. an `ExprLit` with no `Val` set). If `nil` is passed
 // for `retExpr`, this generates an empty `return;` statement.
-func Ret(retExpr ISyn) (this StmtRet) {
-	this.Expr = retExpr
+func Ret(retExpr ISyn) (me StmtRet) {
+	me.Expr = retExpr
 	return
 }
 
 // Switch constructs a `StmtSwitch`.
-func Switch(maybeScrutinee ISyn, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (this *StmtSwitch) {
-	this = &StmtSwitch{Scrutinee: maybeScrutinee, Cases: make(SynCases, 0, 1+len(caseCondsAndBlocksPlusMaybeDefaultBlock)/2)}
+func Switch(maybeScrutinee ISyn, caseCondsAndBlocksPlusMaybeDefaultBlock ...ISyn) (me *StmtSwitch) {
+	me = &StmtSwitch{Scrutinee: maybeScrutinee, Cases: make(SynCases, 0, 1+len(caseCondsAndBlocksPlusMaybeDefaultBlock)/2)}
 	if l := len(caseCondsAndBlocksPlusMaybeDefaultBlock); l%2 != 0 {
-		this.Default.Body = SynsFrom(caseCondsAndBlocksPlusMaybeDefaultBlock[l-1])
+		me.Default.Body = SynsFrom(caseCondsAndBlocksPlusMaybeDefaultBlock[l-1])
 		caseCondsAndBlocksPlusMaybeDefaultBlock = caseCondsAndBlocksPlusMaybeDefaultBlock[:l-1]
 	}
 	for i := 1; i < len(caseCondsAndBlocksPlusMaybeDefaultBlock); i += 2 {
 		body := SynsFrom(caseCondsAndBlocksPlusMaybeDefaultBlock[i])
-		this.Cases = append(this.Cases, SynCase{Cond: caseCondsAndBlocksPlusMaybeDefaultBlock[i-1], SynBlock: SynBlock{Body: body}})
+		me.Cases = append(me.Cases, SynCase{Cond: caseCondsAndBlocksPlusMaybeDefaultBlock[i-1], SynBlock: SynBlock{Body: body}})
 	}
 	return
 }
 
 // Var constructs a `StmtVar`.
-func Var(name string, maybeType *TypeRef, maybeExpr ISyn) (this *StmtVar) {
-	this = &StmtVar{Expr: maybeExpr}
-	this.Name, this.Type = name, maybeType
+func Var(name string, maybeType *TypeRef, maybeExpr ISyn) (me *StmtVar) {
+	me = &StmtVar{Expr: maybeExpr}
+	me.Name, me.Type = name, maybeType
 	return
 }
 
@@ -347,10 +347,10 @@ func Case(cond ISyn, thens ...ISyn) *SynCase {
 	return &SynCase{Cond: cond, SynBlock: SynBlock{Body: thens}}
 }
 
-// Fn constructs a `SynFunc`. If `maybeRecv` has a `Type` set, `this` represents a method of that type.
-func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (this *SynFunc) {
-	this = &SynFunc{Recv: maybeRecv}
-	this.Body, this.Named.Name, this.Type = body, name, TFunc(sig)
+// Fn constructs a `SynFunc`. If `maybeRecv` has a `Type` set, `me` represents a method of that type.
+func Fn(maybeRecv NamedTyped, name string, sig *TypeFunc, body ...ISyn) (me *SynFunc) {
+	me = &SynFunc{Recv: maybeRecv}
+	me.Body, me.Named.Name, me.Type = body, name, TFunc(sig)
 	return
 }
 

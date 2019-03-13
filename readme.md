@@ -88,17 +88,17 @@ SrcMsgsFromLns returns all `SrcMsg` results from calling `SrcMsgFromLn` on all
 #### func (SrcMsgs) Len
 
 ```go
-func (this SrcMsgs) Len() int
+func (me SrcMsgs) Len() int
 ```
 
 #### func (SrcMsgs) Less
 
 ```go
-func (this SrcMsgs) Less(i, j int) bool
+func (me SrcMsgs) Less(i, j int) bool
 ```
 
 #### func (SrcMsgs) Swap
 
 ```go
-func (this SrcMsgs) Swap(i, j int)
+func (me SrcMsgs) Swap(i, j int)
 ```

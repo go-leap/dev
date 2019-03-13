@@ -11,7 +11,7 @@ type ISyn interface {
 type Syns []ISyn
 
 // Add is a convenience short-hand for `append`.
-func (this *Syns) Add(syns ...ISyn) { *this = append(*this, syns...) }
+func (me *Syns) Add(syns ...ISyn) { *me = append(*me, syns...) }
 
 // Named emits its `Name` during code-generation as-is, hence
 // used for referring to named vars, consts, types, funcs etc.
@@ -30,25 +30,25 @@ type NamedTyped struct {
 type NamedsTypeds []NamedTyped
 
 // Add is a convenience short-hand for `append`.
-func (this *NamedsTypeds) Add(name string, typeRef *TypeRef) {
-	*this = append(*this, NamedTyped{Type: typeRef, Named: Named{Name: name}})
+func (me *NamedsTypeds) Add(name string, typeRef *TypeRef) {
+	*me = append(*me, NamedTyped{Type: typeRef, Named: Named{Name: name}})
 }
 
-func (this NamedsTypeds) IfUntypedUse(typeRef *TypeRef) NamedsTypeds {
-	for i := range this {
-		if this[i].Type == nil {
-			clone := make(NamedsTypeds, len(this))
-			copy(clone, this)
+func (me NamedsTypeds) IfUntypedUse(typeRef *TypeRef) NamedsTypeds {
+	for i := range me {
+		if me[i].Type == nil {
+			clone := make(NamedsTypeds, len(me))
+			copy(clone, me)
 			clone[i].Type = typeRef
 			for j := i + 1; j < len(clone); j++ {
-				if this[j].Type == nil {
-					this[j].Type = typeRef
+				if me[j].Type == nil {
+					me[j].Type = typeRef
 				}
 			}
 			return clone
 		}
 	}
-	return this
+	return me
 }
 
 // TypeFunc represents a func signature.
@@ -134,8 +134,8 @@ type SynBlock struct {
 	Body Syns
 }
 
-// Add is a convenience short-hand for `this.Body = append(this.Body,..)`.
-func (this *SynBlock) Add(stmts ...ISyn) { this.Body = append(this.Body, stmts...) }
+// Add is a convenience short-hand for `me.Body = append(me.Body,..)`.
+func (me *SynBlock) Add(stmts ...ISyn) { me.Body = append(me.Body, stmts...) }
 
 // SynFunc represents either a top-level (named) func /
 // method declaration, or an anonymous func expression.
@@ -162,8 +162,8 @@ type SynFunc struct {
 type SingleLineDocCommentParagraphs []string
 
 // Add is a convenience short-hand for `append`.
-func (this *SingleLineDocCommentParagraphs) Add(docCommentLines ...string) {
-	*this = append(*this, docCommentLines...)
+func (me *SingleLineDocCommentParagraphs) Add(docCommentLines ...string) {
+	*me = append(*me, docCommentLines...)
 }
 
 // StmtUnary is embedded by `StmtRet`, `StmtDefer`, `StmtGo`.
@@ -233,8 +233,8 @@ type StmtIf struct {
 type SynCases []SynCase
 
 // Add is a convenience short-hand for `append`.
-func (this *SynCases) Add(cond ISyn, thens ...ISyn) {
-	*this = append(*this, SynCase{Cond: cond, SynBlock: SynBlock{Body: thens}})
+func (me *SynCases) Add(cond ISyn, thens ...ISyn) {
+	*me = append(*me, SynCase{Cond: cond, SynBlock: SynBlock{Body: thens}})
 }
 
 // SynCase represents a condition expression together with a block
