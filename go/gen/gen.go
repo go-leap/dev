@@ -117,6 +117,10 @@ var (
 		Err NamedTyped
 		// `"e"`, suits temporary/intermediate error vars
 		E Named
+		// `"f"`, suitable for func-typed vars / args (callbacks etc)
+		F Named
+		// `"on"`, suitable for func-typed vars / args (callbacks etc)
+		On Named
 		// `"ok"`, suitable for type-asserts / lookups / predicates
 		Ok Named
 		// `"r"`, suitable for a func's primary named `return` value
@@ -188,6 +192,9 @@ var (
 
 		// func() string
 		NoneToString TypeFunc
+
+		// func(string, interface{})
+		StringAnyToNone TypeFunc
 	}
 )
 
@@ -198,6 +205,7 @@ func init() {
 	T.Error, T.Bool, T.Byte, T.Complex128, T.Complex64, T.Float32, T.Float64, T.Int, T.Int16, T.Int32, T.Int64, T.Int8, T.Rune, T.String, T.Uint, T.Uint16, T.Uint32, T.Uint64, T.Uint8 = TFrom("", "error"), TFrom("", "bool"), TFrom("", "byte"), TFrom("", "complex128"), TFrom("", "complex64"), TFrom("", "float32"), TFrom("", "float64"), TFrom("", "int"), TFrom("", "int16"), TFrom("", "int32"), TFrom("", "int64"), TFrom("", "int8"), TFrom("", "rune"), TFrom("", "string"), TFrom("", "uint"), TFrom("", "uint16"), TFrom("", "uint32"), TFrom("", "uint64"), TFrom("", "uint8")
 	T.Empty.Interface, T.Empty.Struct = TInterface(TdInterface(nil)), TStruct(TdStruct())
 	T.SliceOf.Bytes, T.SliceOf.Ints, T.SliceOf.Strings = TSlice(T.Byte), TSlice(T.Int), TSlice(T.String)
-	Vars.Err.Name, Vars.Err.Type, Vars.R.Name, Vars.I.Name, Vars.J.Name, Vars.K.Name, Vars.V.Name, Vars.Ok.Name, Vars.S.Name, Vars.T.Name, Vars.E.Name, Vars.KV.Name, Vars.KVs.Name, Vars.Sl.Name, Vars.Id.Name, Vars.Ids.Name = "err", T.Error, "r", "i", "j", "k", "v", "ok", "s", "t", "e", "kv", "kvs", "sl", "id", "ids"
+	Vars.Err.Name, Vars.Err.Type, Vars.F.Name, Vars.On.Name, Vars.R.Name, Vars.I.Name, Vars.J.Name, Vars.K.Name, Vars.V.Name, Vars.Ok.Name, Vars.S.Name, Vars.T.Name, Vars.E.Name, Vars.KV.Name, Vars.KVs.Name, Vars.Sl.Name, Vars.Id.Name, Vars.Ids.Name = "err", T.Error, "f", "on", "r", "i", "j", "k", "v", "ok", "s", "t", "e", "kv", "kvs", "sl", "id", "ids"
 	Sigs.NoneToBool.Rets, Sigs.NoneToString.Rets = NamedsTypeds{Vars.R.OfType(T.Bool)}, NamedsTypeds{Vars.R.OfType(T.String)}
+	Sigs.StringAnyToNone.Arg("", T.String).Arg("", T.Empty.Interface)
 }

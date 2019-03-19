@@ -633,6 +633,7 @@ func (me *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNames
 		src, goFmtErr = format.Source(orig)
 		if goFmtTimeTaken = time.Since(timegofmtstart); goFmtErr != nil {
 			src = orig
+			println(string(orig))
 		}
 	}
 	return

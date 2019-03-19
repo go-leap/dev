@@ -81,6 +81,10 @@ var (
 		Err NamedTyped
 		// `"e"`, suits temporary/intermediate error vars
 		E Named
+		// `"f"`, suitable for func-typed vars / args (callbacks etc)
+		F Named
+		// `"on"`, suitable for func-typed vars / args (callbacks etc)
+		On Named
 		// `"ok"`, suitable for type-asserts / lookups / predicates
 		Ok Named
 		// `"r"`, suitable for a func's primary named `return` value
@@ -152,6 +156,9 @@ var (
 
 		// func() string
 		NoneToString TypeFunc
+
+		// func(string, interface{})
+		StringAnyToNone TypeFunc
 	}
 )
 ```
@@ -2708,6 +2715,18 @@ func TdStructFld(name string, typeRef *TypeRef, tags map[string]string) (fld Syn
 ```
 TdStructFld constructs a `SynStructField` for `TypeStruct`s.
 
+#### func (*SynStructField) EffectiveName
+
+```go
+func (me *SynStructField) EffectiveName() string
+```
+
+#### func (*SynStructField) EffectiveNameBeginsUpper
+
+```go
+func (me *SynStructField) EffectiveNameBeginsUpper() bool
+```
+
 #### func (*SynStructField) JsonName
 
 ```go
@@ -3054,6 +3073,12 @@ func (me *TypeRef) BitSizeIfBuiltInNumberType() int
 BitSizeIfBuiltInNumberType returns 8 for `int8`, `byte`, `uint8`, or 16, 32, 64,
 128 as applicable, recognizing only direct `Named` refs to Go' native `builtin`
 number types (no type-alias dereferencing yet).
+
+#### func (*TypeRef) EffectiveFieldNameWhenEmbedded
+
+```go
+func (me *TypeRef) EffectiveFieldNameWhenEmbedded() string
+```
 
 #### func (*TypeRef) From
 

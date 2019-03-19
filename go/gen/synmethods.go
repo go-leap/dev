@@ -181,6 +181,16 @@ func (me *TypeRef) UltimateElemType() (tEl *TypeRef) {
 	return
 }
 
+func (me *TypeRef) EffectiveFieldNameWhenEmbedded() string {
+	switch {
+	case me.Named.TypeName != "":
+		return me.Named.TypeName
+	case me.Pointer.Of != nil:
+		return me.Pointer.Of.EffectiveFieldNameWhenEmbedded()
+	}
+	return "?"
+}
+
 func (me *TypeRef) String() string {
 	switch {
 	case me.Named.TypeName != "":
@@ -438,6 +448,17 @@ func (me *TypeStruct) Field(name string, tryJsonNamesToo bool) (fld *SynStructFi
 		}
 	}
 	return nil
+}
+
+func (me *SynStructField) EffectiveName() string {
+	if me.Name == "" {
+		return me.Type.EffectiveFieldNameWhenEmbedded()
+	}
+	return me.Name
+}
+
+func (me *SynStructField) EffectiveNameBeginsUpper() bool {
+	return ustr.BeginsUpper(me.EffectiveName())
 }
 
 // JsonName returns `me.Tags["json"][:semicolon]` or `me.Name`.
