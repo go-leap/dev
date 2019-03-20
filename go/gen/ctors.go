@@ -40,6 +40,14 @@ func Add(operands ...ISyn) OpAdd { return OpAdd{Op: Op{Operands: operands}} }
 // Addr constructs an `OpAddr`.
 func Addr(operands ...ISyn) OpAddr { return OpAddr{Op: Op{Operands: operands}} }
 
+// Addr constructs an `OpAddr` if `maybe` is `true`, else returns `of`.
+func AddrIf(maybe bool, of ISyn) ISyn {
+	if maybe {
+		return Addr(of)
+	}
+	return of
+}
+
 // And constructs an `OpAnd`.
 func And(operands ...ISyn) OpAnd {
 	if len(operands) == 2 {

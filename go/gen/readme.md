@@ -111,6 +111,8 @@ var (
 		KV Named
 		// `"kvs"`, suitable for collection of key-value pairs
 		KVs Named
+		// `"name"`
+		Name Named
 	}
 
 	// singletons for common type-refs
@@ -577,6 +579,13 @@ type ISyn interface {
 ISyn implementations represent some (atomic or compound) syntactic entity in the
 Abstract Syntax Tree (AST), eg.: literals, vars, consts, type-defs, type-refs,
 funcs, calls, keywords, operators, ...
+
+#### func  AddrIf
+
+```go
+func AddrIf(maybe bool, of ISyn) ISyn
+```
+Addr constructs an `OpAddr` if `maybe` is `true`, else returns `of`.
 
 #### func  GEN_BYCASE
 
