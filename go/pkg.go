@@ -398,6 +398,33 @@ func pkgAfterRefreshUpdateGuruScopeExcls() {
 	}
 }
 
+func LoadOnlyPkgNameFrom(impPath string) (pkgName string) {
+	if dirpath := GopathSrc(impPath); ufs.IsDir(dirpath) {
+		ufs.WalkFilesIn(dirpath, func(fp string) bool {
+			if ustr.Suff(fp, ".go") && !(ustr.Suff(fp, "_test.go") || ustr.Suff(fp, "_bench.go")) {
+				if src, err := ufs.ReadTextFile(fp); err == nil && src != "" {
+					var pos int
+					if !ustr.Pref(src, "package ") {
+						if pos = ustr.Pos(src, "\npackage ") + 1; pos == 0 {
+							pos--
+						}
+					}
+					if pos >= 0 {
+						pkgName = ustr.BeforeFirstSpace(src[pos+8:], src)
+					}
+				}
+			}
+			return pkgName == ""
+		})
+	} else {
+		pkgName = impPath
+		if pos := ustr.Last(pkgName, "/"); pos >= 0 {
+			pkgName = pkgName[pos+1:]
+		}
+	}
+	return
+}
+
 func PkgImpPathsToNamesInLn(ln string, curPkgDir string) string {
 	if PkgsByImP != nil {
 		if isla := ustr.IdxB(ln, '/'); isla >= 0 {

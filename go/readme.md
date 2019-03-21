@@ -183,6 +183,12 @@ func LintMvDan(cmdname string, pkgimppath string) udev.SrcMsgs
 func LintViaPkgImpPath(cmdname string, pkgimppath string, inclstderr bool) (msgs udev.SrcMsgs)
 ```
 
+#### func  LoadOnlyPkgNameFrom
+
+```go
+func LoadOnlyPkgNameFrom(impPath string) (pkgName string)
+```
+
 #### func  PkgImpPathsToNamesInLn
 
 ```go
