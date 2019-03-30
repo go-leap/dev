@@ -7,11 +7,15 @@ import (
 	"unicode"
 )
 
+var RestrictedWhitespaceRewriter func(rune) int
+var RestrictedWhitespace bool
+var StandaloneSeps []string
+
 // Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while lexing.
 //
 // If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
-func Lex(filePath string, src io.Reader, restrictedWhitespace bool, lineOff int, posOff int, standAloneSeps ...string) (tokens Tokens, errs []*Error) {
-	tokens = make(Tokens, 0, 64) // a shot in the dark for an initial cap that's better than default 0. could be sub-optimal for source files of several 100s of MB — revisit when that becomes realistic/common
+func Lex(filePath string, src io.Reader, lineOff int, posOff int, toksCap int) (tokens Tokens, errs []*Error) {
+	tokens = make(Tokens, 0, toksCap) // a shot in the dark for an initial cap that's better than default 0
 	var (
 		onlyspacesinlinesofar = true
 		lineindent            int
@@ -100,7 +104,7 @@ func Lex(filePath string, src io.Reader, restrictedWhitespace bool, lineOff int,
 			}
 		default:
 			var issep bool
-			for _, sep := range standAloneSeps {
+			for _, sep := range StandaloneSeps {
 				if issep = (sym == sep); issep {
 					on(sym, Token{flag: TOKEN_SEP, Str: sym})
 					break
@@ -116,8 +120,12 @@ func Lex(filePath string, src io.Reader, restrictedWhitespace bool, lineOff int,
 						otheraccum.Str += sym
 					} else if unaccum(); r == '\n' {
 						lineindent, onlyspacesinlinesofar = 0, true
-					} else if restrictedWhitespace && r != ' ' {
-						lexer.Error(nil, "illegal white-space "+strconv.QuoteRune(r)+": only '\\n' and ' ' permissible")
+					} else if RestrictedWhitespace && r != ' ' {
+						if RestrictedWhitespaceRewriter == nil {
+							lexer.Error(nil, "illegal white-space "+strconv.QuoteRune(r)+": only '\\n' and ' ' permissible")
+						} else if onlyspacesinlinesofar {
+							lineindent += RestrictedWhitespaceRewriter(r)
+						}
 					} else if onlyspacesinlinesofar {
 						lineindent++
 					}

@@ -5,10 +5,22 @@
 
 ## Usage
 
+```go
+var RestrictedWhitespace bool
+```
+
+```go
+var RestrictedWhitespaceRewriter func(rune) int
+```
+
+```go
+var StandaloneSeps []string
+```
+
 #### func  Lex
 
 ```go
-func Lex(filePath string, src io.Reader, restrictedWhitespace bool, lineOff int, posOff int, standAloneSeps ...string) (tokens Tokens, errs []*Error)
+func Lex(filePath string, src io.Reader, lineOff int, posOff int, toksCap int) (tokens Tokens, errs []*Error)
 ```
 Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while
 lexing.
@@ -19,6 +31,7 @@ If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
 
 ```go
 type Error struct {
+	Msg string
 	Pos scanner.Position
 }
 ```
