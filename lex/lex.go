@@ -1,8 +1,8 @@
 package udevlex
 
 import (
+	"io"
 	"strconv"
-	"strings"
 	"text/scanner"
 	"unicode"
 )
@@ -10,18 +10,19 @@ import (
 // Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while lexing.
 //
 // If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
-func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps ...string) (tokens Tokens, errs []*Error) {
-	tokens = make(Tokens, 0, len(src)/4) // a shot in the dark for an initial cap that's better than default 0. could be sub-optimal for source files of several 100s of MB — revisit when that becomes realistic/common
+func Lex(filePath string, src io.Reader, restrictedWhitespace bool, lineOff int, posOff int, standAloneSeps ...string) (tokens Tokens, errs []*Error) {
+	tokens = make(Tokens, 0, 64) // a shot in the dark for an initial cap that's better than default 0. could be sub-optimal for source files of several 100s of MB — revisit when that becomes realistic/common
 	var (
 		onlyspacesinlinesofar = true
 		lineindent            int
 		lexer                 scanner.Scanner
 		otheraccum            *Token
 	)
-	lexer.Init(strings.NewReader(src)).Filename = filePath
+	lexer.Init(src).Filename = filePath
 	lexer.Whitespace, lexer.Mode = 1<<'\r', scanner.ScanChars|scanner.ScanComments|scanner.ScanFloats|scanner.ScanIdents|scanner.ScanInts|scanner.ScanRawStrings|scanner.ScanStrings
 	lexer.Error = func(_ *scanner.Scanner, msg string) {
 		err := Err(&lexer.Position, msg)
+		err.Pos.Line, err.Pos.Offset = err.Pos.Line+lineOff, err.Pos.Offset+posOff
 		err.Pos.Filename = filePath
 		tokens, errs = nil, append(errs, err)
 	}
@@ -39,7 +40,7 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 	on := func(origSym string, token Token) {
 		unaccum()
 		if onlyspacesinlinesofar = false; len(errs) == 0 {
-			token.Meta.init(&lexer.Position, lineindent, origSym)
+			token.Meta.init(&lexer.Position, lineindent, origSym, lineOff, posOff)
 			tokens = append(tokens, token)
 		}
 	}
@@ -110,7 +111,7 @@ func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps 
 					if !unicode.IsSpace(r) {
 						if onlyspacesinlinesofar = false; otheraccum == nil {
 							otheraccum = &Token{flag: TOKEN_OTHER}
-							otheraccum.Meta.init(&lexer.Position, lineindent, "")
+							otheraccum.Meta.init(&lexer.Position, lineindent, "", lineOff, posOff)
 						}
 						otheraccum.Str += sym
 					} else if unaccum(); r == '\n' {

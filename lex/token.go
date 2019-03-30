@@ -69,6 +69,7 @@ type TokenMeta struct {
 	Orig       string
 }
 
-func (me *TokenMeta) init(pos *scanner.Position, indent int, orig string) {
+func (me *TokenMeta) init(pos *scanner.Position, indent int, orig string, lineOff int, posOff int) {
 	me.Position, me.LineIndent, me.Orig = *pos, indent, orig
+	me.Position.Line, me.Position.Offset = me.Position.Line+lineOff, me.Position.Offset+posOff
 }

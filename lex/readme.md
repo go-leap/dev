@@ -8,7 +8,7 @@
 #### func  Lex
 
 ```go
-func Lex(filePath string, src string, restrictedWhitespace bool, standAloneSeps ...string) (tokens Tokens, errs []*Error)
+func Lex(filePath string, src io.Reader, restrictedWhitespace bool, lineOff int, posOff int, standAloneSeps ...string) (tokens Tokens, errs []*Error)
 ```
 Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while
 lexing.

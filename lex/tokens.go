@@ -122,7 +122,7 @@ func (me Tokens) String() string {
 	}
 	var buf bytes.Buffer
 	for i := 0; i < len(me); i++ {
-		buf.WriteRune('·')
+		buf.WriteRune(' ')
 		buf.WriteString(me[i].String())
 	}
 	return buf.String()[1:]
