@@ -171,6 +171,18 @@ BreakOnOther returns all `Tokens` preceding and succeeding the next occurence of
 the specified `TokenOther` in `me`, if any — otherwise, `me,nil` will be
 returned.
 
+#### func (Tokens) CountKind
+
+```go
+func (me Tokens) CountKind(kind TokenKind) (count int)
+```
+
+#### func (Tokens) HasKind
+
+```go
+func (me Tokens) HasKind(kind TokenKind) bool
+```
+
 #### func (Tokens) IndentBasedChunks
 
 ```go
@@ -183,10 +195,12 @@ subsequent 'indented' (`LineIndex` > `minIndent`) lines also belong to it.
 #### func (Tokens) SansComments
 
 ```go
-func (me Tokens) SansComments() (sans Tokens)
+func (me Tokens) SansComments(keepIn map[*Token][]int) (sans Tokens)
 ```
 SansComments returns the newly allocated `sans` with a `cap` of `len(me)` and
 containing all `Tokens` in `me` except those with a `Kind` of `TOKEN_COMMENT`.
+If `keepIn` is not `nil`, it is filled with all non-comment `Token`s in `me`
+mapped to the indices (in `me`) of their subsequent comment `Token`s.
 
 #### func (Tokens) String
 

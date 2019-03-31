@@ -54,12 +54,46 @@ func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
 	return
 }
 
-// SansComments returns the newly allocated `sans` with a `cap` of `len(me)` and containing all `Tokens` in `me` except those with a `Kind` of `TOKEN_COMMENT`.
-func (me Tokens) SansComments() (sans Tokens) {
+func (me Tokens) CountKind(kind TokenKind) (count int) {
+	for i := range me {
+		if me[i].Kind() == kind {
+			count++
+		}
+	}
+	return
+}
+
+func (me Tokens) HasKind(kind TokenKind) bool {
+	for i := range me {
+		if me[i].Kind() == kind {
+			return true
+		}
+	}
+	return false
+}
+
+// SansComments returns the newly allocated `sans` with a `cap` of `len(me)`
+// and containing all `Tokens` in `me` except those with a `Kind` of `TOKEN_COMMENT`.
+// If `keepIn` is not `nil`, it is filled with all non-comment `Token`s in
+// `me` mapped to the indices (in `me`) of their subsequent comment `Token`s.
+func (me Tokens) SansComments(keepIn map[*Token][]int) (sans Tokens) {
 	var nextcopypos int
 	sans = make(Tokens, 0, len(me))
-	for i := 0; i < len(me); i++ {
-		if nucount, iscomment := (nextcopypos < 0), me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL; (!iscomment) && nucount {
+	var keeps []int
+	for i, lastnoncomment, keep := 0, -1, keepIn != nil; i < len(me); i++ {
+		iscomment := me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL
+		if keep {
+			if !iscomment {
+				if lastnoncomment >= 0 && len(keeps) > 0 {
+					keepIn[&me[lastnoncomment]], keeps = keeps, nil
+				}
+				lastnoncomment = i
+			} else if lastnoncomment >= 0 {
+				keeps = append(keeps, i)
+			}
+		}
+
+		if nucount := (nextcopypos < 0); (!iscomment) && nucount {
 			nextcopypos = i
 		} else if iscomment && (!nucount) {
 			sans = append(sans, me[nextcopypos:i]...)
