@@ -59,7 +59,7 @@ func (me Tokens) SansComments() (sans Tokens) {
 	var nextcopypos int
 	sans = make(Tokens, 0, len(me))
 	for i := 0; i < len(me); i++ {
-		if nucount, iscomment := (nextcopypos < 0), me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_LONG; (!iscomment) && nucount {
+		if nucount, iscomment := (nextcopypos < 0), me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL; (!iscomment) && nucount {
 			nextcopypos = i
 		} else if iscomment && (!nucount) {
 			sans = append(sans, me[nextcopypos:i]...)

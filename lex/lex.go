@@ -98,7 +98,7 @@ func Lex(filePath string, src io.Reader, lineOff int, posOff int, toksCap int) (
 			if l, sl := len(sym), sym[0] == '/'; l > 1 && sl && sym[1] == '/' {
 				on(sym, Token{flag: TOKEN_COMMENT, Str: sym[2:]})
 			} else if l > 3 && sl && sym[1] == '*' && sym[l-2] == '*' && sym[l-1] == '/' {
-				on(sym, Token{flag: _TOKEN_COMMENT_LONG, Str: sym[2 : l-2]})
+				on(sym, Token{flag: _TOKEN_COMMENT_ENCL, Str: sym[2 : l-2]})
 			} else {
 				lexer.Error(nil, "unexpected comment format: "+sym)
 			}

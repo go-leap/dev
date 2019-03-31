@@ -1,7 +1,6 @@
 package udevlex
 
 import (
-	"strconv"
 	"text/scanner"
 )
 
@@ -17,5 +16,5 @@ type Error struct {
 
 // Error implements Go's standard `error` interface.
 func (me *Error) Error() string {
-	return me.Pos.Filename + ":" + strconv.FormatInt(int64(me.Pos.Line), 10) + ":" + strconv.FormatInt(int64(me.Pos.Column), 10) + ": " + me.Msg
+	return me.Pos.String() + ":" + me.Msg
 }

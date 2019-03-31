@@ -9,7 +9,7 @@ type TokenKind = int
 const ( // note, order of enumerants in being relied-on in Kind()
 	_ TokenKind = 16 + iota
 	_TOKEN_STR_RAW
-	_TOKEN_COMMENT_LONG
+	_TOKEN_COMMENT_ENCL
 	TOKEN_STR
 	TOKEN_COMMENT
 	TOKEN_FLOAT
@@ -34,7 +34,7 @@ func (me *Token) Kind() (kind TokenKind) {
 	if kind = me.flag; kind < TOKEN_STR {
 		if kind < _TOKEN_STR_RAW {
 			kind = TOKEN_UINT
-		} else if kind == _TOKEN_COMMENT_LONG {
+		} else if kind == _TOKEN_COMMENT_ENCL {
 			kind = TOKEN_COMMENT
 		} else if kind == _TOKEN_STR_RAW {
 			kind = TOKEN_STR
@@ -43,8 +43,8 @@ func (me *Token) Kind() (kind TokenKind) {
 	return
 }
 
-func (me *Token) IsCommentLong() bool {
-	return me.flag == _TOKEN_COMMENT_LONG
+func (me *Token) IsCommentSelfTerminating() bool {
+	return me.flag == _TOKEN_COMMENT_ENCL
 }
 
 func (me *Token) IsStrRaw() bool {

@@ -64,10 +64,10 @@ type Token struct {
 ```
 
 
-#### func (*Token) IsCommentLong
+#### func (*Token) IsCommentSelfTerminating
 
 ```go
-func (me *Token) IsCommentLong() bool
+func (me *Token) IsCommentSelfTerminating() bool
 ```
 
 #### func (*Token) IsStrRaw
