@@ -195,12 +195,15 @@ subsequent 'indented' (`LineIndex` > `minIndent`) lines also belong to it.
 #### func (Tokens) SansComments
 
 ```go
-func (me Tokens) SansComments(keepIn map[*Token][]int) (sans Tokens)
+func (me Tokens) SansComments(keepIn map[*Token][]int, oldIndices map[*Token]int) (sans Tokens)
 ```
 SansComments returns the newly allocated `sans` with a `cap` of `len(me)` and
 containing all `Tokens` in `me` except those with a `Kind` of `TOKEN_COMMENT`.
+
 If `keepIn` is not `nil`, it is filled with all non-comment `Token`s in `me`
 mapped to the indices (in `me`) of their subsequent comment `Token`s.
+
+If `oldIndices` is not `nil`, it keeps track of the original indices in `me`.
 
 #### func (Tokens) String
 

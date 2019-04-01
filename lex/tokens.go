@@ -74,13 +74,16 @@ func (me Tokens) HasKind(kind TokenKind) bool {
 
 // SansComments returns the newly allocated `sans` with a `cap` of `len(me)`
 // and containing all `Tokens` in `me` except those with a `Kind` of `TOKEN_COMMENT`.
+//
 // If `keepIn` is not `nil`, it is filled with all non-comment `Token`s in
 // `me` mapped to the indices (in `me`) of their subsequent comment `Token`s.
-func (me Tokens) SansComments(keepIn map[*Token][]int) (sans Tokens) {
+//
+// If `oldIndices` is not `nil`, it keeps track of the original indices in `me`.
+func (me Tokens) SansComments(keepIn map[*Token][]int, oldIndices map[*Token]int) (sans Tokens) {
 	var nextcopypos int
 	sans = make(Tokens, 0, len(me))
 	var keeps []int
-	for i, lastnoncomment, keep := 0, -1, keepIn != nil; i < len(me); i++ {
+	for i, keep, oldidx, lastnoncomment := 0, keepIn != nil, oldIndices != nil, -1; i < len(me); i++ {
 		iscomment := me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL
 		if keep {
 			if !iscomment {
@@ -95,13 +98,21 @@ func (me Tokens) SansComments(keepIn map[*Token][]int) (sans Tokens) {
 
 		if nucount := (nextcopypos < 0); (!iscomment) && nucount {
 			nextcopypos = i
-		} else if iscomment && (!nucount) {
-			sans = append(sans, me[nextcopypos:i]...)
+		} else if ls := len(sans); iscomment && (!nucount) {
+			if sans = append(sans, me[nextcopypos:i]...); oldidx {
+				for j := nextcopypos; j < i; ls, j = ls+1, j+1 {
+					oldIndices[&sans[ls]] = j
+				}
+			}
 			nextcopypos = -1
 		}
 	}
-	if nextcopypos >= 0 {
-		sans = append(sans, me[nextcopypos:]...)
+	if ls := len(sans); nextcopypos >= 0 {
+		if sans = append(sans, me[nextcopypos:]...); oldIndices != nil {
+			for j := nextcopypos; j < len(me); ls, j = ls+1, j+1 {
+				oldIndices[&sans[ls]] = j
+			}
+		}
 	}
 	return
 }
