@@ -88,11 +88,13 @@ func (me Tokens) SansComments(keepIn map[*Token][]int, oldIndices map[*Token]int
 		if keep {
 			if !iscomment {
 				if lastnoncomment >= 0 && len(keeps) > 0 {
-					keepIn[&me[lastnoncomment]], keeps = keeps, nil
+					keepIn[&me[lastnoncomment]], keeps = append(keepIn[&me[lastnoncomment]], keeps...), nil
 				}
 				lastnoncomment = i
 			} else if lastnoncomment >= 0 {
-				keeps = append(keeps, i)
+				if keeps = append(keeps, i); i == len(me)-1 {
+					keepIn[&me[lastnoncomment]], keeps = append(keepIn[&me[lastnoncomment]], keeps...), nil
+				}
 			}
 		}
 
@@ -124,17 +126,16 @@ func (me Tokens) SansComments(keepIn map[*Token][]int, oldIndices map[*Token]int
 // is the  subsequence immediately following the opening `sepOpen` up to and excluding the matching
 // `sepClose`, and `tail` is all trailing `Tokens` immediately following it.
 func (me Tokens) Sub(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int) {
-	tail = me
+	tail, numUnclosed = me, 1
 	for i := 1; i < len(me); i++ {
 		if me[i].flag == TOKEN_SEP {
 			if me[i].Str == sepOpen {
 				numUnclosed++
 			} else if me[i].Str == sepClose {
-				if numUnclosed == 0 {
+				if numUnclosed--; numUnclosed == 0 {
 					sub, tail = me[1:i], me[i+1:]
 					return
 				}
-				numUnclosed--
 			}
 		}
 	}
