@@ -190,7 +190,7 @@ func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens)
 ```
 IndentBasedChunks breaks up `me` into a number of `chunks`: each 'non-indented'
 line (with `LineIndent` <= `minIndent`) in `me` begins a new 'chunk' and any
-subsequent 'indented' (`LineIndex` > `minIndent`) lines also belong to it.
+subsequent 'indented' (`LineIndent` > `minIndent`) lines also belong to it.
 
 #### func (Tokens) SansComments
 

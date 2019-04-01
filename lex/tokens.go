@@ -144,7 +144,7 @@ func (me Tokens) Sub(sepOpen string, sepClose string) (sub Tokens, tail Tokens, 
 
 // IndentBasedChunks breaks up `me` into a number of `chunks`:
 // each 'non-indented' line (with `LineIndent` <= `minIndent`) in `me` begins a new
-// 'chunk' and any subsequent 'indented' (`LineIndex` > `minIndent`) lines also belong to it.
+// 'chunk' and any subsequent 'indented' (`LineIndent` > `minIndent`) lines also belong to it.
 func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens) {
 	var cur int
 	for i, linenum, l := 0, 1, len(me); i < l; i++ {
