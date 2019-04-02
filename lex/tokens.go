@@ -147,10 +147,7 @@ func (me Tokens) Chunked(by string, sepOpen string, sepClose string) (chunks []T
 	var startfrom int
 	for i := range me {
 		if level == 0 && me[i].Str == by {
-			if i > 0 {
-				chunks = append(chunks, me[startfrom:i])
-			}
-			startfrom = i + 1
+			chunks, startfrom = append(chunks, me[startfrom:i]), i+1
 		} else if me[i].flag == TOKEN_SEP {
 			if me[i].Str == sepOpen {
 				level++
@@ -159,7 +156,9 @@ func (me Tokens) Chunked(by string, sepOpen string, sepClose string) (chunks []T
 			}
 		}
 	}
-	if startfrom < len(me) {
+	if startfrom == 0 {
+		chunks = []Tokens{me}
+	} else if startfrom < len(me) {
 		chunks = append(chunks, me[startfrom:])
 	}
 	return
