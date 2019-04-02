@@ -142,6 +142,29 @@ func (me Tokens) Sub(sepOpen string, sepClose string) (sub Tokens, tail Tokens, 
 	return
 }
 
+func (me Tokens) Chunked(by string, sepOpen string, sepClose string) (chunks []Tokens) {
+	var level int
+	var startfrom int
+	for i := range me {
+		if level == 0 && me[i].Str == by {
+			if i > 0 {
+				chunks = append(chunks, me[startfrom:i])
+			}
+			startfrom = i + 1
+		} else if me[i].flag == TOKEN_SEP {
+			if me[i].Str == sepOpen {
+				level++
+			} else {
+				level--
+			}
+		}
+	}
+	if startfrom < len(me) {
+		chunks = append(chunks, me[startfrom:])
+	}
+	return
+}
+
 // IndentBasedChunks breaks up `me` into a number of `chunks`:
 // each 'non-indented' line (with `LineIndent` <= `minIndent`) in `me` begins a new
 // 'chunk' and any subsequent 'indented' (`LineIndent` > `minIndent`) lines also belong to it.
@@ -152,7 +175,7 @@ func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens) {
 			if tlc := me[cur:]; len(tlc) > 0 {
 				chunks = append(chunks, tlc)
 			}
-		} else if me[i].Meta.LineIndent <= minIndent && me[i].Meta.Line != linenum {
+		} else if me[i].Meta.Line != linenum && me[i].Meta.LineIndent <= minIndent {
 			if tlc := me[cur:i]; len(tlc) > 0 {
 				chunks = append(chunks, tlc)
 			}

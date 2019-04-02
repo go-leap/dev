@@ -171,6 +171,12 @@ BreakOnOther returns all `Tokens` preceding and succeeding the next occurence of
 the specified `TokenOther` in `me`, if any — otherwise, `me,nil` will be
 returned.
 
+#### func (Tokens) Chunked
+
+```go
+func (me Tokens) Chunked(by string, sepOpen string, sepClose string) (chunks []Tokens)
+```
+
 #### func (Tokens) CountKind
 
 ```go
