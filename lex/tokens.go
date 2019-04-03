@@ -169,8 +169,8 @@ func (me Tokens) Chunked(by string, sepOpen string, sepClose string) (chunks []T
 // 'chunk' and any subsequent 'indented' (`LineIndent` > `minIndent`) lines also belong to it.
 func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens) {
 	var cur int
-	for i, linenum, l := 0, 1, len(me); i < l; i++ {
-		if i == l-1 {
+	for i, linenum, l, il := 0, 1, len(me), len(me)-1; i < l; i++ {
+		if i == il {
 			if tlc := me[cur:]; len(tlc) > 0 {
 				chunks = append(chunks, tlc)
 			}
