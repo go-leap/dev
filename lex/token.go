@@ -7,7 +7,7 @@ import (
 type TokenKind = int
 
 const ( // note, order of enumerants in being relied-on in Kind()
-	_ TokenKind = 16 + iota
+	_ TokenKind = 36 + iota
 	_TOKEN_STR_RAW
 	_TOKEN_COMMENT_ENCL
 	TOKEN_STR

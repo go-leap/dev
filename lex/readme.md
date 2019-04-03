@@ -20,7 +20,7 @@ var StandaloneSeps []string
 #### func  Lex
 
 ```go
-func Lex(filePath string, src io.Reader, lineOff int, posOff int, toksCap int) (tokens Tokens, errs []*Error)
+func Lex(src io.Reader, filePath string, lineOff int, posOff int, toksCap int) (tokens Tokens, errs []*Error)
 ```
 Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while
 lexing.

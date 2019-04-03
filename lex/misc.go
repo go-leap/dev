@@ -16,5 +16,5 @@ type Error struct {
 
 // Error implements Go's standard `error` interface.
 func (me *Error) Error() string {
-	return me.Pos.String() + ":" + me.Msg
+	return me.Pos.String() + ": " + me.Msg
 }

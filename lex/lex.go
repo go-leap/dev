@@ -14,8 +14,8 @@ var StandaloneSeps []string
 // Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while lexing.
 //
 // If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
-func Lex(filePath string, src io.Reader, lineOff int, posOff int, toksCap int) (tokens Tokens, errs []*Error) {
-	tokens = make(Tokens, 0, toksCap) // a shot in the dark for an initial cap that's better than default 0
+func Lex(src io.Reader, filePath string, lineOff int, posOff int, toksCap int) (tokens Tokens, errs []*Error) {
+	tokens = make(Tokens, 0, toksCap) // a caller's shot-in-the-dark for an initial cap that's better than default 0
 	var (
 		onlyspacesinlinesofar = true
 		lineindent            int
@@ -26,8 +26,8 @@ func Lex(filePath string, src io.Reader, lineOff int, posOff int, toksCap int) (
 	lexer.Whitespace, lexer.Mode = 1<<'\r', scanner.ScanChars|scanner.ScanComments|scanner.ScanFloats|scanner.ScanIdents|scanner.ScanInts|scanner.ScanRawStrings|scanner.ScanStrings
 	lexer.Error = func(_ *scanner.Scanner, msg string) {
 		err := Err(&lexer.Position, msg)
-		err.Pos.Line, err.Pos.Offset = err.Pos.Line+lineOff, err.Pos.Offset+posOff
-		err.Pos.Filename = filePath
+		err.Pos.Filename, err.Pos.Line, err.Pos.Offset =
+			filePath, err.Pos.Line+lineOff, err.Pos.Offset+posOff
 		tokens, errs = nil, append(errs, err)
 	}
 
