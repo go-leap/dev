@@ -158,7 +158,7 @@ func (me Tokens) Chunked(by string, sepOpen string, sepClose string) (chunks []T
 	}
 	if startfrom == 0 {
 		chunks = []Tokens{me}
-	} else if startfrom < len(me) {
+	} else if startfrom <= len(me) {
 		chunks = append(chunks, me[startfrom:])
 	}
 	return
