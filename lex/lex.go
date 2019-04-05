@@ -7,9 +7,19 @@ import (
 	"unicode"
 )
 
-var RestrictedWhitespaceRewriter func(rune) int
-var RestrictedWhitespace bool
-var StandaloneSeps []string
+var (
+	// RestrictedWhitespace causes lex errors when encountering standalone (outside
+	// comment or string or character tokens) white-space tokens other than '\n' and ' '.
+	RestrictedWhitespace bool
+
+	// RestrictedWhitespaceRewriter, if set, is called instead of
+	// raising a lexing error when `RestrictedWhitespace` is `true`.
+	RestrictedWhitespaceRewriter func(rune) int
+
+	// StandaloneSeps contains token strings that should be
+	// lexed into TOKEN_SEPISH instead of TOKEN_OPISH.
+	StandaloneSeps []string
+)
 
 // Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while lexing.
 //
@@ -106,7 +116,7 @@ func Lex(src io.Reader, filePath string, lineOff int, posOff int, toksCap int) (
 			var issep bool
 			for _, sep := range StandaloneSeps {
 				if issep = (sym == sep); issep {
-					on(sym, Token{flag: TOKEN_SEP, Str: sym})
+					on(sym, Token{flag: TOKEN_SEPISH, Str: sym})
 					break
 				}
 			}
@@ -114,7 +124,7 @@ func Lex(src io.Reader, filePath string, lineOff int, posOff int, toksCap int) (
 				for _, r := range sym { // as of today, at this point len(sym)==1 always. but we need the r anyway and the iteration would logically hold even for a longer sym
 					if !unicode.IsSpace(r) {
 						if onlyspacesinlinesofar = false; otheraccum == nil {
-							otheraccum = &Token{flag: TOKEN_OTHER}
+							otheraccum = &Token{flag: TOKEN_OPISH}
 							otheraccum.Meta.init(&lexer.Position, lineindent, "", lineOff, posOff)
 						}
 						otheraccum.Str += sym

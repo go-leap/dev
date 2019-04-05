@@ -14,8 +14,8 @@ const ( // note, order of enumerants in being relied-on in Kind()
 	TOKEN_COMMENT
 	TOKEN_FLOAT
 	TOKEN_IDENT
-	TOKEN_OTHER
-	TOKEN_SEP
+	TOKEN_OPISH
+	TOKEN_SEPISH
 	TOKEN_RUNE
 	TOKEN_UINT
 )

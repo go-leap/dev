@@ -26,7 +26,7 @@ func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens
 func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent string) (pref Tokens, suff Tokens, numUnclosed int) {
 	for i := 0; i < len(me); i++ {
 		if me[i].flag == TOKEN_IDENT {
-			switch me[i].Str {
+			switch me[i].Meta.Orig {
 			case skipForEachOccurrenceOfIdent:
 				numUnclosed++
 			case needleIdent:
@@ -42,11 +42,11 @@ func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent s
 	return
 }
 
-// BreakOnOther returns all `Tokens` preceding and succeeding the next occurence of the specified `TokenOther` in `me`, if any — otherwise, `me,nil` will be returned.
-func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens) {
+// BreakOnOpish returns all `Tokens` preceding and succeeding the next occurence of the specified `TokenOther` in `me`, if any — otherwise, `me,nil` will be returned.
+func (me Tokens) BreakOnOpish(token string) (pref Tokens, suff Tokens) {
 	pref = me
 	for i := 0; i < len(me); i++ {
-		if me[i].flag == TOKEN_OTHER && me[i].Str == token {
+		if me[i].flag == TOKEN_OPISH && me[i].Meta.Orig == token {
 			pref, suff = me[:i], me[i+1:]
 			return
 		}
@@ -128,10 +128,10 @@ func (me Tokens) SansComments(keepIn map[*Token][]int, oldIndices map[*Token]int
 func (me Tokens) Sub(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int) {
 	tail, numUnclosed = me, 1
 	for i := 1; i < len(me); i++ {
-		if me[i].flag == TOKEN_SEP {
-			if me[i].Str == sepOpen {
+		if me[i].flag == TOKEN_SEPISH {
+			if me[i].Meta.Orig == sepOpen {
 				numUnclosed++
-			} else if me[i].Str == sepClose {
+			} else if me[i].Meta.Orig == sepClose {
 				if numUnclosed--; numUnclosed == 0 {
 					sub, tail = me[1:i], me[i+1:]
 					return
@@ -142,14 +142,14 @@ func (me Tokens) Sub(sepOpen string, sepClose string) (sub Tokens, tail Tokens, 
 	return
 }
 
-func (me Tokens) Chunked(by string, sepOpen string, sepClose string) (chunks []Tokens) {
+func (me Tokens) Chunked(byOrig string, sepOpen string, sepClose string) (chunks []Tokens) {
 	var level int
 	var startfrom int
 	for i := range me {
-		if level == 0 && me[i].Str == by {
+		if level == 0 && me[i].Meta.Orig == byOrig {
 			chunks, startfrom = append(chunks, me[startfrom:i]), i+1
-		} else if me[i].flag == TOKEN_SEP {
-			if me[i].Str == sepOpen {
+		} else if me[i].flag == TOKEN_SEPISH {
+			if me[i].Meta.Orig == sepOpen {
 				level++
 			} else {
 				level--

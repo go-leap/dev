@@ -6,15 +6,19 @@
 ## Usage
 
 ```go
-var RestrictedWhitespace bool
-```
+var (
+	// RestrictedWhitespace causes lex errors when encountering standalone (outside
+	// comment or string or character tokens) white-space tokens other than '\n' and ' '.
+	RestrictedWhitespace bool
 
-```go
-var RestrictedWhitespaceRewriter func(rune) int
-```
+	// RestrictedWhitespaceRewriter, if set, is called instead of
+	// raising a lexing error when `RestrictedWhitespace` is `true`.
+	RestrictedWhitespaceRewriter func(rune) int
 
-```go
-var StandaloneSeps []string
+	// StandaloneSeps contains token strings that should be
+	// lexed into TOKEN_SEPISH instead of TOKEN_OPISH.
+	StandaloneSeps []string
+)
 ```
 
 #### func  Lex
@@ -113,8 +117,8 @@ const (
 	TOKEN_COMMENT
 	TOKEN_FLOAT
 	TOKEN_IDENT
-	TOKEN_OTHER
-	TOKEN_SEP
+	TOKEN_OPISH
+	TOKEN_SEPISH
 	TOKEN_RUNE
 	TOKEN_UINT
 )
@@ -162,19 +166,19 @@ in `me`, plus all subsequent `Tokens` with `LineIndent` greater than
 `minIndent`; and in `outdented` the first and all following `Tokens` with a
 `LineIndent` less-or-equal (if any).
 
-#### func (Tokens) BreakOnOther
+#### func (Tokens) BreakOnOpish
 
 ```go
-func (me Tokens) BreakOnOther(token string) (pref Tokens, suff Tokens)
+func (me Tokens) BreakOnOpish(token string) (pref Tokens, suff Tokens)
 ```
-BreakOnOther returns all `Tokens` preceding and succeeding the next occurence of
+BreakOnOpish returns all `Tokens` preceding and succeeding the next occurence of
 the specified `TokenOther` in `me`, if any — otherwise, `me,nil` will be
 returned.
 
 #### func (Tokens) Chunked
 
 ```go
-func (me Tokens) Chunked(by string, sepOpen string, sepClose string) (chunks []Tokens)
+func (me Tokens) Chunked(byOrig string, sepOpen string, sepClose string) (chunks []Tokens)
 ```
 
 #### func (Tokens) CountKind
