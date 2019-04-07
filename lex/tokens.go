@@ -2,6 +2,7 @@ package udevlex
 
 import (
 	"bytes"
+	"text/scanner"
 )
 
 type Tokens []Token
@@ -70,6 +71,54 @@ func (me Tokens) HasKind(kind TokenKind) bool {
 		}
 	}
 	return false
+}
+
+func (me Tokens) DistanceTo(other Tokens) (dist int) {
+	mfirst, mlast, ofirst, olast := &me[0], &me[len(me)-1], &other[0], &other[len(other)-1]
+	mposf, oposf := mfirst.Meta.Position.Offset, ofirst.Meta.Position.Offset
+	mposl, oposl := mlast.Meta.Position.Offset, olast.Meta.Position.Offset
+	if oposf > mposl { // other's first token after me's last token
+		dist = oposf - (mposl + len(mlast.Meta.Orig))
+	} else if oposl < mposf { // other's last token before me's first token
+		dist = mposf - (oposl + len(olast.Meta.Orig))
+	}
+	return
+}
+
+func (me Tokens) First() *Token { return &me[len(me)-1] }
+
+func (me Tokens) Last() *Token { return &me[len(me)-1] }
+
+func (me Tokens) FromUntil(from *Token, until *Token, inclusive bool) (slice Tokens) {
+	startfrom, endbefore := -1, -1
+	for i := range me {
+		if &me[i] == from {
+			startfrom = i
+		} else if &me[i] == until {
+			if endbefore = i; inclusive {
+				endbefore++
+			}
+			break
+		}
+	}
+	if startfrom >= 0 && endbefore > startfrom {
+		slice = me[startfrom:endbefore]
+	}
+	return
+}
+
+func (me Tokens) Length() (length int) {
+	if l := len(me); l == 1 {
+		length = len(me[0].Meta.Orig)
+	} else if l > 1 {
+		mfirst, mlast := &me[0].Meta, &me[l-1].Meta
+		length = (mlast.Position.Offset - mfirst.Position.Offset) + len(mlast.Orig)
+	}
+	return
+}
+
+func (me Tokens) Pos() *scanner.Position {
+	return &me[0].Meta.Position
 }
 
 // SansComments returns the newly allocated `sans` with a `cap` of `len(me)`

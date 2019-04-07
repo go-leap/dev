@@ -187,6 +187,24 @@ func (me Tokens) Chunked(byOrig string, sepOpen string, sepClose string) (chunks
 func (me Tokens) CountKind(kind TokenKind) (count int)
 ```
 
+#### func (Tokens) DistanceTo
+
+```go
+func (me Tokens) DistanceTo(other Tokens) (dist int)
+```
+
+#### func (Tokens) First
+
+```go
+func (me Tokens) First() *Token
+```
+
+#### func (Tokens) FromUntil
+
+```go
+func (me Tokens) FromUntil(from *Token, until *Token, inclusive bool) (slice Tokens)
+```
+
 #### func (Tokens) HasKind
 
 ```go
@@ -201,6 +219,24 @@ func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens)
 IndentBasedChunks breaks up `me` into a number of `chunks`: each 'non-indented'
 line (with `LineIndent` <= `minIndent`) in `me` begins a new 'chunk' and any
 subsequent 'indented' (`LineIndent` > `minIndent`) lines also belong to it.
+
+#### func (Tokens) Last
+
+```go
+func (me Tokens) Last() *Token
+```
+
+#### func (Tokens) Length
+
+```go
+func (me Tokens) Length() (length int)
+```
+
+#### func (Tokens) Pos
+
+```go
+func (me Tokens) Pos() *scanner.Position
+```
 
 #### func (Tokens) SansComments
 
