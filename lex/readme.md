@@ -159,17 +159,17 @@ was found, `pref` and `suff` will both be `nil`.
 #### func (Tokens) BreakOnIndent
 
 ```go
-func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens)
+func (me Tokens) BreakOnIndent(minLineIndent int) (indented Tokens, outdented Tokens)
 ```
 BreakOnIndent returns in `indented` all `Tokens` on the same line as the first
 in `me`, plus all subsequent `Tokens` with `LineIndent` greater than
-`minIndent`; and in `outdented` the first and all following `Tokens` with a
+`minLineIndent`; and in `outdented` the first and all following `Tokens` with a
 `LineIndent` less-or-equal (if any).
 
 #### func (Tokens) BreakOnOpish
 
 ```go
-func (me Tokens) BreakOnOpish(token string) (pref Tokens, suff Tokens)
+func (me Tokens) BreakOnOpish(token string) (pref Tokens, op *Token, suff Tokens)
 ```
 BreakOnOpish returns all `Tokens` preceding and succeeding the next occurence of
 the specified `TokenOther` in `me`, if any — otherwise, `me,nil` will be
@@ -214,11 +214,11 @@ func (me Tokens) HasKind(kind TokenKind) bool
 #### func (Tokens) IndentBasedChunks
 
 ```go
-func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens)
+func (me Tokens) IndentBasedChunks(minLineIndent int) (chunks []Tokens)
 ```
 IndentBasedChunks breaks up `me` into a number of `chunks`: each 'non-indented'
-line (with `LineIndent` <= `minIndent`) in `me` begins a new 'chunk' and any
-subsequent 'indented' (`LineIndent` > `minIndent`) lines also belong to it.
+line (with `LineIndent` <= `minLineIndent`) in `me` begins a new 'chunk' and any
+subsequent 'indented' (`LineIndent` > `minLineIndent`) lines also belong to it.
 
 #### func (Tokens) Last
 

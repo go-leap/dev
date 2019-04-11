@@ -7,11 +7,11 @@ import (
 
 type Tokens []Token
 
-// BreakOnIndent returns in `indented` all `Tokens` on the same line as the first in `me`, plus all subsequent `Tokens` with `LineIndent` greater than `minIndent`; and in `outdented` the first and all following `Tokens` with a `LineIndent` less-or-equal (if any).
-func (me Tokens) BreakOnIndent(minIndent int) (indented Tokens, outdented Tokens) {
+// BreakOnIndent returns in `indented` all `Tokens` on the same line as the first in `me`, plus all subsequent `Tokens` with `LineIndent` greater than `minLineIndent`; and in `outdented` the first and all following `Tokens` with a `LineIndent` less-or-equal (if any).
+func (me Tokens) BreakOnIndent(minLineIndent int) (indented Tokens, outdented Tokens) {
 	linenum := me[0].Meta.Line
 	for i := 1; i < len(me); i++ {
-		if me[i].Meta.Line != linenum && me[i].Meta.LineIndent <= minIndent {
+		if me[i].Meta.Line != linenum && me[i].Meta.LineIndent <= minLineIndent {
 			indented, outdented = me[:i], me[i:]
 			return
 		}
@@ -44,11 +44,11 @@ func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent s
 }
 
 // BreakOnOpish returns all `Tokens` preceding and succeeding the next occurence of the specified `TokenOther` in `me`, if any — otherwise, `me,nil` will be returned.
-func (me Tokens) BreakOnOpish(token string) (pref Tokens, suff Tokens) {
+func (me Tokens) BreakOnOpish(token string) (pref Tokens, op *Token, suff Tokens) {
 	pref = me
 	for i := 0; i < len(me); i++ {
 		if me[i].flag == TOKEN_OPISH && me[i].Meta.Orig == token {
-			pref, suff = me[:i], me[i+1:]
+			pref, op, suff = me[:i], &me[i], me[i+1:]
 			return
 		}
 	}
@@ -214,20 +214,27 @@ func (me Tokens) Chunked(byOrig string, sepOpen string, sepClose string) (chunks
 }
 
 // IndentBasedChunks breaks up `me` into a number of `chunks`:
-// each 'non-indented' line (with `LineIndent` <= `minIndent`) in `me` begins a new
-// 'chunk' and any subsequent 'indented' (`LineIndent` > `minIndent`) lines also belong to it.
-func (me Tokens) IndentBasedChunks(minIndent int) (chunks []Tokens) {
+// each 'non-indented' line (with `LineIndent` <= `minLineIndent`) in `me` begins a new
+// 'chunk' and any subsequent 'indented' (`LineIndent` > `minLineIndent`) lines also belong to it.
+func (me Tokens) IndentBasedChunks(minLineIndent int) (chunks []Tokens) {
 	var cur int
-	for i, linenum, l, il := 0, 1, len(me), len(me)-1; i < l; i++ {
-		if i == il {
-			if tlc := me[cur:]; len(tlc) > 0 {
-				chunks = append(chunks, tlc)
+	if minLineIndent < 0 {
+		minLineIndent = me[0].Meta.LineIndent
+	}
+	for i, linenum, l := 0, me[0].Meta.Line, len(me); i < l; i++ {
+		if me[i].Meta.Line > linenum && me[i].Meta.LineIndent <= minLineIndent {
+			if minLineIndent == 8 {
+				panic(me[i].Meta.LineIndent)
 			}
-		} else if me[i].Meta.Line != linenum && me[i].Meta.LineIndent <= minIndent {
 			if tlc := me[cur:i]; len(tlc) > 0 {
 				chunks = append(chunks, tlc)
 			}
 			cur, linenum = i, me[i].Meta.Line
+		}
+	}
+	if cur < len(me) {
+		if tlc := me[cur:]; len(tlc) > 0 {
+			chunks = append(chunks, tlc)
 		}
 	}
 	return
