@@ -213,6 +213,10 @@ func (me Tokens) Chunked(byOrig string, sepOpen string, sepClose string) (chunks
 	return
 }
 
+func (me Tokens) IsOpishAndAnyOneOf(any ...string) bool {
+	return len(me) == 1 && me[0].IsOpishAndAnyOneOf(any...)
+}
+
 // IndentBasedChunks breaks up `me` into a number of `chunks`:
 // each 'non-indented' line (with `LineIndent` <= `minLineIndent`) in `me` begins a new
 // 'chunk' and any subsequent 'indented' (`LineIndent` > `minLineIndent`) lines also belong to it.

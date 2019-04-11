@@ -74,6 +74,12 @@ type Token struct {
 func (me *Token) IsCommentSelfTerminating() bool
 ```
 
+#### func (*Token) IsOpishAndAnyOneOf
+
+```go
+func (me *Token) IsOpishAndAnyOneOf(any ...string) bool
+```
+
 #### func (*Token) IsStrRaw
 
 ```go
@@ -219,6 +225,12 @@ func (me Tokens) IndentBasedChunks(minLineIndent int) (chunks []Tokens)
 IndentBasedChunks breaks up `me` into a number of `chunks`: each 'non-indented'
 line (with `LineIndent` <= `minLineIndent`) in `me` begins a new 'chunk' and any
 subsequent 'indented' (`LineIndent` > `minLineIndent`) lines also belong to it.
+
+#### func (Tokens) IsOpishAndAnyOneOf
+
+```go
+func (me Tokens) IsOpishAndAnyOneOf(any ...string) bool
+```
 
 #### func (Tokens) Last
 
