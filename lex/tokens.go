@@ -85,7 +85,7 @@ func (me Tokens) DistanceTo(other Tokens) (dist int) {
 	return
 }
 
-func (me Tokens) First() *Token { return &me[len(me)-1] }
+func (me Tokens) First() *Token { return &me[0] }
 
 func (me Tokens) Last() *Token { return &me[len(me)-1] }
 
