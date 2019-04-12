@@ -63,14 +63,11 @@ func (me *Token) String() string {
 	return me.Meta.Orig
 }
 
-func (me *Token) IsOpishAndAnyOneOf(any ...string) bool {
-	if me.flag == TOKEN_OPISH {
-		for i := range any {
-			if me.Meta.Orig == any[i] {
-				return true
-			}
+func (me *Token) IsAnyOneOf(any ...string) bool {
+	for i := range any {
+		if me.Meta.Orig == any[i] {
+			return true
 		}
-		return len(any) == 0
 	}
 	return false
 }

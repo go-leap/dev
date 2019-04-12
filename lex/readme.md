@@ -68,16 +68,16 @@ type Token struct {
 ```
 
 
+#### func (*Token) IsAnyOneOf
+
+```go
+func (me *Token) IsAnyOneOf(any ...string) bool
+```
+
 #### func (*Token) IsCommentSelfTerminating
 
 ```go
 func (me *Token) IsCommentSelfTerminating() bool
-```
-
-#### func (*Token) IsOpishAndAnyOneOf
-
-```go
-func (me *Token) IsOpishAndAnyOneOf(any ...string) bool
 ```
 
 #### func (*Token) IsStrRaw
@@ -226,10 +226,10 @@ IndentBasedChunks breaks up `me` into a number of `chunks`: each 'non-indented'
 line (with `LineIndent` <= `minLineIndent`) in `me` begins a new 'chunk' and any
 subsequent 'indented' (`LineIndent` > `minLineIndent`) lines also belong to it.
 
-#### func (Tokens) IsOpishAndAnyOneOf
+#### func (Tokens) IsAnyOneOf
 
 ```go
-func (me Tokens) IsOpishAndAnyOneOf(any ...string) bool
+func (me Tokens) IsAnyOneOf(any ...string) bool
 ```
 
 #### func (Tokens) Last

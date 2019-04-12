@@ -213,8 +213,8 @@ func (me Tokens) Chunked(byOrig string, sepOpen string, sepClose string) (chunks
 	return
 }
 
-func (me Tokens) IsOpishAndAnyOneOf(any ...string) bool {
-	return len(me) == 1 && me[0].IsOpishAndAnyOneOf(any...)
+func (me Tokens) IsAnyOneOf(any ...string) bool {
+	return len(me) == 1 && me[0].IsAnyOneOf(any...)
 }
 
 // IndentBasedChunks breaks up `me` into a number of `chunks`:
