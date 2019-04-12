@@ -232,6 +232,12 @@ subsequent 'indented' (`LineIndent` > `minLineIndent`) lines also belong to it.
 func (me Tokens) IsAnyOneOf(any ...string) bool
 ```
 
+#### func (Tokens) JoinIdentPairings
+
+```go
+func (me Tokens) JoinIdentPairings(sepOp string) (joined Tokens, indices map[int]int)
+```
+
 #### func (Tokens) Last
 
 ```go
@@ -262,6 +268,12 @@ If `keepIn` is not `nil`, it is filled with all non-comment `Token`s in `me`
 mapped to the indices (in `me`) of their subsequent comment `Token`s.
 
 If `oldIndices` is not `nil`, it keeps track of the original indices in `me`.
+
+#### func (Tokens) SpacesBetween
+
+```go
+func (me Tokens) SpacesBetween(idxEarlier int, idxLater int) (numSpaces int)
+```
 
 #### func (Tokens) String
 

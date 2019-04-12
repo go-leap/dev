@@ -73,6 +73,14 @@ func (me Tokens) HasKind(kind TokenKind) bool {
 	return false
 }
 
+func (me Tokens) SpacesBetween(idxEarlier int, idxLater int) (numSpaces int) {
+	if idxEarlier != idxLater {
+		poslatter, posformer := me[idxLater].Meta.Position.Offset, me[idxEarlier].Meta.Position.Offset+len(me[idxEarlier].Meta.Orig)
+		numSpaces = poslatter - posformer
+	}
+	return
+}
+
 func (me Tokens) DistanceTo(other Tokens) (dist int) {
 	mfirst, mlast, ofirst, olast := &me[0], &me[len(me)-1], &other[0], &other[len(other)-1]
 	mposf, oposf := mfirst.Meta.Position.Offset, ofirst.Meta.Position.Offset
@@ -215,6 +223,31 @@ func (me Tokens) Chunked(byOrig string, sepOpen string, sepClose string) (chunks
 
 func (me Tokens) IsAnyOneOf(any ...string) bool {
 	return len(me) == 1 && me[0].IsAnyOneOf(any...)
+}
+
+func (me Tokens) JoinIdentPairings(sepOp string) (joined Tokens, indices map[int]int) {
+	var copyfrom int
+	for i, isnil := 1, true; i < len(me)-1; i++ {
+		if me[i].Meta.Orig == sepOp && me.SpacesBetween(i-1, i) == 0 {
+			if me.SpacesBetween(i, i+1) == 0 {
+				if isnil {
+					isnil, joined, indices = false, make(Tokens, 0, len(me)-2), make(map[int]int, len(me)/3)
+				}
+				joined = append(joined, me[copyfrom:i-1]...)
+				idx := len(joined)
+				joined = append(joined, Token{flag: TOKEN_IDENT, Str: me[i-1].Str + sepOp + me[i+1].Str})
+				joined[idx].Meta = me[i-1].Meta
+				joined[idx].Meta.Orig = joined[idx].Str
+				copyfrom, i, indices[idx] = i+2, i+2, len(me[i-1].Str)
+			}
+		}
+	}
+	if copyfrom > 0 {
+		joined = append(joined, me[copyfrom:]...)
+	} else {
+		joined = me
+	}
+	return
 }
 
 // IndentBasedChunks breaks up `me` into a number of `chunks`:
