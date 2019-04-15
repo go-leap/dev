@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"go/build"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -400,7 +401,7 @@ func pkgAfterRefreshUpdateGuruScopeExcls() {
 
 func LoadOnlyPkgNameFrom(impPath string) (pkgName string) {
 	if dirpath := GopathSrc(impPath); ufs.IsDir(dirpath) {
-		ufs.WalkFilesIn(dirpath, func(fp string) bool {
+		ufs.WalkFilesIn(dirpath, func(fp string, _ os.FileInfo) bool {
 			if ustr.Suff(fp, ".go") && !(ustr.Suff(fp, "_test.go") || ustr.Suff(fp, "_bench.go")) {
 				if src, err := ufs.ReadTextFile(fp); err == nil && src != "" {
 					var pos int
