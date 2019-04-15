@@ -15,9 +15,16 @@ var (
 	// raising a lexing error when `RestrictedWhitespace` is `true`.
 	RestrictedWhitespaceRewriter func(rune) int
 
-	// StandaloneSeps contains token strings that should be
-	// lexed into TOKEN_SEPISH instead of TOKEN_OPISH.
+	// StandaloneSeps contains single-rune token strings that would ordinarily
+	// be lexed as `TOKEN_OPISH`s and should instead be lexed as `TOKEN_SEPISH`s.
+	// As such, they can never be part of multi-rune `TOKEN_OPISH`s either
+	// and will always stand alone in the resulting stream of lexemes.
 	StandaloneSeps []string
+
+	// SepsForChunking is used by `Tokens.Chunked` and must be of even length
+	// beginning with all the openers and ending with all the closers, ie. both
+	// equal-length halves joined together such as "[(<{}>)]" or "«‹/\›»" etc.
+	SepsForChunking string
 )
 ```
 
@@ -184,7 +191,7 @@ returned.
 #### func (Tokens) Chunked
 
 ```go
-func (me Tokens) Chunked(byOrig string, sepOpen string, sepClose string) (chunks []Tokens)
+func (me Tokens) Chunked(byOrig string) (chunks []Tokens)
 ```
 
 #### func (Tokens) CountKind
@@ -284,7 +291,7 @@ func (me Tokens) String() string
 #### func (Tokens) Sub
 
 ```go
-func (me Tokens) Sub(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int)
+func (me Tokens) Sub(sepOpen byte, sepClose byte) (sub Tokens, tail Tokens, numUnclosed int)
 ```
 Sub assumes (but won't check: up to the caller) that `me` begins with a
 `TokenSep` of `sepOpen` and returns in `sub` the subsequence of `Tokens` up

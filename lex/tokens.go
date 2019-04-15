@@ -182,13 +182,13 @@ func (me Tokens) SansComments(keepIn map[*Token][]int, oldIndices map[*Token]int
 // `numUnclosed` might be non-`0` to indicate the number of unclosed groupings) — otherwise `sub`
 // is the  subsequence immediately following the opening `sepOpen` up to and excluding the matching
 // `sepClose`, and `tail` is all trailing `Tokens` immediately following it.
-func (me Tokens) Sub(sepOpen string, sepClose string) (sub Tokens, tail Tokens, numUnclosed int) {
+func (me Tokens) Sub(sepOpen byte, sepClose byte) (sub Tokens, tail Tokens, numUnclosed int) {
 	tail, numUnclosed = me, 1
 	for i := 1; i < len(me); i++ {
 		if me[i].flag == TOKEN_SEPISH {
-			if me[i].Meta.Orig == sepOpen {
+			if me[i].Meta.Orig[0] == sepOpen {
 				numUnclosed++
-			} else if me[i].Meta.Orig == sepClose {
+			} else if me[i].Meta.Orig[0] == sepClose {
 				if numUnclosed--; numUnclosed == 0 {
 					sub, tail = me[1:i], me[i+1:]
 					return
@@ -199,17 +199,22 @@ func (me Tokens) Sub(sepOpen string, sepClose string) (sub Tokens, tail Tokens, 
 	return
 }
 
-func (me Tokens) Chunked(byOrig string, sepOpen string, sepClose string) (chunks []Tokens) {
+func (me Tokens) Chunked(byOrig string) (chunks []Tokens) {
 	var level int
 	var startfrom int
+	skipsubs := len(SepsForChunking) > 0
 	for i := range me {
 		if level == 0 && me[i].Meta.Orig == byOrig {
 			chunks, startfrom = append(chunks, me[startfrom:i]), i+1
-		} else if me[i].flag == TOKEN_SEPISH {
-			if me[i].Meta.Orig == sepOpen {
-				level++
-			} else {
-				level--
+		} else if skipsubs && (me[i].flag == TOKEN_SEPISH || (me[i].flag == TOKEN_OPISH && len(me[i].Meta.Orig) == 1)) {
+			for isclosefrom, s := len(SepsForChunking)/2, 0; s < len(SepsForChunking); s++ {
+				if isopen := s < isclosefrom; isopen && me[i].Meta.Orig[0] == SepsForChunking[s] {
+					level++
+					break
+				} else if (!isopen) && me[i].Meta.Orig[0] == SepsForChunking[s] {
+					level--
+					break
+				}
 			}
 		}
 	}
