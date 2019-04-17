@@ -209,7 +209,7 @@ func (me Tokens) DistanceTo(other Tokens) (dist int)
 #### func (Tokens) First
 
 ```go
-func (me Tokens) First() *Token
+func (me Tokens) First(matches func(*Token) bool) *Token
 ```
 
 #### func (Tokens) FromUntil
@@ -248,7 +248,7 @@ func (me Tokens) JoinIdentPairings(sepOp string) (joined Tokens, indices map[int
 #### func (Tokens) Last
 
 ```go
-func (me Tokens) Last() *Token
+func (me Tokens) Last(matches func(*Token) bool) *Token
 ```
 
 #### func (Tokens) Length

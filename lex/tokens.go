@@ -9,11 +9,13 @@ type Tokens []Token
 
 // BreakOnIndent returns in `indented` all `Tokens` on the same line as the first in `me`, plus all subsequent `Tokens` with `LineIndent` greater than `minLineIndent`; and in `outdented` the first and all following `Tokens` with a `LineIndent` less-or-equal (if any).
 func (me Tokens) BreakOnIndent(minLineIndent int) (indented Tokens, outdented Tokens) {
-	linenum := me[0].Meta.Line
-	for i := 1; i < len(me); i++ {
-		if me[i].Meta.Line != linenum && me[i].Meta.LineIndent <= minLineIndent {
-			indented, outdented = me[:i], me[i:]
-			return
+	if len(me) > 0 {
+		linenum := me[0].Meta.Line
+		for i := 1; i < len(me); i++ {
+			if me[i].Meta.Line != linenum && me[i].Meta.LineIndent <= minLineIndent {
+				indented, outdented = me[:i], me[i:]
+				return
+			}
 		}
 	}
 	indented = me
@@ -93,9 +95,29 @@ func (me Tokens) DistanceTo(other Tokens) (dist int) {
 	return
 }
 
-func (me Tokens) First() *Token { return &me[0] }
+func (me Tokens) First(matches func(*Token) bool) *Token {
+	if matches != nil {
+		for i := range me {
+			if t := &me[i]; matches(t) {
+				return t
+			}
+		}
+		return nil
+	}
+	return &me[0]
+}
 
-func (me Tokens) Last() *Token { return &me[len(me)-1] }
+func (me Tokens) Last(matches func(*Token) bool) *Token {
+	if matches != nil {
+		for i := len(me) - 1; i >= 0; i-- {
+			if t := &me[i]; matches(t) {
+				return t
+			}
+		}
+		return nil
+	}
+	return &me[len(me)-1]
+}
 
 func (me Tokens) FromUntil(from *Token, until *Token, inclusive bool) (slice Tokens) {
 	startfrom, endbefore := -1, -1
