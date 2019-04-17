@@ -76,7 +76,7 @@ func LintGoSimple(pkgimppath string) (msgs udev.SrcMsgs) {
 }
 
 func LintErrcheck(pkgimppath string) (msgs udev.SrcMsgs) {
-	for _, m := range udev.CmdExecOnSrc(false, nil, "errcheck", "-abspath", "-asserts", "-blank", "-ignoretests", "false", pkgimppath) {
+	for _, m := range udev.CmdExecOnSrc(true, nil, "errcheck", "-abspath", "-asserts", "-blank", "-ignoretests", pkgimppath) {
 		m.Msg = "Ignores a returned `error`: " + m.Msg
 		msgs = append(msgs, m)
 	}
