@@ -83,15 +83,17 @@ func (me Tokens) SpacesBetween(idxEarlier int, idxLater int) (numSpaces int) {
 	return
 }
 
-func (me Tokens) DistanceTo(other Tokens) (dist int) {
-	mfirst, mlast, ofirst, olast := &me[0], &me[len(me)-1], &other[0], &other[len(other)-1]
-	mposf, oposf := mfirst.Meta.Position.Offset, ofirst.Meta.Position.Offset
-	mposl, oposl := mlast.Meta.Position.Offset, olast.Meta.Position.Offset
-	if oposf > mposl { // other's first token after me's last token
-		dist = oposf - (mposl + len(mlast.Meta.Orig))
-	} else if oposl < mposf { // other's last token before me's first token
-		dist = mposf - (oposl + len(olast.Meta.Orig))
-	}
+func (me Tokens) NumberOfCharsBetweenFirstAndLastOf(other Tokens) (dist int) {
+	mfirst, olast := &me[0], &other[len(other)-1]
+	mpos, opos := mfirst.Meta.Position.Offset, olast.Meta.Position.Offset
+	dist = mpos - (opos + len(olast.Meta.Orig))
+	return
+}
+
+func (me Tokens) NumberOfCharsBetweenLastAndFirstOf(other Tokens) (dist int) {
+	mlast, ofirst := &me[len(me)-1], &other[0]
+	mpos, opos := mlast.Meta.Position.Offset, ofirst.Meta.Position.Offset
+	dist = opos - (mpos + len(mlast.Meta.Orig))
 	return
 }
 

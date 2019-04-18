@@ -200,12 +200,6 @@ func (me Tokens) Chunked(byOrig string) (chunks []Tokens)
 func (me Tokens) CountKind(kind TokenKind) (count int)
 ```
 
-#### func (Tokens) DistanceTo
-
-```go
-func (me Tokens) DistanceTo(other Tokens) (dist int)
-```
-
 #### func (Tokens) First
 
 ```go
@@ -255,6 +249,18 @@ func (me Tokens) Last(matches func(*Token) bool) *Token
 
 ```go
 func (me Tokens) Length() (length int)
+```
+
+#### func (Tokens) NumberOfCharsBetweenFirstAndLastOf
+
+```go
+func (me Tokens) NumberOfCharsBetweenFirstAndLastOf(other Tokens) (dist int)
+```
+
+#### func (Tokens) NumberOfCharsBetweenLastAndFirstOf
+
+```go
+func (me Tokens) NumberOfCharsBetweenLastAndFirstOf(other Tokens) (dist int)
 ```
 
 #### func (Tokens) Pos
