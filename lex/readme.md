@@ -236,7 +236,13 @@ func (me Tokens) IsAnyOneOf(any ...string) bool
 #### func (Tokens) JoinIdentPairings
 
 ```go
-func (me Tokens) JoinIdentPairings(sepOp string) (joined Tokens, indices map[int]int)
+func (me Tokens) JoinIdentPairings(sepOp string) (joined Tokens, origs map[int]int)
+```
+
+#### func (Tokens) JoinPairings
+
+```go
+func (me Tokens) JoinPairings(joinedBy string) (jp []Tokens, jpm map[int]int)
 ```
 
 #### func (Tokens) Last

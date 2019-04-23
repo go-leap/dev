@@ -254,21 +254,36 @@ func (me Tokens) IsAnyOneOf(any ...string) bool {
 	return len(me) == 1 && me[0].IsAnyOneOf(any...)
 }
 
-func (me Tokens) JoinIdentPairings(sepOp string) (joined Tokens, indices map[int]int) {
+func (me Tokens) JoinPairings(joinedBy string) (jp []Tokens, jpm map[int]int) {
+	jp, jpm = make([]Tokens, 0, len(me)), make(map[int]int, len(me))
+	for i := range me {
+		isunpaired := (i == 0 || me.SpacesBetween(i-1, i) > 0) &&
+			(i == len(me)-1 || me.SpacesBetween(i, i+1) > 0)
+		ispairsep := me[i].Meta.Orig == joinedBy
+		if isunpaired {
+			jpm[len(jp)] = i
+			jp = append(jp, me[i:i+1])
+		} else if ispairsep {
+			jpm[len(jp)] = i - 1
+			jp = append(jp, me[i-1:i+2])
+		}
+	}
+	return
+}
+
+func (me Tokens) JoinIdentPairings(sepOp string) (joined Tokens, origs map[int]int) {
 	var copyfrom int
 	for i, isnil := 1, true; i < len(me)-1; i++ {
-		if me[i].Meta.Orig == sepOp && me.SpacesBetween(i-1, i) == 0 {
-			if me.SpacesBetween(i, i+1) == 0 {
-				if isnil {
-					isnil, joined, indices = false, make(Tokens, 0, len(me)-2), make(map[int]int, len(me)/3)
-				}
-				joined = append(joined, me[copyfrom:i-1]...)
-				idx := len(joined)
-				joined = append(joined, Token{flag: TOKEN_IDENT, Str: me[i-1].Str + sepOp + me[i+1].Str})
-				joined[idx].Meta = me[i-1].Meta
-				joined[idx].Meta.Orig = joined[idx].Str
-				copyfrom, i, indices[idx] = i+2, i+2, len(me[i-1].Str)
+		if me[i].Meta.Orig == sepOp && me.SpacesBetween(i-1, i) == 0 && me.SpacesBetween(i, i+1) == 0 {
+			if isnil {
+				isnil, joined, origs = false, make(Tokens, 0, len(me)-2), make(map[int]int, len(me)/3)
 			}
+			joined = append(joined, me[copyfrom:i-1]...)
+			idx := len(joined)
+			joined = append(joined, Token{flag: TOKEN_IDENT, Str: me[i-1].Str + sepOp + me[i+1].Str})
+			joined[idx].Meta = me[i-1].Meta
+			joined[idx].Meta.Orig = joined[idx].Str
+			copyfrom, i, origs[idx] = i+2, i+2, i
 		}
 	}
 	if copyfrom > 0 {
