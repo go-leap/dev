@@ -121,19 +121,20 @@ func (me Tokens) Last(matches func(*Token) bool) *Token {
 	return &me[len(me)-1]
 }
 
-func (me Tokens) FromUntil(from *Token, until *Token, inclusive bool) (slice Tokens) {
-	startfrom, endbefore := -1, -1
+func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens) {
+	fromisntnil := from != nil
+	var startfrom, endbefore int
 	for i := range me {
-		if &me[i] == from {
+		if fromisntnil && &me[i] == from {
 			startfrom = i
 		} else if &me[i] == until {
-			if endbefore = i; inclusive {
+			if endbefore = i; incl {
 				endbefore++
 			}
 			break
 		}
 	}
-	if startfrom >= 0 && endbefore > startfrom {
+	if endbefore > startfrom {
 		slice = me[startfrom:endbefore]
 	}
 	return

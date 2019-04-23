@@ -209,7 +209,7 @@ func (me Tokens) First(matches func(*Token) bool) *Token
 #### func (Tokens) FromUntil
 
 ```go
-func (me Tokens) FromUntil(from *Token, until *Token, inclusive bool) (slice Tokens)
+func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens)
 ```
 
 #### func (Tokens) HasKind
