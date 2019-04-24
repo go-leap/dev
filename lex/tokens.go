@@ -83,14 +83,23 @@ func (me Tokens) SpacesBetween(idxEarlier int, idxLater int) (numSpaces int) {
 	return
 }
 
-func (me Tokens) NumberOfCharsBetweenFirstAndLastOf(other Tokens) (dist int) {
+func (me Tokens) HasSpaces() bool {
+	for i := 1; i < len(me); i++ {
+		if diff := me[i].Meta.Position.Offset - (me[i-1].Meta.Position.Offset + len(me[i-1].Meta.Orig)); diff > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func (me Tokens) NumCharsBetweenFirstAndLastOf(other Tokens) (dist int) {
 	mfirst, olast := &me[0], &other[len(other)-1]
 	mpos, opos := mfirst.Meta.Position.Offset, olast.Meta.Position.Offset
 	dist = mpos - (opos + len(olast.Meta.Orig))
 	return
 }
 
-func (me Tokens) NumberOfCharsBetweenLastAndFirstOf(other Tokens) (dist int) {
+func (me Tokens) NumCharsBetweenLastAndFirstOf(other Tokens) (dist int) {
 	mlast, ofirst := &me[len(me)-1], &other[0]
 	mpos, opos := mlast.Meta.Position.Offset, ofirst.Meta.Position.Offset
 	dist = opos - (mpos + len(mlast.Meta.Orig))
@@ -121,9 +130,31 @@ func (me Tokens) Last(matches func(*Token) bool) *Token {
 	return &me[len(me)-1]
 }
 
+func (me Tokens) FindSub(beginsWith Tokens, endsWith Tokens) (slice Tokens) {
+	beginner, ender := beginsWith.First(nil), endsWith.Last(nil)
+	if slice = me.FromUntil(beginner, ender, true); slice == nil {
+		var db, de bool
+		for i := range me {
+			if (!db) && me[i].Meta.Offset == beginner.Meta.Offset {
+				db, beginner = true, &me[i]
+			} else if db && me[i].Meta.Offset == ender.Meta.Offset {
+				de, ender = true, &me[i]
+				break
+			}
+		}
+		if de {
+			slice = me.FromUntil(beginner, ender, true)
+		}
+	}
+	return
+}
+
 func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens) {
 	fromisntnil := from != nil
 	var startfrom, endbefore int
+	if fromisntnil {
+		startfrom = -1
+	}
 	for i := range me {
 		if fromisntnil && &me[i] == from {
 			startfrom = i
@@ -134,7 +165,7 @@ func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens) 
 			break
 		}
 	}
-	if endbefore > startfrom {
+	if startfrom > -1 && endbefore > startfrom {
 		slice = me[startfrom:endbefore]
 	}
 	return
@@ -154,14 +185,49 @@ func (me Tokens) Pos() *scanner.Position {
 	return &me[0].Meta.Position
 }
 
-func (me Tokens) BreakOnSpace() (pref Tokens, suff Tokens) {
-	for i := 1; i < len(me); i++ {
-		if diff := me[i].Meta.Position.Offset - (me[i-1].Meta.Position.Offset + len(me[i-1].Meta.Orig)); diff > 0 {
-			pref, suff = me[:i], me[i:]
-			return
+func (me Tokens) BreakOnSpace(sepOpen byte, sepClose byte) (pref Tokens, suff Tokens, didBreak bool) {
+	var depth int
+	for i := 0; i < len(me); i++ {
+		if me[i].flag == TOKEN_SEPISH {
+			if me[i].Meta.Orig[0] == sepOpen {
+				depth++
+			} else if me[i].Meta.Orig[0] == sepClose {
+				depth--
+			}
+		} else if depth == 0 && i > 0 {
+			if diff := me[i].Meta.Position.Offset - (me[i-1].Meta.Position.Offset + len(me[i-1].Meta.Orig)); diff > 0 {
+				pref, suff, didBreak = me[:i], me[i:], true
+				return
+			}
 		}
 	}
 	suff = me
+	return
+}
+
+func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte) (m map[*Token]int) {
+	var depth, startfrom int
+	for i := range me {
+		if depth == 0 && i > 0 {
+			if diff := me[i].Meta.Offset - (me[i-1].Meta.Offset + len(me[i-1].Meta.Orig)); diff > 0 {
+				if m == nil {
+					m = make(map[*Token]int, len(me))
+				}
+				m[&me[startfrom]] = i - startfrom
+				startfrom = i
+			}
+		}
+		if me[i].flag == TOKEN_SEPISH {
+			if me[i].Meta.Orig[0] == sepOpen {
+				depth++
+			} else if me[i].Meta.Orig[0] == sepClose {
+				depth--
+			}
+		}
+	}
+	if startfrom > 0 {
+		m[&me[startfrom]] = len(me) - startfrom
+	}
 	return
 }
 
@@ -236,19 +302,19 @@ func (me Tokens) Sub(sepOpen byte, sepClose byte) (sub Tokens, tail Tokens, numU
 }
 
 func (me Tokens) Chunked(byOrig string) (chunks []Tokens) {
-	var level int
+	var depth int
 	var startfrom int
 	skipsubs := len(SepsForChunking) > 0
 	for i := range me {
-		if level == 0 && me[i].Meta.Orig == byOrig {
+		if depth == 0 && me[i].Meta.Orig == byOrig {
 			chunks, startfrom = append(chunks, me[startfrom:i]), i+1
 		} else if skipsubs && (me[i].flag == TOKEN_SEPISH || (me[i].flag == TOKEN_OPISH && len(me[i].Meta.Orig) == 1)) {
 			for isclosefrom, s := len(SepsForChunking)/2, 0; s < len(SepsForChunking); s++ {
 				if isopen := s < isclosefrom; isopen && me[i].Meta.Orig[0] == SepsForChunking[s] {
-					level++
+					depth++
 					break
 				} else if (!isopen) && me[i].Meta.Orig[0] == SepsForChunking[s] {
-					level--
+					depth--
 					break
 				}
 			}

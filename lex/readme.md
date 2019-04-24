@@ -191,7 +191,7 @@ returned.
 #### func (Tokens) BreakOnSpace
 
 ```go
-func (me Tokens) BreakOnSpace() (pref Tokens, suff Tokens)
+func (me Tokens) BreakOnSpace(sepOpen byte, sepClose byte) (pref Tokens, suff Tokens, didBreak bool)
 ```
 
 #### func (Tokens) Chunked
@@ -200,10 +200,22 @@ func (me Tokens) BreakOnSpace() (pref Tokens, suff Tokens)
 func (me Tokens) Chunked(byOrig string) (chunks []Tokens)
 ```
 
+#### func (Tokens) ChunkedBySpacing
+
+```go
+func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte) (m map[*Token]int)
+```
+
 #### func (Tokens) CountKind
 
 ```go
 func (me Tokens) CountKind(kind TokenKind) (count int)
+```
+
+#### func (Tokens) FindSub
+
+```go
+func (me Tokens) FindSub(beginsWith Tokens, endsWith Tokens) (slice Tokens)
 ```
 
 #### func (Tokens) First
@@ -222,6 +234,12 @@ func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens)
 
 ```go
 func (me Tokens) HasKind(kind TokenKind) bool
+```
+
+#### func (Tokens) HasSpaces
+
+```go
+func (me Tokens) HasSpaces() bool
 ```
 
 #### func (Tokens) IndentBasedChunks
@@ -251,16 +269,16 @@ func (me Tokens) Last(matches func(*Token) bool) *Token
 func (me Tokens) Length() (length int)
 ```
 
-#### func (Tokens) NumberOfCharsBetweenFirstAndLastOf
+#### func (Tokens) NumCharsBetweenFirstAndLastOf
 
 ```go
-func (me Tokens) NumberOfCharsBetweenFirstAndLastOf(other Tokens) (dist int)
+func (me Tokens) NumCharsBetweenFirstAndLastOf(other Tokens) (dist int)
 ```
 
-#### func (Tokens) NumberOfCharsBetweenLastAndFirstOf
+#### func (Tokens) NumCharsBetweenLastAndFirstOf
 
 ```go
-func (me Tokens) NumberOfCharsBetweenLastAndFirstOf(other Tokens) (dist int)
+func (me Tokens) NumCharsBetweenLastAndFirstOf(other Tokens) (dist int)
 ```
 
 #### func (Tokens) Pos
