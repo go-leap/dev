@@ -188,6 +188,12 @@ BreakOnOpish returns all `Tokens` preceding and succeeding the next occurence of
 the specified `TokenOther` in `me`, if any — otherwise, `me,nil` will be
 returned.
 
+#### func (Tokens) BreakOnSpace
+
+```go
+func (me Tokens) BreakOnSpace() (pref Tokens, suff Tokens)
+```
+
 #### func (Tokens) Chunked
 
 ```go
@@ -231,18 +237,6 @@ subsequent 'indented' (`LineIndent` > `minLineIndent`) lines also belong to it.
 
 ```go
 func (me Tokens) IsAnyOneOf(any ...string) bool
-```
-
-#### func (Tokens) JoinIdentPairings
-
-```go
-func (me Tokens) JoinIdentPairings(sepOp string) (joined Tokens, origs map[int]int)
-```
-
-#### func (Tokens) JoinPairings
-
-```go
-func (me Tokens) JoinPairings(joinedBy string) (jp []Tokens, jpm map[int]int)
 ```
 
 #### func (Tokens) Last
