@@ -7,6 +7,8 @@
 
 ```go
 var (
+	SanitizeDirtyFloatsNextToOpishs bool
+
 	// RestrictedWhitespace causes lex errors when encountering standalone (outside
 	// comment or string or character tokens) white-space tokens other than '\n' and ' '.
 	RestrictedWhitespace bool

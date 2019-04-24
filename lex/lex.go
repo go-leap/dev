@@ -8,6 +8,8 @@ import (
 )
 
 var (
+	SanitizeDirtyFloatsNextToOpishs bool
+
 	// RestrictedWhitespace causes lex errors when encountering standalone (outside
 	// comment or string or character tokens) white-space tokens other than '\n' and ' '.
 	RestrictedWhitespace bool
@@ -151,5 +153,53 @@ func Lex(src io.Reader, filePath string, lineOff int, posOff int, toksCap int) (
 		}
 	}
 	unaccum()
+	if SanitizeDirtyFloatsNextToOpishs {
+		for i := 1; i < len(tokens); i++ {
+			if tokens[i].Meta.Line == tokens[i-1].Meta.Line {
+				switch {
+
+				case tokens[i].flag == TOKEN_OPISH && tokens[i-1].flag == TOKEN_FLOAT && tokens[i-1].Meta.Orig[len(tokens[i-1].Meta.Orig)-1] == '.' &&
+					0 == (tokens[i].Meta.Position.Offset-(tokens[i-1].Meta.Position.Offset+len(tokens[i-1].Meta.Orig))):
+
+					tokens[i].Meta.Orig = "." + tokens[i].Meta.Orig
+					tokens[i].Str = "." + tokens[i].Str
+					tokens[i].Meta.Offset--
+					tokens[i].Meta.Column--
+					tokens[i-1].flag = 10
+					tokens[i-1].Meta.Orig = tokens[i-1].Meta.Orig[:len(tokens[i-1].Meta.Orig)-1]
+					tokens[i-1].Uint, _ = strconv.ParseUint(tokens[i-1].Meta.Orig, 10, 64)
+
+				case tokens[i].flag == TOKEN_FLOAT && tokens[i].Meta.Orig[0] == '.' &&
+					0 == (tokens[i].Meta.Position.Offset-(tokens[i-1].Meta.Position.Offset+len(tokens[i-1].Meta.Orig))):
+
+					var f2ui bool
+					if tokens[i-1].flag == TOKEN_OPISH {
+						tokens[i-1].Str += "."
+						tokens[i-1].Meta.Orig += "."
+						f2ui = true
+					} else if tokens[i-1].flag == TOKEN_FLOAT && tokens[i-1].Meta.Orig[len(tokens[i-1].Meta.Orig)-1] == '.' {
+						tokens[i-1].Meta.Orig = tokens[i-1].Meta.Orig[:len(tokens[i-1].Meta.Orig)-1]
+						tokens[i-1].flag = 10
+						tokens[i-1].Uint, _ = strconv.ParseUint(tokens[i-1].Meta.Orig, 10, 64)
+						pref, suff := tokens[:i], tokens[i:]
+						var dots Token
+						dots.flag, dots.Str, dots.Meta = TOKEN_OPISH, "..", tokens[i].Meta
+						dots.Meta.Orig = ".."
+						dots.Meta.Position.Offset--
+						dots.Meta.Position.Column--
+						tokens = append(pref, append(Tokens{dots}, suff...)...)
+						f2ui, i = true, i+1
+					}
+					if f2ui {
+						tokens[i].Meta.Offset++
+						tokens[i].Meta.Column++
+						tokens[i].Meta.Orig = tokens[i].Meta.Orig[1:]
+						tokens[i].flag = 10
+						tokens[i].Uint, _ = strconv.ParseUint(tokens[i].Meta.Orig, 10, 64)
+					}
+				}
+			}
+		}
+	}
 	return
 }
