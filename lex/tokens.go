@@ -107,6 +107,9 @@ func (me Tokens) NumCharsBetweenLastAndFirstOf(other Tokens) (dist int) {
 }
 
 func (me Tokens) First(matches func(*Token) bool) *Token {
+	if len(me) == 0 {
+		return nil
+	}
 	if matches != nil {
 		for i := range me {
 			if t := &me[i]; matches(t) {
@@ -119,6 +122,9 @@ func (me Tokens) First(matches func(*Token) bool) *Token {
 }
 
 func (me Tokens) Last(matches func(*Token) bool) *Token {
+	if len(me) == 0 {
+		return nil
+	}
 	if matches != nil {
 		for i := len(me) - 1; i >= 0; i-- {
 			if t := &me[i]; matches(t) {
