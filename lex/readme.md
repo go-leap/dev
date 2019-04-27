@@ -101,6 +101,12 @@ func (me *Token) IsStrRaw() bool
 func (me *Token) Kind() (kind TokenKind)
 ```
 
+#### func (*Token) Or
+
+```go
+func (me *Token) Or(ifMeIsNilThenReturn *Token) *Token
+```
+
 #### func (*Token) Rune
 
 ```go

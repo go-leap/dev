@@ -51,6 +51,13 @@ func (me *Token) IsStrRaw() bool {
 	return me.flag == _TOKEN_STR_RAW
 }
 
+func (me *Token) Or(ifMeIsNilThenReturn *Token) *Token {
+	if me == nil {
+		return ifMeIsNilThenReturn
+	}
+	return me
+}
+
 func (me *Token) Rune() (r rune) {
 	return rune(me.Uint)
 }
