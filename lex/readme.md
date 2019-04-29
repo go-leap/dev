@@ -187,6 +187,12 @@ in `me`, plus all subsequent `Tokens` with `LineIndent` greater than
 `minLineIndent`; and in `outdented` the first and all following `Tokens` with a
 `LineIndent` less-or-equal (if any).
 
+#### func (Tokens) BreakOnLeadingComments
+
+```go
+func (me Tokens) BreakOnLeadingComments() (leadingComments Tokens, rest Tokens)
+```
+
 #### func (Tokens) BreakOnOpish
 
 ```go

@@ -237,6 +237,18 @@ func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte) (m map[*Token]int
 	return
 }
 
+func (me Tokens) BreakOnLeadingComments() (leadingComments Tokens, rest Tokens) {
+	var stopbefore int
+	for i := range me {
+		if me[i].flag != _TOKEN_COMMENT_ENCL && me[i].flag != TOKEN_COMMENT {
+			stopbefore = i
+			break
+		}
+	}
+	leadingComments, rest = me[:stopbefore], me[stopbefore:]
+	return
+}
+
 // SansComments returns the newly allocated `sans` with a `cap` of `len(me)`
 // and containing all `Tokens` in `me` except those with a `Kind` of `TOKEN_COMMENT`.
 //
