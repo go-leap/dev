@@ -348,9 +348,6 @@ func (me Tokens) IndentBasedChunks(minLineIndent int) (chunks []Tokens) {
 	}
 	for i, linenum, l := 0, me[0].Meta.Line, len(me); i < l; i++ {
 		if me[i].Meta.Line > linenum && me[i].Meta.LineIndent <= minLineIndent {
-			if minLineIndent == 8 {
-				panic(me[i].Meta.LineIndent)
-			}
 			if tlc := me[cur:i]; len(tlc) > 0 {
 				chunks = append(chunks, tlc)
 			}
