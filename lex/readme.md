@@ -217,7 +217,7 @@ func (me Tokens) Chunked(byOrig string) (chunks []Tokens)
 #### func (Tokens) ChunkedBySpacing
 
 ```go
-func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte) (m map[*Token]int)
+func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte, breaker string) (m map[*Token]int)
 ```
 
 #### func (Tokens) CountKind
