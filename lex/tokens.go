@@ -213,9 +213,12 @@ func (me Tokens) BreakOnSpace(sepOpen byte, sepClose byte) (pref Tokens, suff To
 
 func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte) (m map[*Token]int) {
 	var depth, startfrom int
+	var wascomment bool
 	for i := range me {
-		if depth == 0 && i > 0 {
-			if diff := me[i].Meta.Offset - (me[i-1].Meta.Offset + len(me[i-1].Meta.Orig)); diff > 0 {
+		d0 := (depth == 0)
+		iscomment := d0 && (me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL)
+		if d0 && i > 0 {
+			if diff := me[i].Meta.Offset - (me[i-1].Meta.Offset + len(me[i-1].Meta.Orig)); diff > 0 || wascomment || iscomment {
 				if m == nil {
 					m = make(map[*Token]int, len(me))
 				}
@@ -223,12 +226,12 @@ func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte) (m map[*Token]int
 				startfrom = i
 			}
 		}
-		if me[i].flag == TOKEN_SEPISH {
-			if me[i].Meta.Orig[0] == sepOpen {
-				depth++
-			} else if me[i].Meta.Orig[0] == sepClose {
-				depth--
-			}
+		if me[i].flag != TOKEN_SEPISH {
+			wascomment = iscomment
+		} else if me[i].Meta.Orig[0] == sepOpen {
+			depth++
+		} else if me[i].Meta.Orig[0] == sepClose {
+			depth--
 		}
 	}
 	if startfrom > 0 {
