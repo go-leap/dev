@@ -252,6 +252,7 @@ func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte, breaker string) (
 }
 
 func (me Tokens) BreakOnLeadingComments() (leadingComments Tokens, rest Tokens) {
+	// note to self, dont ever return nil, only (empty or not) sub-slices for both ret-vals
 	var stopbefore int
 	for i := range me {
 		if me[i].flag != _TOKEN_COMMENT_ENCL && me[i].flag != TOKEN_COMMENT {
