@@ -333,13 +333,17 @@ func (me Tokens) Sub(sepOpen byte, sepClose byte) (sub Tokens, tail Tokens, numU
 	return
 }
 
-func (me Tokens) Chunked(byOrig string) (chunks []Tokens) {
+func (me Tokens) Chunked(byOrig string, stopChunkingOn string) (chunks []Tokens) {
 	var depth int
 	var startfrom int
-	skipsubs := len(SepsForChunking) > 0
+	hasignore, skipsubs := stopChunkingOn != "", len(SepsForChunking) > 0
 	for i := range me {
-		if depth == 0 && me[i].Meta.Orig == byOrig {
-			chunks, startfrom = append(chunks, me[startfrom:i]), i+1
+		if depth == 0 {
+			if me[i].Meta.Orig == byOrig {
+				chunks, startfrom = append(chunks, me[startfrom:i]), i+1
+			} else if hasignore && me[i].Meta.Orig == stopChunkingOn {
+				break
+			}
 		} else if skipsubs && (me[i].flag == TOKEN_SEPISH || (me[i].flag == TOKEN_OPISH && len(me[i].Meta.Orig) == 1)) {
 			for isclosefrom, s := len(SepsForChunking)/2, 0; s < len(SepsForChunking); s++ {
 				if isopen := s < isclosefrom; isopen && me[i].Meta.Orig[0] == SepsForChunking[s] {

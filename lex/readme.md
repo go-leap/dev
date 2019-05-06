@@ -211,7 +211,7 @@ func (me Tokens) BreakOnSpace(sepOpen byte, sepClose byte) (pref Tokens, suff To
 #### func (Tokens) Chunked
 
 ```go
-func (me Tokens) Chunked(byOrig string) (chunks []Tokens)
+func (me Tokens) Chunked(byOrig string, stopChunkingOn string) (chunks []Tokens)
 ```
 
 #### func (Tokens) ChunkedBySpacing
