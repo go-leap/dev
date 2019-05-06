@@ -344,7 +344,8 @@ func (me Tokens) Chunked(byOrig string, stopChunkingOn string) (chunks []Tokens)
 			} else if hasignore && me[i].Meta.Orig == stopChunkingOn {
 				break
 			}
-		} else if skipsubs && (me[i].flag == TOKEN_SEPISH || (me[i].flag == TOKEN_OPISH && len(me[i].Meta.Orig) == 1)) {
+		}
+		if skipsubs && (me[i].flag == TOKEN_SEPISH || (me[i].flag == TOKEN_OPISH && len(me[i].Meta.Orig) == 1)) {
 			for isclosefrom, s := len(SepsForChunking)/2, 0; s < len(SepsForChunking); s++ {
 				if isopen := s < isclosefrom; isopen && me[i].Meta.Orig[0] == SepsForChunking[s] {
 					depth++
