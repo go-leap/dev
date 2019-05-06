@@ -244,6 +244,12 @@ func (me Tokens) First(matches func(*Token) bool) *Token
 func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens)
 ```
 
+#### func (Tokens) Has
+
+```go
+func (me Tokens) Has(orig string) bool
+```
+
 #### func (Tokens) HasKind
 
 ```go

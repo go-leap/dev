@@ -66,6 +66,15 @@ func (me Tokens) CountKind(kind TokenKind) (count int) {
 	return
 }
 
+func (me Tokens) Has(orig string) bool {
+	for i := range me {
+		if me[i].Meta.Orig == orig {
+			return true
+		}
+	}
+	return false
+}
+
 func (me Tokens) HasKind(kind TokenKind) bool {
 	for i := range me {
 		if me[i].Kind() == kind {
@@ -164,7 +173,8 @@ func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens) 
 	for i := range me {
 		if fromisntnil && &me[i] == from {
 			startfrom = i
-		} else if &me[i] == until {
+		}
+		if &me[i] == until {
 			if endbefore = i; incl {
 				endbefore++
 			}
