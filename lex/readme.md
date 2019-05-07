@@ -57,6 +57,13 @@ Error holds a message returned by `Error`, plus additional positional details.
 func Err(pos *scanner.Position, msg string) *Error
 ```
 
+#### func (*Error) At
+
+```go
+func (me *Error) At() *scanner.Position
+```
+At returns `Pos` (but allows for callers' interface shenanigans).
+
 #### func (*Error) Error
 
 ```go
