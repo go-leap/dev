@@ -221,13 +221,13 @@ func (me Tokens) BreakOnSpace(sepOpen byte, sepClose byte) (pref Tokens, suff To
 	return
 }
 
-func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte, breaker string) (m map[*Token]int) {
+func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte, isLen1Breaker func(int) bool) (m map[*Token]int) {
 	var depth, startfrom int
-	var wascomment, wasbreaker bool
+	var wascomment, isbreaker, wasbreaker bool
 	for i := range me {
 		d0 := (depth == 0)
 		iscomment := d0 && (me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL)
-		isbreaker := d0 && breaker != "" && me[i].Meta.Orig == breaker
+		isbreaker = d0 && isLen1Breaker != nil && len(me[i].Meta.Orig) == 1 && isLen1Breaker(i)
 		if d0 && i > 0 {
 			if diff := me[i].Meta.Offset - (me[i-1].Meta.Offset + len(me[i-1].Meta.Orig)); diff > 0 || wascomment || iscomment || wasbreaker || isbreaker {
 				if m == nil {
