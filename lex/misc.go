@@ -14,11 +14,6 @@ type Error struct {
 	Pos scanner.Position
 }
 
-// At returns `Pos` (but allows for callers' interface shenanigans).
-func (me *Error) At() *scanner.Position {
-	return &me.Pos
-}
-
 // Error implements Go's standard `error` interface.
 func (me *Error) Error() string {
 	return me.Pos.String() + ": " + me.Msg
