@@ -163,6 +163,12 @@ type Tokens []Token
 ```
 
 
+#### func (Tokens) Between
+
+```go
+func (me Tokens) Between(after *Token, before *Token) (slice Tokens)
+```
+
 #### func (Tokens) BreakOnIdent
 
 ```go

@@ -164,6 +164,27 @@ func (me Tokens) FindSub(beginsWith Tokens, endsWith Tokens) (slice Tokens) {
 	return
 }
 
+func (me Tokens) Between(after *Token, before *Token) (slice Tokens) {
+	if after != nil && before != nil {
+		var hasb bool
+		posb, posa := -1, -1
+		for i := range me {
+			if hasb {
+				if &me[i] == after {
+					posa = i
+					break
+				}
+			} else if &me[i] == before {
+				posb, hasb = i, true
+			}
+		}
+		if hasb && posa > 0 {
+			slice = me[posb+1 : posa]
+		}
+	}
+	return
+}
+
 func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens) {
 	fromisntnil := from != nil
 	var startfrom, endbefore int
