@@ -187,7 +187,7 @@ func (me Tokens) Between(after *Token, before *Token) (slice Tokens) {
 
 func (me Tokens) AreEnclosing(pos0ByteOffset int) bool {
 	if len(me) > 0 {
-		return me[0].Meta.Offset <= pos0ByteOffset && me[len(me)-1].Meta.Offset >= pos0ByteOffset
+		return me[0].Meta.Offset <= pos0ByteOffset && pos0ByteOffset <= (me[len(me)-1].Meta.Offset+len(me[len(me)-1].Meta.Orig))
 	}
 	return false
 }
