@@ -163,6 +163,12 @@ type Tokens []Token
 ```
 
 
+#### func (Tokens) AreEnclosing
+
+```go
+func (me Tokens) AreEnclosing(pos0ByteOffset int) bool
+```
+
 #### func (Tokens) Between
 
 ```go
@@ -230,12 +236,6 @@ func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte, isLen1Breaker fun
 
 ```go
 func (me Tokens) CountKind(kind TokenKind) (count int)
-```
-
-#### func (Tokens) DoEnclose
-
-```go
-func (me Tokens) DoEnclose(pos0ByteOffset int) bool
 ```
 
 #### func (Tokens) FindSub
