@@ -185,6 +185,13 @@ func (me Tokens) Between(after *Token, before *Token) (slice Tokens) {
 	return
 }
 
+func (me Tokens) DoEnclose(pos0ByteOffset int) bool {
+	if len(me) > 0 {
+		return me[0].Meta.Offset <= pos0ByteOffset && me[len(me)-1].Meta.Offset >= pos0ByteOffset
+	}
+	return false
+}
+
 func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens) {
 	fromisntnil := from != nil
 	var startfrom, endbefore int
