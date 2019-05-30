@@ -238,6 +238,12 @@ func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte, isLen1Breaker fun
 func (me Tokens) CountKind(kind TokenKind) (count int)
 ```
 
+#### func (Tokens) EqLenAndOffsets
+
+```go
+func (me Tokens) EqLenAndOffsets(toks Tokens, checkInnerOffsetsToo bool) bool
+```
+
 #### func (Tokens) FindSub
 
 ```go

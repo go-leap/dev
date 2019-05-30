@@ -192,6 +192,22 @@ func (me Tokens) AreEnclosing(pos0ByteOffset int) bool {
 	return false
 }
 
+func (me Tokens) EqLenAndOffsets(toks Tokens, checkInnerOffsetsToo bool) bool {
+	if l := len(me); l > 0 && l == len(toks) {
+		if me[0].Meta.Offset == toks[0].Meta.Offset && me[l-1].Meta.Offset == toks[l-1].Meta.Offset {
+			if checkInnerOffsetsToo {
+				for i := 1; i < l-1; i++ {
+					if me[i].Meta.Offset != toks[i].Meta.Offset {
+						return false
+					}
+				}
+			}
+			return true
+		}
+	}
+	return false
+}
+
 func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens) {
 	fromisntnil := from != nil
 	var startfrom, endbefore int
