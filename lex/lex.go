@@ -8,7 +8,9 @@ import (
 )
 
 var (
-	SanitizeDirtyFloatsNextToOpishs bool
+	// SanitizeDirtyFloatsNextToDotOpishs, if `true`, will cause `Lex` to
+	// call `Tokens.SanitizeDirtyFloatsNextToDotOpishs` on each lexeme produced.
+	SanitizeDirtyFloatsNextToDotOpishs bool
 
 	// RestrictedWhitespace causes lex errors when encountering standalone (outside
 	// comment or string or character tokens) white-space tokens other than '\n' and ' '.
@@ -33,7 +35,7 @@ var (
 // Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while lexing.
 //
 // If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
-func Lex(src io.Reader, filePath string, lineOff int, posOff int, toksCap int) (tokens Tokens, errs []*Error) {
+func Lex(src io.Reader, filePath string, toksCap int) (tokens Tokens, errs []*Error) {
 	tokens = make(Tokens, 0, toksCap) // a caller's shot-in-the-dark for an initial cap that's better than default 0
 	var (
 		onlyspacesinlinesofar = true
@@ -45,8 +47,7 @@ func Lex(src io.Reader, filePath string, lineOff int, posOff int, toksCap int) (
 	lexer.Whitespace, lexer.Mode = 1<<'\r', scanner.ScanChars|scanner.ScanComments|scanner.ScanFloats|scanner.ScanIdents|scanner.ScanInts|scanner.ScanRawStrings|scanner.ScanStrings
 	lexer.Error = func(_ *scanner.Scanner, msg string) {
 		err := Err(&lexer.Position, msg)
-		err.Pos.Filename, err.Pos.Line, err.Pos.Offset =
-			filePath, err.Pos.Line+lineOff, err.Pos.Offset+posOff
+		err.Pos.Filename = filePath
 		tokens, errs = nil, append(errs, err)
 	}
 
@@ -63,7 +64,7 @@ func Lex(src io.Reader, filePath string, lineOff int, posOff int, toksCap int) (
 	on := func(origSym string, token Token) {
 		unaccum()
 		if onlyspacesinlinesofar = false; len(errs) == 0 {
-			token.Meta.init(&lexer.Position, lineindent, origSym, lineOff, posOff)
+			token.Meta.init(&lexer.Position, lineindent, origSym)
 			tokens = append(tokens, token)
 		}
 	}
@@ -134,7 +135,7 @@ func Lex(src io.Reader, filePath string, lineOff int, posOff int, toksCap int) (
 					if !unicode.IsSpace(r) {
 						if onlyspacesinlinesofar = false; otheraccum == nil {
 							otheraccum = &Token{flag: TOKEN_OPISH}
-							otheraccum.Meta.init(&lexer.Position, lineindent, "", lineOff, posOff)
+							otheraccum.Meta.init(&lexer.Position, lineindent, "")
 						}
 						otheraccum.Str += sym
 					} else if unaccum(); r == '\n' {
@@ -151,55 +152,10 @@ func Lex(src io.Reader, filePath string, lineOff int, posOff int, toksCap int) (
 				}
 			}
 		}
-	}
-	unaccum()
-	if SanitizeDirtyFloatsNextToOpishs {
-		for i := 1; i < len(tokens); i++ {
-			if tokens[i].Meta.Line == tokens[i-1].Meta.Line {
-				switch {
-
-				case tokens[i].flag == TOKEN_OPISH && tokens[i-1].flag == TOKEN_FLOAT && tokens[i-1].Meta.Orig[len(tokens[i-1].Meta.Orig)-1] == '.' &&
-					0 == (tokens[i].Meta.Position.Offset-(tokens[i-1].Meta.Position.Offset+len(tokens[i-1].Meta.Orig))):
-
-					tokens[i].Meta.Orig = "." + tokens[i].Meta.Orig
-					tokens[i].Str = "." + tokens[i].Str
-					tokens[i].Meta.Offset--
-					tokens[i].Meta.Column--
-					tokens[i-1].flag = 10
-					tokens[i-1].Meta.Orig = tokens[i-1].Meta.Orig[:len(tokens[i-1].Meta.Orig)-1]
-					tokens[i-1].Uint, _ = strconv.ParseUint(tokens[i-1].Meta.Orig, 10, 64)
-
-				case tokens[i].flag == TOKEN_FLOAT && tokens[i].Meta.Orig[0] == '.' &&
-					0 == (tokens[i].Meta.Position.Offset-(tokens[i-1].Meta.Position.Offset+len(tokens[i-1].Meta.Orig))):
-
-					var f2ui bool
-					if tokens[i-1].flag == TOKEN_OPISH {
-						tokens[i-1].Str += "."
-						tokens[i-1].Meta.Orig += "."
-						f2ui = true
-					} else if tokens[i-1].flag == TOKEN_FLOAT && tokens[i-1].Meta.Orig[len(tokens[i-1].Meta.Orig)-1] == '.' {
-						tokens[i-1].Meta.Orig = tokens[i-1].Meta.Orig[:len(tokens[i-1].Meta.Orig)-1]
-						tokens[i-1].flag = 10
-						tokens[i-1].Uint, _ = strconv.ParseUint(tokens[i-1].Meta.Orig, 10, 64)
-						pref, suff := tokens[:i], tokens[i:]
-						var dots Token
-						dots.flag, dots.Str, dots.Meta = TOKEN_OPISH, "..", tokens[i].Meta
-						dots.Meta.Orig = ".."
-						dots.Meta.Position.Offset--
-						dots.Meta.Position.Column--
-						tokens = append(pref, append(Tokens{dots}, suff...)...)
-						f2ui, i = true, i+1
-					}
-					if f2ui {
-						tokens[i].Meta.Offset++
-						tokens[i].Meta.Column++
-						tokens[i].Meta.Orig = tokens[i].Meta.Orig[1:]
-						tokens[i].flag = 10
-						tokens[i].Uint, _ = strconv.ParseUint(tokens[i].Meta.Orig, 10, 64)
-					}
-				}
-			}
+		if SanitizeDirtyFloatsNextToDotOpishs {
+			tokens.SanitizeDirtyFloatsNextToDotOpishs(len(tokens) - 1)
 		}
 	}
+	unaccum()
 	return
 }

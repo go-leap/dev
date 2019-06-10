@@ -90,15 +90,18 @@ SrcMsgsFromLns returns all `SrcMsg` results from calling `SrcMsgFromLn` on all
 ```go
 func (me SrcMsgs) Len() int
 ```
+Len implements `sort.Interface`.
 
 #### func (SrcMsgs) Less
 
 ```go
 func (me SrcMsgs) Less(i, j int) bool
 ```
+Less implements `sort.Interface`.
 
 #### func (SrcMsgs) Swap
 
 ```go
 func (me SrcMsgs) Swap(i, j int)
 ```
+Swap implements `sort.Interface`.

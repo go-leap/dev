@@ -2,17 +2,21 @@ package udevlex
 
 import (
 	"bytes"
+	"strconv"
 	"text/scanner"
 )
 
+// Tokens is a slice of `Token`s.
 type Tokens []Token
 
-// BreakOnIndent returns in `indented` all `Tokens` on the same line as the first in `me`, plus all subsequent `Tokens` with `LineIndent` greater than `minLineIndent`; and in `outdented` the first and all following `Tokens` with a `LineIndent` less-or-equal (if any).
+// BreakOnIndent returns in `indented` all `Tokens` on the same line as the first in `me`,
+// plus all subsequent `Tokens` with `LineIndent` greater than `minLineIndent`; and in `outdented`
+// the first and all following `Tokens` with a `LineIndent` less-or-equal (if any).
 func (me Tokens) BreakOnIndent(minLineIndent int) (indented Tokens, outdented Tokens) {
 	if len(me) > 0 {
-		linenum := me[0].Meta.Line
+		linenum := me[0].Meta.Pos.Line
 		for i := 1; i < len(me); i++ {
-			if me[i].Meta.Line != linenum && me[i].Meta.LineIndent <= minLineIndent {
+			if me[i].Meta.Pos.Line != linenum && me[i].Meta.LineIndent <= minLineIndent {
 				indented, outdented = me[:i], me[i:]
 				return
 			}
@@ -57,6 +61,7 @@ func (me Tokens) BreakOnOpish(token string) (pref Tokens, op *Token, suff Tokens
 	return
 }
 
+// CountKind returns the number of `Token`s with the specified `Kind`.
 func (me Tokens) CountKind(kind TokenKind) (count int) {
 	for i := range me {
 		if me[i].Kind() == kind {
@@ -66,6 +71,7 @@ func (me Tokens) CountKind(kind TokenKind) (count int) {
 	return
 }
 
+// Has returns whether any of the `Tokens` was produced from the specified original source sub-string.
 func (me Tokens) Has(orig string) bool {
 	for i := range me {
 		if me[i].Meta.Orig == orig {
@@ -75,6 +81,7 @@ func (me Tokens) Has(orig string) bool {
 	return false
 }
 
+// HasKind returns whether any of the `Tokens` is of the specified `Kind`.
 func (me Tokens) HasKind(kind TokenKind) bool {
 	for i := range me {
 		if me[i].Kind() == kind {
@@ -84,37 +91,33 @@ func (me Tokens) HasKind(kind TokenKind) bool {
 	return false
 }
 
-func (me Tokens) SpacesBetween(idxEarlier int, idxLater int) (numSpaces int) {
-	if idxEarlier != idxLater {
-		poslatter, posformer := me[idxLater].Meta.Position.Offset, me[idxEarlier].Meta.Position.Offset+len(me[idxEarlier].Meta.Orig)
-		numSpaces = poslatter - posformer
-	}
-	return
-}
-
+// HasSpaces returns whether any two consecutive `Tokens` suggest that there is white-space in between each other.
 func (me Tokens) HasSpaces() bool {
 	for i := 1; i < len(me); i++ {
-		if diff := me[i].Meta.Position.Offset - (me[i-1].Meta.Position.Offset + len(me[i-1].Meta.Orig)); diff > 0 {
+		if diff := me[i].Meta.Pos.Offset - (me[i-1].Meta.Pos.Offset + len(me[i-1].Meta.Orig)); diff > 0 {
 			return true
 		}
 	}
 	return false
 }
 
+// NumCharsBetweenFirstAndLastOf returns the number of characters between the first `Token` in `me` and the end of the last `Token` in `other`.
 func (me Tokens) NumCharsBetweenFirstAndLastOf(other Tokens) (dist int) {
 	mfirst, olast := &me[0], &other[len(other)-1]
-	mpos, opos := mfirst.Meta.Position.Offset, olast.Meta.Position.Offset
+	mpos, opos := mfirst.Meta.Pos.Offset, olast.Meta.Pos.Offset
 	dist = mpos - (opos + len(olast.Meta.Orig))
 	return
 }
 
+// NumCharsBetweenLastAndFirstOf returns the number of characters between the first `Token` in `other` and the end of the last `Token` in `me`.
 func (me Tokens) NumCharsBetweenLastAndFirstOf(other Tokens) (dist int) {
 	mlast, ofirst := &me[len(me)-1], &other[0]
-	mpos, opos := mlast.Meta.Position.Offset, ofirst.Meta.Position.Offset
+	mpos, opos := mlast.Meta.Pos.Offset, ofirst.Meta.Pos.Offset
 	dist = opos - (mpos + len(mlast.Meta.Orig))
 	return
 }
 
+// First returns the first `Token` if `matches` is `nil`, else the first for which it returns `true`.
 func (me Tokens) First(matches func(*Token) bool) *Token {
 	if len(me) == 0 {
 		return nil
@@ -130,6 +133,7 @@ func (me Tokens) First(matches func(*Token) bool) *Token {
 	return &me[0]
 }
 
+// Last returns the last `Token` if `matches` is `nil`, else the last one for which it returns `true`.
 func (me Tokens) Last(matches func(*Token) bool) *Token {
 	if len(me) == 0 {
 		return nil
@@ -145,14 +149,19 @@ func (me Tokens) Last(matches func(*Token) bool) *Token {
 	return &me[len(me)-1]
 }
 
+// FindSub initially calls `FromUntil` but if the result is `nil` because
+// `beginsWith` / `endsWith` aren't sub-slices of `me`, it figures out the proper
+// beginner/ender from `TokenMeta.Pos.Offset` values of the `First(nil)` of
+// `beginsWith` and the `Last(nil)` of `endsWith`. In any case, only the first
+// `Token` in `beginsWith` and the last in `endsWith` are ever considered.
 func (me Tokens) FindSub(beginsWith Tokens, endsWith Tokens) (slice Tokens) {
 	beginner, ender := beginsWith.First(nil), endsWith.Last(nil)
 	if slice = me.FromUntil(beginner, ender, true); slice == nil {
 		var db, de bool
 		for i := range me {
-			if (!db) && me[i].Meta.Offset == beginner.Meta.Offset {
+			if (!db) && me[i].Meta.Pos.Offset == beginner.Meta.Pos.Offset {
 				db, beginner = true, &me[i]
-			} else if db && me[i].Meta.Offset == ender.Meta.Offset {
+			} else if db && me[i].Meta.Pos.Offset == ender.Meta.Pos.Offset {
 				de, ender = true, &me[i]
 				break
 			}
@@ -164,6 +173,7 @@ func (me Tokens) FindSub(beginsWith Tokens, endsWith Tokens) (slice Tokens) {
 	return
 }
 
+// Between returns the `Tokens` that come after `after` and before `before`.
 func (me Tokens) Between(after *Token, before *Token) (slice Tokens) {
 	if after != nil && before != nil {
 		var hasb bool
@@ -185,19 +195,21 @@ func (me Tokens) Between(after *Token, before *Token) (slice Tokens) {
 	return
 }
 
+// AreEnclosing returns whether the `Tokens` enclose the specified 0-based, byte-based offset position.
 func (me Tokens) AreEnclosing(pos0ByteOffset int) bool {
 	if len(me) > 0 {
-		return me[0].Meta.Offset <= pos0ByteOffset && pos0ByteOffset <= (me[len(me)-1].Meta.Offset+len(me[len(me)-1].Meta.Orig))
+		return me[0].Meta.Pos.Offset <= pos0ByteOffset && pos0ByteOffset <= (me[len(me)-1].Meta.Pos.Offset+len(me[len(me)-1].Meta.Orig))
 	}
 	return false
 }
 
+// EqLenAndOffsets returns at least whether `me` and `toks` have the same `len` and the `First` and `Last` of both share the same `TokenMeta.Pos.Offset`. If `checkInnerOffsetsToo` is `true`, all other `Tokens` (not just the `First` and `Last` ones) are compared as well.
 func (me Tokens) EqLenAndOffsets(toks Tokens, checkInnerOffsetsToo bool) bool {
 	if l := len(me); l > 0 && l == len(toks) {
-		if me[0].Meta.Offset == toks[0].Meta.Offset && me[l-1].Meta.Offset == toks[l-1].Meta.Offset {
+		if me[0].Meta.Pos.Offset == toks[0].Meta.Pos.Offset && me[l-1].Meta.Pos.Offset == toks[l-1].Meta.Pos.Offset {
 			if checkInnerOffsetsToo {
 				for i := 1; i < l-1; i++ {
-					if me[i].Meta.Offset != toks[i].Meta.Offset {
+					if me[i].Meta.Pos.Offset != toks[i].Meta.Pos.Offset {
 						return false
 					}
 				}
@@ -208,6 +220,7 @@ func (me Tokens) EqLenAndOffsets(toks Tokens, checkInnerOffsetsToo bool) bool {
 	return false
 }
 
+// FromUntil returns the `Tokens` from `from` (or the beginning, if `nil`) until `until` (or the end, if `nil`). If `incl` is `true`, `until` is included in `slice`.
 func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens) {
 	fromisntnil := from != nil
 	var startfrom, endbefore int
@@ -231,20 +244,23 @@ func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens) 
 	return
 }
 
+// Length returns the length of the original source sub-string that this `Tokens` slice represents (without traversing it).
 func (me Tokens) Length() (length int) {
 	if l := len(me); l == 1 {
 		length = len(me[0].Meta.Orig)
 	} else if l > 1 {
 		mfirst, mlast := &me[0].Meta, &me[l-1].Meta
-		length = (mlast.Position.Offset - mfirst.Position.Offset) + len(mlast.Orig)
+		length = (mlast.Pos.Offset - mfirst.Pos.Offset) + len(mlast.Orig)
 	}
 	return
 }
 
+// Pos returns the `TokenMeta.Pos` of the `First` `Token` in `me`.
 func (me Tokens) Pos() *scanner.Position {
-	return &me[0].Meta.Position
+	return &me[0].Meta.Pos
 }
 
+// BreakOnSpace splits up `me` into `pref` and `suff` between the first two consecutive `Tokens` that suggest white-space in between each other. If no such pair exists, `didBreak` is `false` and `pref` is `nil` and `suff` is `me`.
 func (me Tokens) BreakOnSpace(sepOpen byte, sepClose byte) (pref Tokens, suff Tokens, didBreak bool) {
 	var depth int
 	for i := 0; i < len(me); i++ {
@@ -255,7 +271,7 @@ func (me Tokens) BreakOnSpace(sepOpen byte, sepClose byte) (pref Tokens, suff To
 				depth--
 			}
 		} else if depth == 0 && i > 0 {
-			if diff := me[i].Meta.Position.Offset - (me[i-1].Meta.Position.Offset + len(me[i-1].Meta.Orig)); diff > 0 {
+			if diff := me[i].Meta.Pos.Offset - (me[i-1].Meta.Pos.Offset + len(me[i-1].Meta.Orig)); diff > 0 {
 				pref, suff, didBreak = me[:i], me[i:], true
 				return
 			}
@@ -265,15 +281,18 @@ func (me Tokens) BreakOnSpace(sepOpen byte, sepClose byte) (pref Tokens, suff To
 	return
 }
 
-func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte, isLen1Breaker func(int) bool) (m map[*Token]int) {
+// CrampedOnes records in `m` any `Token` in `me` that begins a sequence of non-white-space-separated
+// lexemes and the length of that sequence. If no such sequence exists, `m` will be `nil`.
+// If `isBreaker` isn't `nil`, it can identify language-specific tokens that break this logic, such as `,`.
+func (me Tokens) CrampedOnes(sepOpen byte, sepClose byte, isBreaker func(int) bool) (m map[*Token]int) {
 	var depth, startfrom int
 	var wascomment, isbreaker, wasbreaker bool
 	for i := range me {
 		d0 := (depth == 0)
 		iscomment := d0 && (me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL)
-		isbreaker = d0 && isLen1Breaker != nil && len(me[i].Meta.Orig) == 1 && isLen1Breaker(i)
+		isbreaker = d0 && isBreaker != nil && isBreaker(i)
 		if d0 && i > 0 {
-			if diff := me[i].Meta.Offset - (me[i-1].Meta.Offset + len(me[i-1].Meta.Orig)); diff > 0 || wascomment || iscomment || wasbreaker || isbreaker {
+			if diff := me[i].Meta.Pos.Offset - (me[i-1].Meta.Pos.Offset + len(me[i-1].Meta.Orig)); diff > 0 || wascomment || iscomment || wasbreaker || isbreaker {
 				if m == nil {
 					m = make(map[*Token]int, len(me))
 				}
@@ -295,8 +314,8 @@ func (me Tokens) ChunkedBySpacing(sepOpen byte, sepClose byte, isLen1Breaker fun
 	return
 }
 
+// BreakOnLeadingComments returns the `leadingComments` (which could be empty) as well as the `rest`.
 func (me Tokens) BreakOnLeadingComments() (leadingComments Tokens, rest Tokens) {
-	// note to self, dont ever return nil, only (empty or not) sub-slices for both ret-vals
 	var stopbefore int
 	for i := range me {
 		if me[i].flag != _TOKEN_COMMENT_ENCL && me[i].flag != TOKEN_COMMENT {
@@ -378,6 +397,8 @@ func (me Tokens) Sub(sepOpen byte, sepClose byte) (sub Tokens, tail Tokens, numU
 	return
 }
 
+// Chunked splits `me` into `chunks` separated by `TokenMeta.Orig` occurrences of `byOrig`,
+// stopping at the first occurrence of `stopChunkingOn` (if specified).
 func (me Tokens) Chunked(byOrig string, stopChunkingOn string) (chunks []Tokens) {
 	var depth int
 	var startfrom int
@@ -410,6 +431,7 @@ func (me Tokens) Chunked(byOrig string, stopChunkingOn string) (chunks []Tokens)
 	return
 }
 
+// IsAnyOneOf calls `Token.IsAnyOneOf` is `me` has only one `Token`.
 func (me Tokens) IsAnyOneOf(any ...string) bool {
 	return len(me) == 1 && me[0].IsAnyOneOf(any...)
 }
@@ -422,12 +444,12 @@ func (me Tokens) IndentBasedChunks(minLineIndent int) (chunks []Tokens) {
 	if minLineIndent < 0 {
 		minLineIndent = me[0].Meta.LineIndent
 	}
-	for i, linenum, l := 0, me[0].Meta.Line, len(me); i < l; i++ {
-		if me[i].Meta.Line > linenum && me[i].Meta.LineIndent <= minLineIndent {
+	for i, linenum, l := 0, me[0].Meta.Pos.Line, len(me); i < l; i++ {
+		if me[i].Meta.Pos.Line > linenum && me[i].Meta.LineIndent <= minLineIndent {
 			if tlc := me[cur:i]; len(tlc) > 0 {
 				chunks = append(chunks, tlc)
 			}
-			cur, linenum = i, me[i].Meta.Line
+			cur, linenum = i, me[i].Meta.Pos.Line
 		}
 	}
 	if cur < len(me) {
@@ -438,15 +460,69 @@ func (me Tokens) IndentBasedChunks(minLineIndent int) (chunks []Tokens) {
 	return
 }
 
+// SanitizeDirtyFloatsNextToDotOpishs attempts to undo sometimes-unwanted
+// float tokenizations by `text/scanner`, such as `0..1` into `0.0` and `0.1`,
+// or `0...1` into `0.0` and `.` and `0.1`, replacing with the corresponding
+// uint / dot `Token` combinations instead. `i > 0 && i < len(me)` must hold.
+func (me *Tokens) SanitizeDirtyFloatsNextToDotOpishs(i int) {
+	if mod, tokens := false, *me; i > 0 && tokens[i].Meta.Pos.Line == tokens[i-1].Meta.Pos.Line {
+		switch {
+		case tokens[i].flag == TOKEN_OPISH && tokens[i-1].flag == TOKEN_FLOAT && tokens[i-1].Meta.Orig[len(tokens[i-1].Meta.Orig)-1] == '.' &&
+			0 == (tokens[i].Meta.Pos.Offset-(tokens[i-1].Meta.Pos.Offset+len(tokens[i-1].Meta.Orig))):
+
+			tokens[i].Meta.Orig = "." + tokens[i].Meta.Orig
+			tokens[i].Str = "." + tokens[i].Str
+			tokens[i].Meta.Pos.Offset--
+			tokens[i].Meta.Pos.Column--
+			tokens[i-1].flag = 10
+			tokens[i-1].Meta.Orig = tokens[i-1].Meta.Orig[:len(tokens[i-1].Meta.Orig)-1]
+			tokens[i-1].Uint, _ = strconv.ParseUint(tokens[i-1].Meta.Orig, 10, 64)
+
+		case tokens[i].flag == TOKEN_FLOAT && tokens[i].Meta.Orig[0] == '.' &&
+			0 == (tokens[i].Meta.Pos.Offset-(tokens[i-1].Meta.Pos.Offset+len(tokens[i-1].Meta.Orig))):
+
+			var f2ui bool
+			if tokens[i-1].flag == TOKEN_OPISH {
+				tokens[i-1].Str += "."
+				tokens[i-1].Meta.Orig += "."
+				f2ui = true
+			} else if tokens[i-1].flag == TOKEN_FLOAT && tokens[i-1].Meta.Orig[len(tokens[i-1].Meta.Orig)-1] == '.' {
+				tokens[i-1].Meta.Orig = tokens[i-1].Meta.Orig[:len(tokens[i-1].Meta.Orig)-1]
+				tokens[i-1].flag = 10
+				tokens[i-1].Uint, _ = strconv.ParseUint(tokens[i-1].Meta.Orig, 10, 64)
+				pref, suff := tokens[:i], tokens[i:]
+				var dots Token
+				dots.flag, dots.Str, dots.Meta = TOKEN_OPISH, "..", tokens[i].Meta
+				dots.Meta.Orig = ".."
+				dots.Meta.Pos.Offset--
+				dots.Meta.Pos.Column--
+				mod, tokens = true, append(pref, append(Tokens{dots}, suff...)...)
+				f2ui, i = true, i+1
+			}
+			if f2ui {
+				tokens[i].Meta.Pos.Offset++
+				tokens[i].Meta.Pos.Column++
+				tokens[i].Meta.Orig = tokens[i].Meta.Orig[1:]
+				tokens[i].flag = 10
+				tokens[i].Uint, _ = strconv.ParseUint(tokens[i].Meta.Orig, 10, 64)
+			}
+		}
+		if mod {
+			*me = tokens
+		}
+	}
+}
+
+// String returns a representation of `Tokens` handy for troubleshooting / diagnostics.
 func (me Tokens) String() string {
 	if len(me) == 0 {
 		return ""
 	}
 	var buf bytes.Buffer
 	for i := 0; i < len(me); i++ {
-		buf.WriteString(" [")
+		buf.WriteString(" ‹")
 		buf.WriteString(me[i].String())
-		buf.WriteString("]   ")
+		buf.WriteString("›   ")
 	}
 	return buf.String()[1:]
 }

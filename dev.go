@@ -11,8 +11,13 @@ import (
 // SrcMsgs implements `sort.Interface`.
 type SrcMsgs []*SrcMsg
 
-func (me SrcMsgs) Len() int           { return len(me) }
-func (me SrcMsgs) Swap(i, j int)      { me[i], me[j] = me[j], me[i] }
+// Len implements `sort.Interface`.
+func (me SrcMsgs) Len() int { return len(me) }
+
+// Swap implements `sort.Interface`.
+func (me SrcMsgs) Swap(i, j int) { me[i], me[j] = me[j], me[i] }
+
+// Less implements `sort.Interface`.
 func (me SrcMsgs) Less(i, j int) bool { return me[i].Msg < me[j].Msg }
 
 // SrcMsg captures tool-provided information about some source code location.
