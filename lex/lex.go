@@ -26,9 +26,12 @@ var (
 	// and will always stand alone in the resulting stream of lexemes.
 	StandaloneSeps []string
 
-	// SepsForChunking is used by `Tokens.Chunked` and must be of even length
-	// beginning with all the openers and ending with all the closers, ie. both
+	// SepsForChunking is used by `Tokens.Chunked`, `Tokens.BreakOnSpace`,
+	// `Tokens.Has`, `Tokens.CrampedOnes`, and must be of even length
+	// beginning with all the openers and ending with all the closers: both
 	// equal-length halves joined together such as "[(<{}>)]" or "«‹/\›»" etc.
+	// The mentioned methods skip their logic while passing tokens one or
+	// several levels deep within these delimiters.
 	SepsForChunking string
 )
 

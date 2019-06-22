@@ -25,9 +25,12 @@ var (
 	// and will always stand alone in the resulting stream of lexemes.
 	StandaloneSeps []string
 
-	// SepsForChunking is used by `Tokens.Chunked` and must be of even length
-	// beginning with all the openers and ending with all the closers, ie. both
+	// SepsForChunking is used by `Tokens.Chunked`, `Tokens.BreakOnSpace`,
+	// `Tokens.Has`, `Tokens.CrampedOnes`, and must be of even length
+	// beginning with all the openers and ending with all the closers: both
 	// equal-length halves joined together such as "[(<{}>)]" or "«‹/\›»" etc.
+	// The mentioned methods skip their logic while passing tokens one or
+	// several levels deep within these delimiters.
 	SepsForChunking string
 )
 ```
@@ -255,7 +258,7 @@ returned.
 #### func (Tokens) BreakOnSpace
 
 ```go
-func (me Tokens) BreakOnSpace(sepOpen byte, sepClose byte) (pref Tokens, suff Tokens, didBreak bool)
+func (me Tokens) BreakOnSpace(deep bool) (pref Tokens, suff Tokens, didBreak bool)
 ```
 BreakOnSpace splits up `me` into `pref` and `suff` between the first two
 consecutive `Tokens` that suggest white-space in between each other. If no such
@@ -279,7 +282,7 @@ CountKind returns the number of `Token`s with the specified `Kind`.
 #### func (Tokens) CrampedOnes
 
 ```go
-func (me Tokens) CrampedOnes(sepOpen byte, sepClose byte, isBreaker func(int) bool) (m map[*Token]int)
+func (me Tokens) CrampedOnes(isBreaker func(int) bool) (m map[*Token]int)
 ```
 CrampedOnes records in `m` any `Token` in `me` that begins a sequence of
 non-white-space-separated lexemes and the length of that sequence. If no such
@@ -327,7 +330,7 @@ FromUntil returns the `Tokens` from `from` (or the beginning, if `nil`) until
 #### func (Tokens) Has
 
 ```go
-func (me Tokens) Has(orig string) bool
+func (me Tokens) Has(orig string, deep bool) bool
 ```
 Has returns whether any of the `Tokens` was produced from the specified original
 source sub-string.
@@ -439,9 +442,9 @@ diagnostics.
 func (me Tokens) Sub(sepOpen byte, sepClose byte) (sub Tokens, tail Tokens, numUnclosed int)
 ```
 Sub assumes (but won't check: up to the caller) that `me` begins with a
-`TokenSep` of `sepOpen` and returns in `sub` the subsequence of `Tokens` up
-until a matching `TokenSep` of `sepClose`. If no correct subsequence is found,
-`sub` is `nil` and `tail` is `me` (and `numUnclosed` might be non-`0` to
+`TOKEN_SEPISH` of `sepOpen` and returns in `sub` the subsequence of `Tokens` up
+until a matching `TOKEN_SEPISH` of `sepClose`. If no correct subsequence is
+found, `sub` is `nil` and `tail` is `me` (and `numUnclosed` might be non-`0` to
 indicate the number of unclosed groupings) — otherwise `sub` is the subsequence
 immediately following the opening `sepOpen` up to and excluding the matching
 `sepClose`, and `tail` is all trailing `Tokens` immediately following it.

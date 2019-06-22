@@ -71,10 +71,15 @@ func (me Tokens) CountKind(kind TokenKind) (count int) {
 	return
 }
 
-// Has returns whether any of the `Tokens` was produced from the specified original source sub-string.
-func (me Tokens) Has(orig string) bool {
+// Has returns whether any of the `Tokens` was produced from the specified
+// original source sub-string.
+func (me Tokens) Has(orig string, deep bool) bool {
+	var depth int
+	skipsubs := len(SepsForChunking) > 0 && !deep
 	for i := range me {
-		if me[i].Meta.Orig == orig {
+		if d := me[i].sepsDepthIncrement(skipsubs); d != 0 {
+			depth += d
+		} else if me[i].Meta.Orig == orig {
 			return true
 		}
 	}
@@ -261,16 +266,15 @@ func (me Tokens) Pos() *scanner.Position {
 }
 
 // BreakOnSpace splits up `me` into `pref` and `suff` between the first two consecutive `Tokens` that suggest white-space in between each other. If no such pair exists, `didBreak` is `false` and `pref` is `nil` and `suff` is `me`.
-func (me Tokens) BreakOnSpace(sepOpen byte, sepClose byte) (pref Tokens, suff Tokens, didBreak bool) {
+func (me Tokens) BreakOnSpace(deep bool) (pref Tokens, suff Tokens, didBreak bool) {
 	var depth int
+	skipsubs := len(SepsForChunking) > 0 && !deep
 	for i := 0; i < len(me); i++ {
-		if me[i].flag == TOKEN_SEPISH {
-			if me[i].Meta.Orig[0] == sepOpen {
-				depth++
-			} else if me[i].Meta.Orig[0] == sepClose {
-				depth--
-			}
-		} else if depth == 0 && i > 0 {
+		if d := me[i].sepsDepthIncrement(skipsubs); d != 0 {
+			depth += d
+			continue
+		}
+		if depth == 0 && i > 0 {
 			if diff := me[i].Meta.Pos.Offset - (me[i-1].Meta.Pos.Offset + len(me[i-1].Meta.Orig)); diff > 0 {
 				pref, suff, didBreak = me[:i], me[i:], true
 				return
@@ -284,9 +288,10 @@ func (me Tokens) BreakOnSpace(sepOpen byte, sepClose byte) (pref Tokens, suff To
 // CrampedOnes records in `m` any `Token` in `me` that begins a sequence of non-white-space-separated
 // lexemes and the length of that sequence. If no such sequence exists, `m` will be `nil`.
 // If `isBreaker` isn't `nil`, it can identify language-specific tokens that break this logic, such as `,`.
-func (me Tokens) CrampedOnes(sepOpen byte, sepClose byte, isBreaker func(int) bool) (m map[*Token]int) {
+func (me Tokens) CrampedOnes(isBreaker func(int) bool) (m map[*Token]int) {
 	var depth, startfrom int
 	var wascomment, isbreaker, wasbreaker bool
+	skipsubs := len(SepsForChunking) > 0
 	for i := range me {
 		d0 := (depth == 0)
 		iscomment := d0 && (me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL)
@@ -302,10 +307,8 @@ func (me Tokens) CrampedOnes(sepOpen byte, sepClose byte, isBreaker func(int) bo
 		}
 		if me[i].flag != TOKEN_SEPISH {
 			wascomment, wasbreaker = iscomment, isbreaker
-		} else if me[i].Meta.Orig[0] == sepOpen {
-			depth++
-		} else if me[i].Meta.Orig[0] == sepClose {
-			depth--
+		} else {
+			depth += me[i].sepsDepthIncrement(skipsubs)
 		}
 	}
 	if startfrom > 0 {
@@ -374,8 +377,8 @@ func (me Tokens) SansComments(keepIn map[*Token][]int, oldIndices map[*Token]int
 	return
 }
 
-// Sub assumes (but won't check: up to the caller) that `me` begins with a `TokenSep` of
-// `sepOpen` and returns in `sub` the subsequence of `Tokens` up until a matching `TokenSep` of
+// Sub assumes (but won't check: up to the caller) that `me` begins with a `TOKEN_SEPISH` of
+// `sepOpen` and returns in `sub` the subsequence of `Tokens` up until a matching `TOKEN_SEPISH` of
 // `sepClose`. If no correct subsequence is found, `sub` is `nil` and `tail` is `me` (and
 // `numUnclosed` might be non-`0` to indicate the number of unclosed groupings) — otherwise `sub`
 // is the  subsequence immediately following the opening `sepOpen` up to and excluding the matching
@@ -411,17 +414,7 @@ func (me Tokens) Chunked(byOrig string, stopChunkingOn string) (chunks []Tokens)
 				break
 			}
 		}
-		if skipsubs && (me[i].flag == TOKEN_SEPISH || (me[i].flag == TOKEN_OPISH && len(me[i].Meta.Orig) == 1)) {
-			for isclosefrom, s := len(SepsForChunking)/2, 0; s < len(SepsForChunking); s++ {
-				if isopen := s < isclosefrom; isopen && me[i].Meta.Orig[0] == SepsForChunking[s] {
-					depth++
-					break
-				} else if (!isopen) && me[i].Meta.Orig[0] == SepsForChunking[s] {
-					depth--
-					break
-				}
-			}
-		}
+		depth += me[i].sepsDepthIncrement(skipsubs)
 	}
 	if startfrom == 0 {
 		chunks = []Tokens{me}

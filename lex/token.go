@@ -104,6 +104,19 @@ func (me *Token) IsAnyOneOf(any ...string) bool {
 	return false
 }
 
+func (me *Token) sepsDepthIncrement(skipSubs bool) int {
+	if skipSubs && me.flag == TOKEN_SEPISH {
+		for isclosefrom, s := len(SepsForChunking)/2, 0; s < len(SepsForChunking); s++ {
+			if isopen := s < isclosefrom; isopen && me.Meta.Orig[0] == SepsForChunking[s] {
+				return 1
+			} else if (!isopen) && me.Meta.Orig[0] == SepsForChunking[s] {
+				return -1
+			}
+		}
+	}
+	return 0
+}
+
 // TokenMeta provides a `Token`'s `Position`, `LineIndent` and `Orig` source sub-string.
 type TokenMeta struct {
 	Pos        scanner.Position
