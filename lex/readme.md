@@ -318,10 +318,16 @@ func (me Tokens) First(matches func(*Token) bool) *Token
 First returns the first `Token` if `matches` is `nil`, else the first for which
 it returns `true`.
 
+#### func (Tokens) First1
+
+```go
+func (me Tokens) First1() (r *Token)
+```
+
 #### func (Tokens) FromUntil
 
 ```go
-func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens)
+func (me Tokens) FromUntil(from *Token, until *Token, incl bool) Tokens
 ```
 FromUntil returns the `Tokens` from `from` (or the beginning, if `nil`) until
 `until` (or the end, if `nil`). If `incl` is `true`, `until` is included in
@@ -373,6 +379,12 @@ func (me Tokens) Last(matches func(*Token) bool) *Token
 ```
 Last returns the last `Token` if `matches` is `nil`, else the last one for which
 it returns `true`.
+
+#### func (Tokens) Last1
+
+```go
+func (me Tokens) Last1() (r *Token)
+```
 
 #### func (Tokens) Length
 

@@ -138,6 +138,20 @@ func (me Tokens) First(matches func(*Token) bool) *Token {
 	return &me[0]
 }
 
+func (me Tokens) First1() (r *Token) {
+	if len(me) > 0 {
+		r = &me[0]
+	}
+	return
+}
+
+func (me Tokens) Last1() (r *Token) {
+	if len(me) > 0 {
+		r = &me[len(me)-1]
+	}
+	return
+}
+
 // Last returns the last `Token` if `matches` is `nil`, else the last one for which it returns `true`.
 func (me Tokens) Last(matches func(*Token) bool) *Token {
 	if len(me) == 0 {
@@ -226,27 +240,36 @@ func (me Tokens) EqLenAndOffsets(toks Tokens, checkInnerOffsetsToo bool) bool {
 }
 
 // FromUntil returns the `Tokens` from `from` (or the beginning, if `nil`) until `until` (or the end, if `nil`). If `incl` is `true`, `until` is included in `slice`.
-func (me Tokens) FromUntil(from *Token, until *Token, incl bool) (slice Tokens) {
-	fromisntnil := from != nil
+func (me Tokens) FromUntil(from *Token, until *Token, incl bool) Tokens {
+	if len(me) == 0 || (incl && (from == nil || from == &me[0]) && (until == nil || until == &me[len(me)-1])) {
+		return me
+	}
 	var startfrom, endbefore int
-	if fromisntnil {
+	if from != nil {
 		startfrom = -1
 	}
+	if until == nil {
+		endbefore = len(me) - 1
+	} else {
+		endbefore = -1
+	}
 	for i := range me {
-		if fromisntnil && &me[i] == from {
+		if startfrom < 0 && &me[i] == from {
 			startfrom = i
 		}
-		if &me[i] == until {
-			if endbefore = i; incl {
+		if endbefore < 0 && &me[i] == until {
+			endbefore = i
+		}
+		if startfrom > -1 && endbefore > -1 {
+			if incl {
 				endbefore++
 			}
-			break
+			if endbefore >= startfrom {
+				return me[startfrom:endbefore]
+			}
 		}
 	}
-	if startfrom > -1 && endbefore > startfrom {
-		slice = me[startfrom:endbefore]
-	}
-	return
+	return nil
 }
 
 // Length returns the length of the original source sub-string that this `Tokens` slice represents (without traversing it).
@@ -262,7 +285,10 @@ func (me Tokens) Length() (length int) {
 
 // Pos returns the `TokenMeta.Pos` of the `First` `Token` in `me`.
 func (me Tokens) Pos() *scanner.Position {
-	return &me[0].Meta.Pos
+	if len(me) > 0 {
+		return &me[0].Meta.Pos
+	}
+	return nil
 }
 
 // BreakOnSpace splits up `me` into `pref` and `suff` between the first two consecutive `Tokens` that suggest white-space in between each other. If no such pair exists, `didBreak` is `false` and `pref` is `nil` and `suff` is `me`.
