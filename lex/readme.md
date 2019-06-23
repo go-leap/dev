@@ -394,6 +394,12 @@ func (me Tokens) Length() (length int)
 Length returns the length of the original source sub-string that this `Tokens`
 slice represents (without traversing it).
 
+#### func (Tokens) Next
+
+```go
+func (me Tokens) Next(after *Token, fallback bool) *Token
+```
+
 #### func (Tokens) NumCharsBetweenFirstAndLastOf
 
 ```go
@@ -416,6 +422,12 @@ NumCharsBetweenLastAndFirstOf returns the number of characters between the first
 func (me Tokens) Pos() *scanner.Position
 ```
 Pos returns the `TokenMeta.Pos` of the `First` `Token` in `me`.
+
+#### func (Tokens) Prev
+
+```go
+func (me Tokens) Prev(before *Token, fallback bool) *Token
+```
 
 #### func (*Tokens) SanitizeDirtyFloatsNextToDotOpishs
 

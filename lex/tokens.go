@@ -168,6 +168,30 @@ func (me Tokens) Last(matches func(*Token) bool) *Token {
 	return &me[len(me)-1]
 }
 
+func (me Tokens) Prev(before *Token, fallback bool) *Token {
+	for i := range me {
+		if &me[i] == before && i > 0 {
+			return &me[i-1]
+		}
+	}
+	if fallback {
+		return before
+	}
+	return nil
+}
+
+func (me Tokens) Next(after *Token, fallback bool) *Token {
+	for i := range me {
+		if &me[i] == after && i < (len(me)-1) {
+			return &me[i+1]
+		}
+	}
+	if fallback {
+		return after
+	}
+	return nil
+}
+
 // FindSub initially calls `FromUntil` but if the result is `nil` because
 // `beginsWith` / `endsWith` aren't sub-slices of `me`, it figures out the proper
 // beginner/ender from `TokenMeta.Pos.Offset` values of the `First(nil)` of
