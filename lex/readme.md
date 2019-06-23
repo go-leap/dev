@@ -19,19 +19,25 @@ var (
 	// raising a lexing error when `RestrictedWhitespace` is `true`.
 	RestrictedWhitespaceRewriter func(rune) int
 
-	// StandaloneSeps contains single-rune token strings that would ordinarily
-	// be lexed as `TOKEN_OPISH`s and should instead be lexed as `TOKEN_SEPISH`s.
-	// As such, they can never be part of multi-rune `TOKEN_OPISH`s either
-	// and will always stand alone in the resulting stream of lexemes.
-	StandaloneSeps []string
-
-	// SepsForChunking is used by `Tokens.Chunked`, `Tokens.BreakOnSpace`,
-	// `Tokens.Has`, `Tokens.CrampedOnes`, and must be of even length
-	// beginning with all the openers and ending with all the closers: both
-	// equal-length halves joined together such as "[(<{}>)]" or "«‹/\›»" etc.
+	// SepsGroupers, if it is to be used, must be set before the first call to
+	// `Lex`, and must never be modified ever again for its consumers such as
+	// `Tokens.Chunked`, `Tokens.BreakOnSpace`, `Tokens.Has`, `Tokens.CrampedOnes`
+	// to work correctly. It must be of even length beginning with all the
+	// "openers" and ending with all the "closers": two equal-length halves
+	// in one `string` such as "[(<{}>)]" or "«‹/\›»" etc.
+	// ASCII bytes `< 128` only, no `>= 128` runes. Each is also only ever
+	// lexed as a `TOKEN_SEPISH` and thus can never be part of a `TOKEN_OPISH`.
 	// The mentioned methods skip their logic while passing tokens one or
 	// several levels deep within these delimiters.
-	SepsForChunking string
+	SepsGroupers string
+
+	// SepsOthers contains single-byte tokens that would ordinarily be lexed
+	// as `TOKEN_OPISH`s and should instead be lexed as `TOKEN_SEPISH`s. As
+	// such, they can never be part of multi-rune `TOKEN_OPISH`s and will
+	// always stand alone in the resulting stream of lexemes. These are in
+	// addition to any specified in `SepsGroupers`, for non-grouping solitary
+	// non-operator seps such as eg. `,` or `;` etc.
+	SepsOthers string
 )
 ```
 
@@ -44,6 +50,12 @@ Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while
 lexing.
 
 If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
+
+#### func  SepsGrouperCloserForOpener
+
+```go
+func SepsGrouperCloserForOpener(opener byte) (closer byte)
+```
 
 #### type Error
 

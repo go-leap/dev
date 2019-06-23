@@ -75,7 +75,7 @@ func (me Tokens) CountKind(kind TokenKind) (count int) {
 // original source sub-string.
 func (me Tokens) Has(orig string, deep bool) bool {
 	var depth int
-	skipsubs := len(SepsForChunking) > 0 && !deep
+	skipsubs := (len(SepsGroupers) > 0 && !deep)
 	for i := range me {
 		if d := me[i].sepsDepthIncrement(skipsubs); d != 0 {
 			depth += d
@@ -318,7 +318,7 @@ func (me Tokens) Pos() *scanner.Position {
 // BreakOnSpace splits up `me` into `pref` and `suff` between the first two consecutive `Tokens` that suggest white-space in between each other. If no such pair exists, `didBreak` is `false` and `pref` is `nil` and `suff` is `me`.
 func (me Tokens) BreakOnSpace(deep bool) (pref Tokens, suff Tokens, didBreak bool) {
 	var depth int
-	skipsubs := len(SepsForChunking) > 0 && !deep
+	skipsubs := (len(SepsGroupers) > 0 && !deep)
 	for i := 0; i < len(me); i++ {
 		if d := me[i].sepsDepthIncrement(skipsubs); d != 0 {
 			depth += d
@@ -341,7 +341,7 @@ func (me Tokens) BreakOnSpace(deep bool) (pref Tokens, suff Tokens, didBreak boo
 func (me Tokens) CrampedOnes(isBreaker func(int) bool) (m map[*Token]int) {
 	var depth, startfrom int
 	var wascomment, isbreaker, wasbreaker bool
-	skipsubs := len(SepsForChunking) > 0
+	skipsubs := (len(SepsGroupers) > 0)
 	for i := range me {
 		d0 := (depth == 0)
 		iscomment := d0 && (me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL)
@@ -455,7 +455,7 @@ func (me Tokens) Sub(sepOpen byte, sepClose byte) (sub Tokens, tail Tokens, numU
 func (me Tokens) Chunked(byOrig string, stopChunkingOn string) (chunks []Tokens) {
 	var depth int
 	var startfrom int
-	hasignore, skipsubs := stopChunkingOn != "", len(SepsForChunking) > 0
+	hasignore, skipsubs := (stopChunkingOn != ""), (len(SepsGroupers) > 0)
 	for i := range me {
 		if depth == 0 {
 			if me[i].Meta.Orig == byOrig {
@@ -508,8 +508,9 @@ func (me Tokens) IndentBasedChunks(minLineIndent int) (chunks []Tokens) {
 // or `0...1` into `0.0` and `.` and `0.1`, replacing with the corresponding
 // uint / dot `Token` combinations instead. `i > 0 && i < len(me)` must hold.
 func (me *Tokens) SanitizeDirtyFloatsNextToDotOpishs(i int) {
-	if mod, tokens := false, *me; i > 0 && tokens[i].Meta.Pos.Line == tokens[i-1].Meta.Pos.Line {
+	if modified, tokens := false, *me; i > 0 && tokens[i].Meta.Pos.Line == tokens[i-1].Meta.Pos.Line {
 		switch {
+
 		case tokens[i].flag == TOKEN_OPISH && tokens[i-1].flag == TOKEN_FLOAT && tokens[i-1].Meta.Orig[len(tokens[i-1].Meta.Orig)-1] == '.' &&
 			0 == (tokens[i].Meta.Pos.Offset-(tokens[i-1].Meta.Pos.Offset+len(tokens[i-1].Meta.Orig))):
 
@@ -539,7 +540,7 @@ func (me *Tokens) SanitizeDirtyFloatsNextToDotOpishs(i int) {
 				dots.Meta.Orig = ".."
 				dots.Meta.Pos.Offset--
 				dots.Meta.Pos.Column--
-				mod, tokens = true, append(pref, append(Tokens{dots}, suff...)...)
+				modified, tokens = true, append(pref, append(Tokens{dots}, suff...)...)
 				f2ui, i = true, i+1
 			}
 			if f2ui {
@@ -550,7 +551,7 @@ func (me *Tokens) SanitizeDirtyFloatsNextToDotOpishs(i int) {
 				tokens[i].Uint, _ = strconv.ParseUint(tokens[i].Meta.Orig, 10, 64)
 			}
 		}
-		if mod {
+		if modified {
 			*me = tokens
 		}
 	}

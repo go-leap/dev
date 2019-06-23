@@ -1,6 +1,7 @@
 package udevlex
 
 import (
+	"strings"
 	"text/scanner"
 )
 
@@ -104,12 +105,18 @@ func (me *Token) IsAnyOneOf(any ...string) bool {
 	return false
 }
 
-func (me *Token) sepsDepthIncrement(skipSubs bool) int {
-	if skipSubs && me.flag == TOKEN_SEPISH {
-		for isclosefrom, s := len(SepsForChunking)/2, 0; s < len(SepsForChunking); s++ {
-			if isopen := s < isclosefrom; isopen && me.Meta.Orig[0] == SepsForChunking[s] {
+// caution, a global. only mutated by Lex(), users are warned in doc-comments
+// for SepsGroupers to set it before Lex call and never mutate it afterwards.
+// The consumer of this is just called a lot and I cannot accept doing the
+// always-exact-same by-2 division over and over and over again uselessly.
+var idxSepsGroupersClosers int
+
+func (me *Token) sepsDepthIncrement(should bool) int {
+	if should && me.flag == TOKEN_SEPISH {
+		if at := strings.IndexByte(SepsGroupers, me.Meta.Orig[0]); at >= 0 {
+			if at < idxSepsGroupersClosers {
 				return 1
-			} else if (!isopen) && me.Meta.Orig[0] == SepsForChunking[s] {
+			} else {
 				return -1
 			}
 		}

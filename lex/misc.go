@@ -1,6 +1,7 @@
 package udevlex
 
 import (
+	"strings"
 	"text/scanner"
 )
 
@@ -18,4 +19,11 @@ type Error struct {
 // Error implements Go's standard `error` interface.
 func (me *Error) Error() string {
 	return me.Pos.String() + ": " + me.Msg
+}
+
+func SepsGrouperCloserForOpener(opener byte) (closer byte) {
+	if i := strings.IndexByte(SepsGroupers, opener); i >= 0 {
+		return SepsGroupers[len(SepsGroupers)-(i+1)]
+	}
+	return
 }

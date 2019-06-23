@@ -20,19 +20,25 @@ var (
 	// raising a lexing error when `RestrictedWhitespace` is `true`.
 	RestrictedWhitespaceRewriter func(rune) int
 
-	// StandaloneSeps contains single-rune token strings that would ordinarily
-	// be lexed as `TOKEN_OPISH`s and should instead be lexed as `TOKEN_SEPISH`s.
-	// As such, they can never be part of multi-rune `TOKEN_OPISH`s either
-	// and will always stand alone in the resulting stream of lexemes.
-	StandaloneSeps []string
-
-	// SepsForChunking is used by `Tokens.Chunked`, `Tokens.BreakOnSpace`,
-	// `Tokens.Has`, `Tokens.CrampedOnes`, and must be of even length
-	// beginning with all the openers and ending with all the closers: both
-	// equal-length halves joined together such as "[(<{}>)]" or "«‹/\›»" etc.
+	// SepsGroupers, if it is to be used, must be set before the first call to
+	// `Lex`, and must never be modified ever again for its consumers such as
+	// `Tokens.Chunked`, `Tokens.BreakOnSpace`, `Tokens.Has`, `Tokens.CrampedOnes`
+	// to work correctly. It must be of even length beginning with all the
+	// "openers" and ending with all the "closers": two equal-length halves
+	// in one `string` such as "[(<{}>)]" or "«‹/\›»" etc.
+	// ASCII bytes `< 128` only, no `>= 128` runes. Each is also only ever
+	// lexed as a `TOKEN_SEPISH` and thus can never be part of a `TOKEN_OPISH`.
 	// The mentioned methods skip their logic while passing tokens one or
 	// several levels deep within these delimiters.
-	SepsForChunking string
+	SepsGroupers string
+
+	// SepsOthers contains single-byte tokens that would ordinarily be lexed
+	// as `TOKEN_OPISH`s and should instead be lexed as `TOKEN_SEPISH`s. As
+	// such, they can never be part of multi-rune `TOKEN_OPISH`s and will
+	// always stand alone in the resulting stream of lexemes. These are in
+	// addition to any specified in `SepsGroupers`, for non-grouping solitary
+	// non-operator seps such as eg. `,` or `;` etc.
+	SepsOthers string
 )
 
 // Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while lexing.
@@ -46,7 +52,7 @@ func Lex(src io.Reader, filePath string, toksCap int) (tokens Tokens, errs []*Er
 		lexer                 scanner.Scanner
 		otheraccum            *Token
 	)
-	lexer.Init(src).Filename = filePath
+	lexer.Init(src).Filename, idxSepsGroupersClosers = filePath, len(SepsGroupers)/2
 	lexer.Whitespace, lexer.Mode = 1<<'\r', scanner.ScanChars|scanner.ScanComments|scanner.ScanFloats|scanner.ScanIdents|scanner.ScanInts|scanner.ScanRawStrings|scanner.ScanStrings
 	lexer.Error = func(_ *scanner.Scanner, msg string) {
 		err := Err(&lexer.Position, msg)
@@ -72,75 +78,78 @@ func Lex(src io.Reader, filePath string, toksCap int) (tokens Tokens, errs []*Er
 		}
 	}
 
+	allseps := SepsOthers + SepsGroupers
 	for tok := lexer.Scan(); tok != scanner.EOF; tok = lexer.Scan() {
-		sym := lexer.TokenText()
+		lexeme := lexer.TokenText()
 		switch tok {
 		case scanner.Ident:
-			on(sym, Token{flag: TOKEN_IDENT, Str: sym})
+			on(lexeme, Token{flag: TOKEN_IDENT, Str: lexeme})
 		case scanner.Char:
-			if c, _, _, errchr := strconv.UnquoteChar(sym[1:], '\''); errchr == nil {
-				on(sym, Token{flag: TOKEN_RUNE, Uint: uint64(c)})
+			if c, _, _, errchr := strconv.UnquoteChar(lexeme[1:], '\''); errchr == nil {
+				on(lexeme, Token{flag: TOKEN_RUNE, Uint: uint64(c)})
 			} else {
 				lexer.Error(nil, errchr.Error())
 			}
 		case scanner.RawString, scanner.String:
-			if s, errstr := strconv.Unquote(sym); errstr == nil {
-				if tok != scanner.RawString && sym[0] == '`' && sym[len(sym)-1] == '`' {
+			if s, errstr := strconv.Unquote(lexeme); errstr == nil {
+				if tok != scanner.RawString && lexeme[0] == '`' && lexeme[len(lexeme)-1] == '`' {
 					tok = scanner.RawString
 				}
 				flag := TOKEN_STR
 				if tok == scanner.RawString {
 					flag = _TOKEN_STR_RAW
 				}
-				on(sym, Token{flag: flag, Str: s})
+				on(lexeme, Token{flag: flag, Str: s})
 			} else {
 				lexer.Error(nil, errstr.Error())
 			}
 		case scanner.Float:
-			if f, errfloat := strconv.ParseFloat(sym, 64); errfloat == nil {
-				on(sym, Token{flag: TOKEN_FLOAT, Float: f})
+			if f, errfloat := strconv.ParseFloat(lexeme, 64); errfloat == nil {
+				on(lexeme, Token{flag: TOKEN_FLOAT, Float: f})
 			} else {
 				lexer.Error(nil, errfloat.Error())
 			}
 		case scanner.Int:
 			var base, i int
-			if l := len(sym); l > 2 && sym[0] == '0' && (sym[1] == 'x' || sym[1] == 'X') {
+			if l := len(lexeme); l > 2 && lexeme[0] == '0' && (lexeme[1] == 'x' || lexeme[1] == 'X') {
 				i, base = 2, 16
-			} else if l > 1 && sym[0] == '0' {
+			} else if l > 1 && lexeme[0] == '0' {
 				i, base = 1, 8
 			}
-			if u, erruint := strconv.ParseUint(sym[i:], base, 64); erruint == nil {
+			if u, erruint := strconv.ParseUint(lexeme[i:], base, 64); erruint == nil {
 				if base == 0 {
 					base = 10
 				}
-				on(sym, Token{flag: base, Uint: u})
+				on(lexeme, Token{flag: base, Uint: u})
 			} else {
 				lexer.Error(nil, erruint.Error())
 			}
 		case scanner.Comment:
-			if l, sl := len(sym), sym[0] == '/'; l > 1 && sl && sym[1] == '/' {
-				on(sym, Token{flag: TOKEN_COMMENT, Str: sym[2:]})
-			} else if l > 3 && sl && sym[1] == '*' && sym[l-2] == '*' && sym[l-1] == '/' {
-				on(sym, Token{flag: _TOKEN_COMMENT_ENCL, Str: sym[2 : l-2]})
+			if l, sl := len(lexeme), lexeme[0] == '/'; l > 1 && sl && lexeme[1] == '/' {
+				on(lexeme, Token{flag: TOKEN_COMMENT, Str: lexeme[2:]})
+			} else if l > 3 && sl && lexeme[1] == '*' && lexeme[l-2] == '*' && lexeme[l-1] == '/' {
+				on(lexeme, Token{flag: _TOKEN_COMMENT_ENCL, Str: lexeme[2 : l-2]})
 			} else {
-				lexer.Error(nil, "unexpected comment format: "+sym)
+				lexer.Error(nil, "unexpected comment format: "+lexeme)
 			}
 		default:
 			var issep bool
-			for _, sep := range StandaloneSeps {
-				if issep = (sym == sep); issep {
-					on(sym, Token{flag: TOKEN_SEPISH, Str: sym})
-					break
+			if len(lexeme) == 1 { // as of today, at this point should always be true
+				for i := 0; i < len(allseps); i++ {
+					if issep = (lexeme[0] == allseps[i]); issep {
+						on(lexeme, Token{flag: TOKEN_SEPISH, Str: lexeme})
+						break
+					}
 				}
 			}
 			if !issep {
-				for _, r := range sym { // as of today, at this point len(sym)==1 always. but we need the r anyway and the iteration would logically hold even for a longer sym
+				for _, r := range lexeme {
 					if !unicode.IsSpace(r) {
 						if onlyspacesinlinesofar = false; otheraccum == nil {
 							otheraccum = &Token{flag: TOKEN_OPISH}
 							otheraccum.Meta.init(&lexer.Position, lineindent, "")
 						}
-						otheraccum.Str += sym
+						otheraccum.Str += lexeme
 					} else if unaccum(); r == '\n' {
 						lineindent, onlyspacesinlinesofar = 0, true
 					} else if RestrictedWhitespace && r != ' ' {
