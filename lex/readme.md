@@ -49,8 +49,6 @@ func Lex(src io.Reader, filePath string, toksCap int) (tokens Tokens, errs []*Er
 Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while
 lexing.
 
-If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
-
 #### func  SepsGrouperCloserForOpener
 
 ```go

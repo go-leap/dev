@@ -42,8 +42,6 @@ var (
 )
 
 // Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while lexing.
-//
-// If `errs` has a `len` greater than 0, `tokens` will be empty (and vice versa).
 func Lex(src io.Reader, filePath string, toksCap int) (tokens Tokens, errs []*Error) {
 	tokens = make(Tokens, 0, toksCap) // a caller's shot-in-the-dark for an initial cap that's better than default 0
 	var (
@@ -54,10 +52,12 @@ func Lex(src io.Reader, filePath string, toksCap int) (tokens Tokens, errs []*Er
 	)
 	lexer.Init(src).Filename, idxSepsGroupersClosers = filePath, len(SepsGroupers)/2
 	lexer.Whitespace, lexer.Mode = 1<<'\r', scanner.ScanChars|scanner.ScanComments|scanner.ScanFloats|scanner.ScanIdents|scanner.ScanInts|scanner.ScanRawStrings|scanner.ScanStrings
+
+	tokerr := false
 	lexer.Error = func(_ *scanner.Scanner, msg string) {
 		err := Err(&lexer.Position, msg)
 		err.Pos.Filename = filePath
-		tokens, errs = nil, append(errs, err)
+		tokerr, errs = true, append(errs, err)
 	}
 
 	unaccum := func() {
@@ -85,52 +85,66 @@ func Lex(src io.Reader, filePath string, toksCap int) (tokens Tokens, errs []*Er
 		case scanner.Ident:
 			on(lexeme, Token{flag: TOKEN_IDENT, Str: lexeme})
 		case scanner.Char:
-			if c, _, _, errchr := strconv.UnquoteChar(lexeme[1:], '\''); errchr == nil {
-				on(lexeme, Token{flag: TOKEN_RUNE, Uint: uint64(c)})
-			} else {
-				lexer.Error(nil, errchr.Error())
+			if !tokerr {
+				if c, _, _, errchr := strconv.UnquoteChar(lexeme[1:], '\''); errchr == nil {
+					on(lexeme, Token{flag: TOKEN_RUNE, Uint: uint64(c)})
+				} else {
+					lexer.Error(nil, errchr.Error())
+				}
 			}
 		case scanner.RawString, scanner.String:
-			if s, errstr := strconv.Unquote(lexeme); errstr == nil {
-				if tok != scanner.RawString && lexeme[0] == '`' && lexeme[len(lexeme)-1] == '`' {
-					tok = scanner.RawString
+			if !tokerr {
+				if s, errstr := strconv.Unquote(lexeme); errstr == nil {
+					if tok != scanner.RawString && lexeme[0] == '`' && lexeme[len(lexeme)-1] == '`' {
+						tok = scanner.RawString
+					}
+					flag := TOKEN_STR
+					if tok == scanner.RawString {
+						flag = _TOKEN_STR_RAW
+					}
+					on(lexeme, Token{flag: flag, Str: s})
+				} else {
+					lexer.Error(nil, errstr.Error())
 				}
-				flag := TOKEN_STR
-				if tok == scanner.RawString {
-					flag = _TOKEN_STR_RAW
-				}
-				on(lexeme, Token{flag: flag, Str: s})
-			} else {
-				lexer.Error(nil, errstr.Error())
 			}
 		case scanner.Float:
-			if f, errfloat := strconv.ParseFloat(lexeme, 64); errfloat == nil {
-				on(lexeme, Token{flag: TOKEN_FLOAT, Float: f})
-			} else {
-				lexer.Error(nil, errfloat.Error())
+			if !tokerr {
+				if f, errfloat := strconv.ParseFloat(lexeme, 64); errfloat == nil {
+					on(lexeme, Token{flag: TOKEN_FLOAT, Float: f})
+				} else {
+					lexer.Error(nil, errfloat.Error())
+				}
 			}
 		case scanner.Int:
-			var base, i int
-			if l := len(lexeme); l > 2 && lexeme[0] == '0' && (lexeme[1] == 'x' || lexeme[1] == 'X') {
-				i, base = 2, 16
-			} else if l > 1 && lexeme[0] == '0' {
-				i, base = 1, 8
-			}
-			if u, erruint := strconv.ParseUint(lexeme[i:], base, 64); erruint == nil {
-				if base == 0 {
-					base = 10
+			if !tokerr {
+				var base, i int
+				if l := len(lexeme); l > 2 && lexeme[0] == '0' && (lexeme[1] == 'x' || lexeme[1] == 'X') {
+					i, base = 2, 16
+				} else if l > 1 && lexeme[0] == '0' {
+					i, base = 1, 8
 				}
-				on(lexeme, Token{flag: base, Uint: u})
-			} else {
-				lexer.Error(nil, erruint.Error())
+				if u, erruint := strconv.ParseUint(lexeme[i:], base, 64); erruint == nil {
+					if base == 0 {
+						base = 10
+					}
+					on(lexeme, Token{flag: base, Uint: u})
+				} else {
+					lexer.Error(nil, erruint.Error())
+				}
 			}
 		case scanner.Comment:
-			if l, sl := len(lexeme), lexeme[0] == '/'; l > 1 && sl && lexeme[1] == '/' {
-				on(lexeme, Token{flag: TOKEN_COMMENT, Str: lexeme[2:]})
-			} else if l > 3 && sl && lexeme[1] == '*' && lexeme[l-2] == '*' && lexeme[l-1] == '/' {
-				on(lexeme, Token{flag: _TOKEN_COMMENT_ENCL, Str: lexeme[2 : l-2]})
-			} else {
-				lexer.Error(nil, "unexpected comment format: "+lexeme)
+			if !tokerr {
+				if l, sl := len(lexeme), lexeme[0] == '/'; l > 1 && sl && lexeme[1] == '/' {
+					on(lexeme, Token{flag: TOKEN_COMMENT, Str: lexeme[2:]})
+				} else if l > 3 && sl && lexeme[1] == '*' {
+					if lexeme[l-2] == '*' && lexeme[l-1] == '/' {
+						on(lexeme, Token{flag: _TOKEN_COMMENT_ENCL, Str: lexeme[2 : l-2]})
+					} else {
+						lexer.Error(nil, "missing `*/` at end of comment")
+					}
+				} else {
+					lexer.Error(nil, "unexpected comment format: "+lexeme)
+				}
 			}
 		default:
 			var issep bool
@@ -167,6 +181,7 @@ func Lex(src io.Reader, filePath string, toksCap int) (tokens Tokens, errs []*Er
 		if SanitizeDirtyFloatsNextToDotOpishs {
 			tokens.SanitizeDirtyFloatsNextToDotOpishs(len(tokens) - 1)
 		}
+		tokerr = false
 	}
 	unaccum()
 	return
