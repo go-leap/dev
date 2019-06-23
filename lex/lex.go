@@ -22,7 +22,7 @@ var (
 
 	// SepsGroupers, if it is to be used, must be set before the first call to
 	// `Lex`, and must never be modified ever again for its consumers such as
-	// `Tokens.Chunked`, `Tokens.BreakOnSpace`, `Tokens.Has`, `Tokens.CrampedOnes`
+	// `Tokens.Chunked`, `Tokens.BreakOnSpace`, `Tokens.Has`, `Tokens.Cliques`
 	// to work correctly. It must be of even length beginning with all the
 	// "openers" and ending with all the "closers": two equal-length halves
 	// in one `string` such as "[(<{}>)]" or "«‹/\›»" etc.

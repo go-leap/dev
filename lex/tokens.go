@@ -75,11 +75,11 @@ func (me Tokens) CountKind(kind TokenKind) (count int) {
 // original source sub-string.
 func (me Tokens) Has(orig string, deep bool) bool {
 	var depth int
-	skipsubs := (len(SepsGroupers) > 0 && !deep)
+	skipsubs := len(SepsGroupers) > 0 && !deep
 	for i := range me {
 		if d := me[i].sepsDepthIncrement(skipsubs); d != 0 {
 			depth += d
-		} else if me[i].Meta.Orig == orig {
+		} else if depth == 0 && me[i].Meta.Orig == orig {
 			return true
 		}
 	}
@@ -335,34 +335,51 @@ func (me Tokens) BreakOnSpace(deep bool) (pref Tokens, suff Tokens, didBreak boo
 	return
 }
 
-// CrampedOnes records in `m` any `Token` in `me` that begins a sequence of non-white-space-separated
-// lexemes and the length of that sequence. If no such sequence exists, `m` will be `nil`.
-// If `isBreaker` isn't `nil`, it can identify language-specific tokens that break this logic, such as `,`.
-func (me Tokens) CrampedOnes(isBreaker func(int) bool) (m map[*Token]int) {
+// Cliques records in `nums` any `Token` in `me` that begins a sequence of
+// non-white-space-separated lexemes and its number of `Tokens` If no such
+// sequence exists or if it would equal `me` entirely, `nums` will be `nil`,
+// else any value in it will be `> 1`. If `isBreaker` isn't `nil`, it can
+// identify language-specific tokens that break up this logic, such as `,`.
+func (me Tokens) Cliques(isBreaker func(idxCur int, idxLast int) bool) (nums map[*Token]int) {
+	if len(me) <= 1 {
+		return
+	}
 	var depth, startfrom int
 	var wascomment, isbreaker, wasbreaker bool
-	skipsubs := (len(SepsGroupers) > 0)
+	d0, skipsubs, idxlast := true, (len(SepsGroupers) > 0), len(me)-1
 	for i := range me {
-		d0 := (depth == 0)
-		iscomment := d0 && (me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL)
-		isbreaker = d0 && isBreaker != nil && isBreaker(i)
-		if d0 && i > 0 {
-			if diff := me[i].Meta.Pos.Offset - (me[i-1].Meta.Pos.Offset + len(me[i-1].Meta.Orig)); diff > 0 || wascomment || iscomment || wasbreaker || isbreaker {
-				if m == nil {
-					m = make(map[*Token]int, len(me))
+		var iscomment bool
+		issepish := me[i].flag == TOKEN_SEPISH
+		if d0 {
+			iscomment, isbreaker =
+				(me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL), isBreaker != nil && isBreaker(i, idxlast)
+			if i > 0 {
+				diff := me[i].Meta.Pos.Offset - (me[i-1].Meta.Pos.Offset + len(me[i-1].Meta.Orig))
+				if diff > 0 || wascomment || iscomment || wasbreaker || isbreaker {
+					if n := i - startfrom; n > 1 {
+						if nums == nil {
+							nums = make(map[*Token]int, len(me)/2)
+						}
+						nums[&me[startfrom]] = n
+					}
+					startfrom = i
 				}
-				m[&me[startfrom]] = i - startfrom
-				startfrom = i
 			}
 		}
-		if me[i].flag != TOKEN_SEPISH {
-			wascomment, wasbreaker = iscomment, isbreaker
+		if wasbreaker = isbreaker; !issepish {
+			wascomment = iscomment
 		} else {
 			depth += me[i].sepsDepthIncrement(skipsubs)
+			d0 = (depth == 0)
 		}
 	}
 	if startfrom > 0 {
-		m[&me[startfrom]] = len(me) - startfrom
+		if n := len(me) - startfrom; n > 1 {
+			if nums == nil {
+				nums = make(map[*Token]int, 1)
+			}
+			nums[&me[startfrom]] = n
+		}
 	}
 	return
 }

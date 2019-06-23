@@ -21,7 +21,7 @@ var (
 
 	// SepsGroupers, if it is to be used, must be set before the first call to
 	// `Lex`, and must never be modified ever again for its consumers such as
-	// `Tokens.Chunked`, `Tokens.BreakOnSpace`, `Tokens.Has`, `Tokens.CrampedOnes`
+	// `Tokens.Chunked`, `Tokens.BreakOnSpace`, `Tokens.Has`, `Tokens.Cliques`
 	// to work correctly. It must be of even length beginning with all the
 	// "openers" and ending with all the "closers": two equal-length halves
 	// in one `string` such as "[(<{}>)]" or "«‹/\›»" etc.
@@ -284,22 +284,23 @@ func (me Tokens) Chunked(byOrig string, stopChunkingOn string) (chunks []Tokens)
 Chunked splits `me` into `chunks` separated by `TokenMeta.Orig` occurrences of
 `byOrig`, stopping at the first occurrence of `stopChunkingOn` (if specified).
 
+#### func (Tokens) Cliques
+
+```go
+func (me Tokens) Cliques(isBreaker func(idxCur int, idxLast int) bool) (nums map[*Token]int)
+```
+Cliques records in `nums` any `Token` in `me` that begins a sequence of
+non-white-space-separated lexemes and its number of `Tokens` If no such sequence
+exists or if it would equal `me` entirely, `nums` will be `nil`, else any value
+in it will be `> 1`. If `isBreaker` isn't `nil`, it can identify
+language-specific tokens that break up this logic, such as `,`.
+
 #### func (Tokens) CountKind
 
 ```go
 func (me Tokens) CountKind(kind TokenKind) (count int)
 ```
 CountKind returns the number of `Token`s with the specified `Kind`.
-
-#### func (Tokens) CrampedOnes
-
-```go
-func (me Tokens) CrampedOnes(isBreaker func(int) bool) (m map[*Token]int)
-```
-CrampedOnes records in `m` any `Token` in `me` that begins a sequence of
-non-white-space-separated lexemes and the length of that sequence. If no such
-sequence exists, `m` will be `nil`. If `isBreaker` isn't `nil`, it can identify
-language-specific tokens that break this logic, such as `,`.
 
 #### func (Tokens) EqLenAndOffsets
 
