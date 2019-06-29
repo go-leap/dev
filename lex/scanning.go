@@ -31,6 +31,7 @@ func (me *Scanner) Scan(src string, srcFilePath string) {
 	var rcur rune
 	var isnewln bool
 	var islast bool
+	var numhasdot bool
 
 	var waitends func() TokenKind
 	waitsince, offlast, lcl := -1, len(src)-1, len(ScannerLongComment)/2
@@ -54,9 +55,21 @@ func (me *Scanner) Scan(src string, srcFilePath string) {
 		return
 	}
 	wait4endnumber := func() (ret TokenKind) {
-		// begin with 0..9
-		// inside can have 0..9 or letters or `_` or `.`
-		// end with 0..9 followed by non-inside (else peek at next for inside-compat)
+		if src[off0] == '.' {
+			numhasdot = true
+		} else if src[off0] != '_' && (src[off0] < 48 || src[off0] > 57) && !unicode.IsLetter(rcur) {
+			if numhasdot {
+				ret = TOKEN_FLOAT
+			} else {
+				ret = TOKEN_UINT
+			}
+		}
+		return
+	}
+	wait4endident := func() (ret TokenKind) {
+		if src[off0] != '_' && !unicode.IsLetter(rcur) {
+			ret = TOKEN_IDENT
+		}
 		return
 	}
 
@@ -85,8 +98,10 @@ func (me *Scanner) Scan(src string, srcFilePath string) {
 			case src[off0:off0+lcl] == ScannerLongComment[:lcl]:
 				// TODO: bounds-check above
 				waitsince, waitends = off0, wait4endlongcomment
-			case unicode.IsNumber(rcur):
-				waitsince, waitends = off0, wait4endnumber
+			case src[off0] > 47 && src[off0] < 58:
+				waitsince, waitends, numhasdot = off0, wait4endnumber, false
+			case src[off0] == '_' || unicode.IsLetter(rcur):
+				waitsince, waitends = off0, wait4endident
 			}
 		}
 		if waitends == nil {
