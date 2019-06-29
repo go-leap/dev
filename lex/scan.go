@@ -8,8 +8,8 @@ import (
 
 type Pos struct {
 	FilePath string
-	Offset0  int
-	Line1    int
+	Off0     int
+	Ln1      int
 	Col1     int
 }
 
@@ -19,100 +19,105 @@ var (
 	ScannerStringDelims               string = "'\""
 )
 
+type scanState struct {
+	src string
+	Pos
+	since  Pos
+	lcl    int
+	cur    rune
+	isLf   bool
+	numDot bool
+}
+
 func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int)) {
-	pos := Pos{FilePath: srcFilePath, Line1: 1, Col1: 1}
+	s := scanState{src: src, lcl: len(ScannerLongCommentPrefixAndSuffix) / 2,
+		Pos: Pos{FilePath: srcFilePath, Ln1: 1, Col1: 1}}
 
-	var off0 int
-	var rcur rune
-	var isnewln bool
-	var numdot bool
+	var waiton func(*scanState) TokenKind
 
-	var wait4end func() TokenKind
-	var waitsince Pos
-	lcl := len(ScannerLongCommentPrefixAndSuffix) / 2
-	wait4endlinecomment := func() (ret TokenKind) {
-		if rcur == -1 || isnewln {
-			ret = TOKEN_COMMENT
+	for s.Off0, s.cur = range src {
+		if s.isLf = (src[s.Off0] == '\n'); s.isLf {
+			s.Pos.Col1, s.Pos.Ln1 = 1, s.Pos.Ln1+1
+		} else {
+			s.Pos.Col1++
 		}
-		return
-	}
-	wait4endlongcomment := func() (ret TokenKind) {
-		if rcur == -1 || (off0 >= (waitsince.Offset0+len(ScannerLongCommentPrefixAndSuffix)) && src[off0-lcl:off0] == ScannerLongCommentPrefixAndSuffix[lcl:]) {
-			ret = _TOKEN_COMMENT_ENCL
+
+		if waiton != nil {
+			if tokkind := waiton(&s); tokkind != 0 {
+				on(tokkind, &s.since, s.Off0-s.since.Off0)
+				waiton = nil
+			}
 		}
-		return
-	}
-	wait4endstring := func() (ret TokenKind) {
-		if rcur == -1 || (off0 > (waitsince.Offset0+1) && src[off0-1] == src[waitsince.Offset0] && src[off0-2] != '\\') {
-			ret = TOKEN_STR
+		if waiton == nil && !s.isLf {
+			if /* NUM-LIT? */ src[s.Off0] > '/' && src[s.Off0] < ':' {
+				s.since, waiton, s.numDot = s.Pos, scanWaitOnLitNumber, false
+			} else /* STR-LIT? */ if strings.IndexByte(ScannerStringDelims, src[s.Off0]) != -1 {
+				s.since, waiton = s.Pos, scanWaitOnLitString
+			} else /* COMMENT? */ if offl := s.Off0 + len(ScannerLineCommentPrefix); offl <= len(src) && ScannerLineCommentPrefix == src[s.Off0:offl] {
+				s.since, waiton = s.Pos, scanWaitOnCommentLine
+			} else /* COMMENT? */ if offl = s.Off0 + s.lcl; offl <= len(src) && src[s.Off0:offl] == ScannerLongCommentPrefixAndSuffix[:s.lcl] {
+				s.since, waiton = s.Pos, scanWaitOnCommentLong
+			} else /* IDENT? */ if src[s.Off0] == '_' || unicode.IsLetter(s.cur) {
+				s.since, waiton = s.Pos, scanWaitOnIdent
+			}
 		}
-		return
-	}
-	wait4endident := func() (ret TokenKind) {
-		if rcur == -1 || (src[off0] != '_' && !unicode.In(rcur, unicode.Letter, unicode.Number)) {
-			ret = TOKEN_IDENT
+		if waiton == nil {
+			if rl := utf8.RuneLen(s.cur); unicode.IsSpace(s.cur) {
+				on(TOKEN_SPACE, &s.Pos, rl)
+			} else {
+				on(TOKEN_OTHER, &s.Pos, rl)
+			}
 		}
-		return
 	}
-	wait4endnumber := func() (ret TokenKind) {
-		numend := (rcur == -1)
-		if !numend {
-			if src[off0] == '.' {
-				if off1 := off0 + 1; (!numdot) && off1 < len(src) && src[off1] > '/' && src[off1] < ':' {
-					numdot = true
-				} else {
-					numend = true
-				}
-			} else if src[off0] != '_' && (src[off0] < '0' || src[off0] > '9') &&
-				!unicode.In(rcur, unicode.Letter, unicode.Number) {
+	if s.cur, s.Off0 = -1, len(src); waiton != nil {
+		on(waiton(&s), &s.since, s.Off0-s.since.Off0)
+	}
+}
+
+func scanWaitOnCommentLine(s *scanState) (ret TokenKind) {
+	if s.cur == -1 || s.isLf {
+		ret = TOKEN_COMMENT
+	}
+	return
+}
+func scanWaitOnCommentLong(s *scanState) (ret TokenKind) {
+	if s.cur == -1 || (s.Off0 >= (s.since.Off0+len(ScannerLongCommentPrefixAndSuffix)) && s.src[s.Off0-s.lcl:s.Off0] == ScannerLongCommentPrefixAndSuffix[s.lcl:]) {
+		ret = _TOKEN_COMMENT_ENCL
+	}
+	return
+}
+func scanWaitOnIdent(s *scanState) (ret TokenKind) {
+	if s.cur == -1 || (s.src[s.Off0] != '_' && !unicode.In(s.cur, unicode.Letter, unicode.Number)) {
+		ret = TOKEN_IDENT
+	}
+	return
+}
+func scanWaitOnLitString(s *scanState) (ret TokenKind) {
+	if s.cur == -1 || (s.Off0 > (s.since.Off0+1) && s.src[s.Off0-1] == s.src[s.since.Off0] && s.src[s.Off0-2] != '\\') {
+		ret = TOKEN_STR
+	}
+	return
+}
+func scanWaitOnLitNumber(s *scanState) (ret TokenKind) {
+	numend := (s.cur == -1)
+	if !numend {
+		if s.src[s.Off0] == '.' {
+			if off1 := s.Off0 + 1; (!s.numDot) && off1 < len(s.src) && s.src[off1] > '/' && s.src[off1] < ':' {
+				s.numDot = true
+			} else {
 				numend = true
 			}
+		} else if s.src[s.Off0] != '_' && (s.src[s.Off0] < '0' || s.src[s.Off0] > '9') &&
+			!unicode.In(s.cur, unicode.Letter, unicode.Number) {
+			numend = true
 		}
-		if numend {
-			if numdot {
-				ret = TOKEN_FLOAT
-			} else {
-				ret = TOKEN_UINT
-			}
-		}
-		return
 	}
-
-	for off0, rcur = range src {
-		if pos.Offset0, isnewln = off0, (src[off0] == '\n'); isnewln {
-			pos.Col1, pos.Line1 = 1, pos.Line1+1
+	if numend {
+		if s.numDot {
+			ret = TOKEN_FLOAT
 		} else {
-			pos.Col1++
-		}
-
-		if wait4end != nil {
-			if tokkind := wait4end(); tokkind != 0 {
-				on(tokkind, &waitsince, off0-waitsince.Offset0)
-				wait4end = nil
-			}
-		}
-		if wait4end == nil && !isnewln {
-			if /* NUM-LIT? */ src[off0] > '/' && src[off0] < ':' {
-				waitsince, wait4end, numdot = pos, wait4endnumber, false
-			} else /* STR-LIT? */ if strings.IndexByte(ScannerStringDelims, src[off0]) != -1 {
-				waitsince, wait4end = pos, wait4endstring
-			} else /* COMMENT? */ if offl := off0 + len(ScannerLineCommentPrefix); offl <= len(src) && ScannerLineCommentPrefix == src[off0:offl] {
-				waitsince, wait4end = pos, wait4endlinecomment
-			} else /* COMMENT? */ if offl = off0 + lcl; offl <= len(src) && src[off0:offl] == ScannerLongCommentPrefixAndSuffix[:lcl] {
-				waitsince, wait4end = pos, wait4endlongcomment
-			} else /* IDENT? */ if src[off0] == '_' || unicode.IsLetter(rcur) {
-				waitsince, wait4end = pos, wait4endident
-			}
-		}
-		if wait4end == nil {
-			if rl := utf8.RuneLen(rcur); unicode.IsSpace(rcur) {
-				on(TOKEN_SPACE, &pos, rl)
-			} else {
-				on(TOKEN_OTHER, &pos, rl)
-			}
+			ret = TOKEN_UINT
 		}
 	}
-	if rcur, off0 = -1, len(src); wait4end != nil {
-		on(wait4end(), &waitsince, off0-waitsince.Offset0)
-	}
+	return
 }

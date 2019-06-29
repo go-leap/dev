@@ -100,8 +100,8 @@ Error implements Go's standard `error` interface.
 ```go
 type Pos struct {
 	FilePath string
-	Offset0  int
-	Line1    int
+	Off0     int
+	Ln1      int
 	Col1     int
 }
 ```
