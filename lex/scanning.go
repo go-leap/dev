@@ -80,8 +80,10 @@ func (me *Scanner) Scan(src string, srcFilePath string) {
 			case src[off0] == ScannerStringDelim:
 				waitsince, waitends = off0, wait4endstring
 			case src[off0:off0+len(ScannerLineComment)] == ScannerLineComment:
+				// TODO: bounds-check above
 				waitsince, waitends = off0, wait4endlinecomment
 			case src[off0:off0+lcl] == ScannerLongComment[:lcl]:
+				// TODO: bounds-check above
 				waitsince, waitends = off0, wait4endlongcomment
 			case unicode.IsNumber(rcur):
 				waitsince, waitends = off0, wait4endnumber
