@@ -2,7 +2,6 @@ package udevlex
 
 import (
 	"strings"
-	"text/scanner"
 )
 
 // TokenKind enumerates the possible values that could be returned by `Token.Kind`.
@@ -51,10 +50,10 @@ func (me *Token) Kind() (kind TokenKind) {
 	return
 }
 
-func (me *Token) Pos(lineOffset int, posOffset int) *scanner.Position {
+func (me *Token) Pos(lineOffset int, posOffset int) *Pos {
 	pos := me.Meta.Pos
-	pos.Line += lineOffset
-	pos.Offset += posOffset
+	pos.Ln1 += lineOffset
+	pos.Off0 += posOffset
 	return &pos
 }
 
@@ -126,12 +125,11 @@ func (me *Token) sepsDepthIncrement(should bool) int {
 
 // TokenMeta provides a `Token`'s `Position`, `LineIndent` and `Orig` source sub-string.
 type TokenMeta struct {
-	Pos        scanner.Position
+	Orig string
+	Pos
 	LineIndent int
-	Orig       string
 }
 
-func (me *TokenMeta) init(pos *scanner.Position, indent int, orig string) {
+func (me *TokenMeta) init(pos *Pos, indent int, orig string) {
 	me.Pos, me.LineIndent, me.Orig = *pos, indent, orig
-	me.Pos.Line, me.Pos.Offset = me.Pos.Line, me.Pos.Offset
 }

@@ -7,10 +7,6 @@
 
 ```go
 var (
-	// SanitizeDirtyFloatsNextToDotOpishs, if `true`, will cause `Lex` to
-	// call `Tokens.SanitizeDirtyFloatsNextToDotOpishs` on each lexeme produced.
-	SanitizeDirtyFloatsNextToDotOpishs bool
-
 	// RestrictedWhitespace causes lex errors when encountering standalone (outside
 	// comment or string or character tokens) white-space tokens other than '\n' and ' '.
 	RestrictedWhitespace bool
@@ -52,16 +48,10 @@ var (
 #### func  Lex
 
 ```go
-func Lex(src io.Reader, filePath string, toksCap int) (tokens Tokens, errs []*Error)
+func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens, errs []*Error)
 ```
 Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while
 lexing.
-
-#### func  Lex2
-
-```go
-func Lex2(src string, filePath string, toksCap int) (tokens Tokens, errs []*Error)
-```
 
 #### func  Scan
 
@@ -80,19 +70,12 @@ func SepsGrouperCloserForOpener(opener byte) (closer byte)
 ```go
 type Error struct {
 	Msg string
-	Pos scanner.Position
+	Pos
 }
 ```
 
 Error holds a message obtained via `Scanner.Error`, plus additional positional
 details.
-
-#### func  Err
-
-```go
-func Err(pos *scanner.Position, msg string) *Error
-```
-Err returns a newly constructed `Error` with the given `Msg` and `Pos`.
 
 #### func (*Error) Error
 
@@ -178,7 +161,7 @@ Or returns `me` if not `nil`, else `fallback`.
 #### func (*Token) Pos
 
 ```go
-func (me *Token) Pos(lineOffset int, posOffset int) *scanner.Position
+func (me *Token) Pos(lineOffset int, posOffset int) *Pos
 ```
 
 #### func (*Token) Rune
@@ -230,9 +213,9 @@ const (
 
 ```go
 type TokenMeta struct {
-	Pos        scanner.Position
+	Orig string
+	Pos
 	LineIndent int
-	Orig       string
 }
 ```
 
@@ -344,7 +327,7 @@ CountKind returns the number of `Token`s with the specified `Kind`.
 func (me Tokens) EqLenAndOffsets(toks Tokens, checkInnerOffsetsToo bool) bool
 ```
 EqLenAndOffsets returns at least whether `me` and `toks` have the same `len` and
-the `First` and `Last` of both share the same `TokenMeta.Pos.Offset`. If
+the `First` and `Last` of both share the same `TokenMeta.Pos.Off0`. If
 `checkInnerOffsetsToo` is `true`, all other `Tokens` (not just the `First` and
 `Last` ones) are compared as well.
 
@@ -355,7 +338,7 @@ func (me Tokens) FindSub(beginsWith Tokens, endsWith Tokens) (slice Tokens)
 ```
 FindSub initially calls `FromUntil` but if the result is `nil` because
 `beginsWith` / `endsWith` aren't sub-slices of `me`, it figures out the proper
-beginner/ender from `TokenMeta.Pos.Offset` values of the `First(nil)` of
+beginner/ender from `TokenMeta.Pos.Off0` values of the `First(nil)` of
 `beginsWith` and the `Last(nil)` of `endsWith`. In any case, only the first
 `Token` in `beginsWith` and the last in `endsWith` are ever considered.
 
@@ -468,7 +451,7 @@ NumCharsBetweenLastAndFirstOf returns the number of characters between the first
 #### func (Tokens) Pos
 
 ```go
-func (me Tokens) Pos() *scanner.Position
+func (me Tokens) Pos() *Pos
 ```
 Pos returns the `TokenMeta.Pos` of the `First` `Token` in `me`.
 
@@ -477,16 +460,6 @@ Pos returns the `TokenMeta.Pos` of the `First` `Token` in `me`.
 ```go
 func (me Tokens) Prev(before *Token, fallback bool) *Token
 ```
-
-#### func (*Tokens) SanitizeDirtyFloatsNextToDotOpishs
-
-```go
-func (me *Tokens) SanitizeDirtyFloatsNextToDotOpishs(i int)
-```
-SanitizeDirtyFloatsNextToDotOpishs attempts to undo sometimes-unwanted float
-tokenizations by `text/scanner`, such as `0..1` into `0.0` and `0.1`, or `0...1`
-into `0.0` and `.` and `0.1`, replacing with the corresponding uint / dot
-`Token` combinations instead. `i > 0 && i < len(me)` must hold.
 
 #### func (Tokens) SansComments
 
