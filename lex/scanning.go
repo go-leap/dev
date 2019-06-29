@@ -1,6 +1,7 @@
 package udevlex
 
 import (
+	"strings"
 	"unicode"
 )
 
@@ -12,52 +13,62 @@ type Pos struct {
 }
 
 var (
-	ScannerLineComment      = "//"
-	ScannerLongComment      = "/**/"
-	ScannerStringDelim byte = '"'
+	ScannerLineCommentPrefix                 = "//"
+	ScannerLongCommentPrefixAndSuffix        = "/**/"
+	ScannerStringDelims               string = "'\""
 )
 
-type Scanner struct {
-	FileName string
-	Position Pos
-	On       func(TokenKind, int, int)
-}
-
-func (me *Scanner) Scan(src string, srcFilePath string) {
-	me.Position.FilePath, me.Position.Offset0, me.Position.Line1, me.Position.Col1 =
-		me.FileName, 0, 1, 1
+func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int)) {
+	pos := Pos{FilePath: srcFilePath, Line1: 1, Col1: 1}
 
 	var off0 int
 	var rcur rune
 	var isnewln bool
-	var islast bool
 	var numhasdot bool
 
 	var waitends func() TokenKind
-	waitsince, offlast, lcl := -1, len(src)-1, len(ScannerLongComment)/2
+	var waitsince Pos
+	lcl := len(ScannerLongCommentPrefixAndSuffix) / 2
 
 	wait4endlinecomment := func() (ret TokenKind) {
-		if islast || isnewln {
+		if rcur == -1 || isnewln {
 			ret = TOKEN_COMMENT
 		}
 		return
 	}
 	wait4endlongcomment := func() (ret TokenKind) {
-		if islast || (off0 >= (waitsince+len(ScannerLongComment)) && src[off0-lcl:off0] == ScannerLongComment[lcl:]) {
+		if rcur == -1 || (off0 >= (waitsince.Offset0+len(ScannerLongCommentPrefixAndSuffix)) && src[off0-lcl:off0] == ScannerLongCommentPrefixAndSuffix[lcl:]) {
 			ret = _TOKEN_COMMENT_ENCL
 		}
 		return
 	}
 	wait4endstring := func() (ret TokenKind) {
-		if islast || (off0 > (waitsince+1) && src[off0-1] == ScannerStringDelim && src[off0-2] != '\\') {
+		if rcur == -1 || (off0 > (waitsince.Offset0+1) && src[off0-1] == src[waitsince.Offset0] && src[off0-2] != '\\') {
 			ret = TOKEN_STR
 		}
 		return
 	}
+	wait4endident := func() (ret TokenKind) {
+		if rcur == -1 || (src[off0] != '_' && !unicode.IsLetter(rcur)) {
+			ret = TOKEN_IDENT
+		}
+		return
+	}
 	wait4endnumber := func() (ret TokenKind) {
-		if src[off0] == '.' {
-			numhasdot = true
-		} else if src[off0] != '_' && (src[off0] < 48 || src[off0] > 57) && !unicode.IsLetter(rcur) {
+		numdone := (rcur == -1)
+		if !numdone {
+			if src[off0] == '.' {
+				if off1 := off0 + 1; off1 < len(src) && src[off1] > 47 && src[off1] < 58 {
+					numhasdot = true
+				} else {
+					numdone = true
+				}
+			} else if src[off0] != '_' && (src[off0] < 48 || src[off0] > 57) &&
+				!unicode.IsLetter(rcur) {
+				numdone = true
+			}
+		}
+		if numdone {
 			if numhasdot {
 				ret = TOKEN_FLOAT
 			} else {
@@ -66,46 +77,42 @@ func (me *Scanner) Scan(src string, srcFilePath string) {
 		}
 		return
 	}
-	wait4endident := func() (ret TokenKind) {
-		if src[off0] != '_' && !unicode.IsLetter(rcur) {
-			ret = TOKEN_IDENT
-		}
-		return
-	}
 
 	for off0, rcur = range src {
-		me.Position.Offset0 = off0
-		islast, isnewln = (off0 == offlast), (src[off0] == '\n')
+		pos.Offset0 = off0
+		isnewln = (src[off0] == '\n')
 		if isnewln {
-			me.Position.Col1, me.Position.Line1 = 1, me.Position.Line1+1
+			pos.Col1, pos.Line1 = 1, pos.Line1+1
 		} else {
-			me.Position.Col1++
+			pos.Col1++
 		}
 
 		if waitends != nil {
 			if tokkind := waitends(); tokkind != 0 {
-				me.On(tokkind, waitsince, off0)
-				waitsince, waitends = -1, nil
+				on(tokkind, &waitsince, off0-waitsince.Offset0)
+				waitends = nil
 			}
 		}
 		if waitends == nil && !isnewln {
-			switch {
-			case src[off0] == ScannerStringDelim:
-				waitsince, waitends = off0, wait4endstring
-			case src[off0:off0+len(ScannerLineComment)] == ScannerLineComment:
+			if /* NUM-LIT? */ src[off0] > 47 && src[off0] < 58 {
+				waitsince, waitends, numhasdot = pos, wait4endnumber, false
+			} else /* STR-LIT? */ if strings.IndexByte(ScannerStringDelims, src[off0]) != -1 {
+				waitsince, waitends = pos, wait4endstring
+			} else /* COMMENT? */ if ScannerLineCommentPrefix == src[off0:off0+len(ScannerLineCommentPrefix)] {
 				// TODO: bounds-check above
-				waitsince, waitends = off0, wait4endlinecomment
-			case src[off0:off0+lcl] == ScannerLongComment[:lcl]:
+				waitsince, waitends = pos, wait4endlinecomment
+			} else /* COMMENT? */ if src[off0:off0+lcl] == ScannerLongCommentPrefixAndSuffix[:lcl] {
 				// TODO: bounds-check above
-				waitsince, waitends = off0, wait4endlongcomment
-			case src[off0] > 47 && src[off0] < 58:
-				waitsince, waitends, numhasdot = off0, wait4endnumber, false
-			case src[off0] == '_' || unicode.IsLetter(rcur):
-				waitsince, waitends = off0, wait4endident
+				waitsince, waitends = pos, wait4endlongcomment
+			} else /* IDENT? */ if src[off0] == '_' || unicode.IsLetter(rcur) {
+				waitsince, waitends = pos, wait4endident
 			}
 		}
 		if waitends == nil {
 
 		}
+	}
+	if rcur, off0 = -1, len(src); waitends != nil {
+		on(waitends(), &waitsince, off0-waitsince.Offset0)
 	}
 }

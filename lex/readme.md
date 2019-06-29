@@ -43,9 +43,9 @@ var (
 
 ```go
 var (
-	ScannerLineComment      = "//"
-	ScannerLongComment      = "/**/"
-	ScannerStringDelim byte = '"'
+	ScannerLineCommentPrefix                 = "//"
+	ScannerLongCommentPrefixAndSuffix        = "/**/"
+	ScannerStringDelims               string = "'\""
 )
 ```
 
@@ -56,6 +56,12 @@ func Lex(src io.Reader, filePath string, toksCap int) (tokens Tokens, errs []*Er
 ```
 Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while
 lexing.
+
+#### func  Scan
+
+```go
+func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int))
+```
 
 #### func  SepsGrouperCloserForOpener
 
@@ -100,23 +106,6 @@ type Pos struct {
 }
 ```
 
-
-#### type Scanner
-
-```go
-type Scanner struct {
-	FileName string
-	Position Pos
-	On       func(TokenKind, int, int)
-}
-```
-
-
-#### func (*Scanner) Scan
-
-```go
-func (me *Scanner) Scan(src string, srcFilePath string)
-```
 
 #### type Token
 
