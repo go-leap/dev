@@ -81,6 +81,48 @@ func (me *Error) Error() string
 ```
 Error implements Go's standard `error` interface.
 
+#### type IScanner
+
+```go
+type IScanner interface {
+	OnError(func(*Pos, string))
+	OnToken(func(*Pos, PrimTokenKind, string))
+	Scan()
+}
+```
+
+
+#### type Pos
+
+```go
+type Pos struct {
+	FilePath string
+	Offset0  int
+	Line1    int
+	Col1     int
+}
+```
+
+
+#### type PrimTokenKind
+
+```go
+type PrimTokenKind int32
+```
+
+
+```go
+const (
+	PrimTokenKindOther   PrimTokenKind = 0
+	PrimTokenKindChar    PrimTokenKind = -5
+	PrimTokenKindComment PrimTokenKind = -8
+	PrimTokenKindFloat   PrimTokenKind = -4
+	PrimTokenKindIdent   PrimTokenKind = -2
+	PrimTokenKindInt     PrimTokenKind = -3
+	PrimTokenKindString  PrimTokenKind = -6
+)
+```
+
 #### type Token
 
 ```go
