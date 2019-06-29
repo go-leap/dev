@@ -69,6 +69,7 @@ func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int)) {
 			}
 		}
 	}
+
 	if s.cur, s.Off0 = -1, len(src); waiton != nil {
 		on(waiton(&s), &s.since, s.Off0-s.since.Off0)
 	}
