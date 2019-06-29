@@ -70,40 +70,40 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 		lexeme := string(srcUtf8WithoutBom[at.Off0:untilOff0])
 		switch kind {
 		case TOKEN_IDENT:
-			on(at, lexeme, Token{flag: TOKEN_IDENT, Str: lexeme})
+			on(at, lexeme, Token{Kind: TOKEN_IDENT, Str: lexeme})
 		case TOKEN_STR:
 			if s, err := strconv.Unquote(lexeme); err == nil {
-				on(at, lexeme, Token{flag: TOKEN_STR, Str: s})
+				on(at, lexeme, Token{Kind: TOKEN_STR, Str: s})
 			} else {
 				onerr(at, err.Error())
 			}
 		case TOKEN_FLOAT:
 			if f, err := strconv.ParseFloat(lexeme, 64); err == nil {
-				on(at, lexeme, Token{flag: TOKEN_FLOAT, Float: f})
+				on(at, lexeme, Token{Kind: TOKEN_FLOAT, Float: f})
 			} else {
 				onerr(at, err.Error())
 			}
 		case TOKEN_UINT:
 			if u, err := strconv.ParseUint(lexeme, 0, 64); err == nil {
-				on(at, lexeme, Token{flag: TOKEN_UINT, Uint: u})
+				on(at, lexeme, Token{Kind: TOKEN_UINT, Uint: u})
 			} else {
 				onerr(at, err.Error())
 			}
 		case TOKEN_COMMENT:
-			on(at, lexeme, Token{flag: TOKEN_COMMENT})
+			on(at, lexeme, Token{Kind: TOKEN_COMMENT})
 		case TOKEN_OPISH:
 			var issep bool
 			if len(lexeme) == 1 {
 				for i := 0; i < len(allseps); i++ {
 					if issep = (lexeme[0] == allseps[i]); issep {
-						on(at, lexeme, Token{flag: TOKEN_SEPISH, Str: lexeme})
+						on(at, lexeme, Token{Kind: TOKEN_SEPISH, Str: lexeme})
 						break
 					}
 				}
 			}
 			if !issep {
 				if onlyspacesinlinesofar = false; opishaccum == nil {
-					opishaccum = &Token{flag: TOKEN_OPISH}
+					opishaccum = &Token{Kind: TOKEN_OPISH}
 					opishaccum.Meta.init(at, lineindent, "")
 				}
 				opishaccum.Str += lexeme

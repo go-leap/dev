@@ -39,13 +39,13 @@ func (me *scanState) isNumOrLetterOrUnderscore() bool {
 
 func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int)) {
 	s := scanState{src: src, lcl: len(ScannerLongCommentPrefixAndSuffix) / 2,
-		Pos: Pos{FilePath: srcFilePath, Ln1: 1, Col1: 1}}
+		Pos: Pos{FilePath: srcFilePath, Ln1: 1}}
 
 	var waiton func(*scanState) TokenKind
 
 	for s.Off0, s.cur = range src {
 		if s.isLf = (src[s.Off0] == '\n'); s.isLf {
-			s.Pos.Col1, s.Pos.Ln1 = 1, s.Pos.Ln1+1
+			s.Pos.Col1, s.Pos.Ln1 = 0, s.Pos.Ln1+1
 		} else {
 			s.Pos.Col1++
 		}

@@ -115,6 +115,8 @@ type Token struct {
 	Float float64
 	// Uint is only set if `Kind` returns `TOKEN_UINT` or `TOKEN_RUNE`.
 	Uint uint64
+
+	Kind TokenKind
 }
 ```
 
@@ -128,28 +130,17 @@ func (me *Token) IsAnyOneOf(any ...string) bool
 IsAnyOneOf returns whether some value in `any` is equal to this `Token`'s
 original source sub-string.
 
-#### func (*Token) IsCommentSelfTerminating
+#### func (*Token) IsLineComment
 
 ```go
-func (me *Token) IsCommentSelfTerminating() bool
+func (me *Token) IsLineComment() bool
 ```
-IsCommentSelfTerminating returns `false` for `// ...` single-line comments, and
-`true` for `/* ... */` multi-line comments.
 
-#### func (*Token) IsStrRaw
+#### func (*Token) IsLongComment
 
 ```go
-func (me *Token) IsStrRaw() bool
+func (me *Token) IsLongComment() bool
 ```
-IsStrRaw returns whether this `Token` of `TOKEN_STR` `Kind` had backtick
-delimiters.
-
-#### func (*Token) Kind
-
-```go
-func (me *Token) Kind() (kind TokenKind)
-```
-Kind returns this `Token`'s `TokenKind`.
 
 #### func (*Token) Or
 
@@ -179,15 +170,6 @@ func (me *Token) String() string
 String returns the original source sub-string that this `Token` was produced
 from.
 
-#### func (*Token) UintBase
-
-```go
-func (me *Token) UintBase() int
-```
-UintBase returns the base of this `Token` with `TOKEN_UINT` `Kind`, ie. 10 for
-decimal, 16 for hexadecimal, 8 for octal base etc. (For a `Token` of a different
-`Kind`, the return value is usually the `Kind` itself.)
-
 #### type TokenKind
 
 ```go
@@ -204,7 +186,6 @@ const (
 	TOKEN_IDENT
 	TOKEN_OPISH
 	TOKEN_SEPISH
-	TOKEN_RUNE
 	TOKEN_UINT
 )
 ```
@@ -447,6 +428,12 @@ func (me Tokens) NumCharsBetweenLastAndFirstOf(other Tokens) (dist int)
 ```
 NumCharsBetweenLastAndFirstOf returns the number of characters between the first
 `Token` in `other` and the end of the last `Token` in `me`.
+
+#### func (Tokens) Orig
+
+```go
+func (me Tokens) Orig() (s string)
+```
 
 #### func (Tokens) Pos
 

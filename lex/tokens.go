@@ -2,6 +2,7 @@ package udevlex
 
 import (
 	"bytes"
+	"strings"
 )
 
 // Tokens is a slice of `Token`s.
@@ -30,7 +31,7 @@ func (me Tokens) BreakOnIndent(minLineIndent int) (indented Tokens, outdented To
 // Unless a correct break position was found, `pref` and `suff` will both be `nil`.
 func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent string) (pref Tokens, suff Tokens, numUnclosed int) {
 	for i := 0; i < len(me); i++ {
-		if me[i].flag == TOKEN_IDENT {
+		if me[i].Kind == TOKEN_IDENT {
 			switch me[i].Meta.Orig {
 			case skipForEachOccurrenceOfIdent:
 				numUnclosed++
@@ -51,7 +52,7 @@ func (me Tokens) BreakOnIdent(needleIdent string, skipForEachOccurrenceOfIdent s
 func (me Tokens) BreakOnOpish(token string) (pref Tokens, op *Token, suff Tokens) {
 	pref = me
 	for i := 0; i < len(me); i++ {
-		if me[i].flag == TOKEN_OPISH && me[i].Meta.Orig == token {
+		if me[i].Kind == TOKEN_OPISH && me[i].Meta.Orig == token {
 			pref, op, suff = me[:i], &me[i], me[i+1:]
 			return
 		}
@@ -62,7 +63,7 @@ func (me Tokens) BreakOnOpish(token string) (pref Tokens, op *Token, suff Tokens
 // CountKind returns the number of `Token`s with the specified `Kind`.
 func (me Tokens) CountKind(kind TokenKind) (count int) {
 	for i := range me {
-		if me[i].Kind() == kind {
+		if me[i].Kind == kind {
 			count++
 		}
 	}
@@ -87,7 +88,7 @@ func (me Tokens) Has(orig string, deep bool) bool {
 // HasKind returns whether any of the `Tokens` is of the specified `Kind`.
 func (me Tokens) HasKind(kind TokenKind) bool {
 	for i := range me {
-		if me[i].Kind() == kind {
+		if me[i].Kind == kind {
 			return true
 		}
 	}
@@ -347,10 +348,10 @@ func (me Tokens) Cliques(isBreaker func(idxCur int, idxLast int) bool) (nums map
 	d0, skipsubs, idxlast := true, (len(SepsGroupers) > 0), len(me)-1
 	for i := range me {
 		var iscomment bool
-		issepish := me[i].flag == TOKEN_SEPISH
+		issepish := me[i].Kind == TOKEN_SEPISH
 		if d0 {
 			iscomment, isbreaker =
-				(me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL), isBreaker != nil && isBreaker(i, idxlast)
+				me[i].Kind == TOKEN_COMMENT, isBreaker != nil && isBreaker(i, idxlast)
 			if i > 0 {
 				diff := me[i].Meta.Pos.Off0 - (me[i-1].Meta.Pos.Off0 + len(me[i-1].Meta.Orig))
 				if diff > 0 || wascomment || iscomment || wasbreaker || isbreaker {
@@ -386,7 +387,7 @@ func (me Tokens) Cliques(isBreaker func(idxCur int, idxLast int) bool) (nums map
 func (me Tokens) BreakOnLeadingComments() (leadingComments Tokens, rest Tokens) {
 	var stopbefore int
 	for i := range me {
-		if me[i].flag != _TOKEN_COMMENT_ENCL && me[i].flag != TOKEN_COMMENT {
+		if me[i].Kind != TOKEN_COMMENT {
 			stopbefore = i
 			break
 		}
@@ -407,7 +408,7 @@ func (me Tokens) SansComments(keepIn map[*Token][]int, oldIndices map[*Token]int
 	sans = make(Tokens, 0, len(me))
 	var keeps []int
 	for i, keep, oldidx, lastnoncomment := 0, keepIn != nil, oldIndices != nil, -1; i < len(me); i++ {
-		iscomment := me[i].flag == TOKEN_COMMENT || me[i].flag == _TOKEN_COMMENT_ENCL
+		iscomment := me[i].Kind == TOKEN_COMMENT
 		if keep {
 			if !iscomment {
 				if lastnoncomment >= 0 && len(keeps) > 0 {
@@ -451,7 +452,7 @@ func (me Tokens) SansComments(keepIn map[*Token][]int, oldIndices map[*Token]int
 func (me Tokens) Sub(sepOpen byte, sepClose byte) (sub Tokens, tail Tokens, numUnclosed int) {
 	tail, numUnclosed = me, 1
 	for i := 1; i < len(me); i++ {
-		if me[i].flag == TOKEN_SEPISH {
+		if me[i].Kind == TOKEN_SEPISH {
 			if me[i].Meta.Orig[0] == sepOpen {
 				numUnclosed++
 			} else if me[i].Meta.Orig[0] == sepClose {
@@ -514,6 +515,17 @@ func (me Tokens) IndentBasedChunks(minLineIndent int) (chunks []Tokens) {
 		if tlc := me[cur:]; len(tlc) > 0 {
 			chunks = append(chunks, tlc)
 		}
+	}
+	return
+}
+
+func (me Tokens) Orig() (s string) {
+	var prev *Token
+	for i := range me {
+		if prev != nil {
+			s += strings.Repeat(" ", me[i].Meta.Off0-(prev.Meta.Off0+len(prev.Meta.Orig)))
+		}
+		prev, s = &me[i], s+me[i].Meta.Orig
 	}
 	return
 }
