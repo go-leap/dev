@@ -1,6 +1,7 @@
 package udevlex
 
 import (
+	"errors"
 	"io"
 	"strconv"
 	scan "text/scanner"
@@ -184,5 +185,102 @@ func Lex(src io.Reader, filePath string, toksCap int) (tokens Tokens, errs []*Er
 		tokerr = false
 	}
 	unaccum()
+	return
+}
+
+func Lex2(src string, filePath string, toksCap int) (tokens Tokens, errs []*Error) {
+	tokens = make(Tokens, 0, toksCap) // a caller's shot-in-the-dark for an initial cap that's better than default 0
+	var (
+		onlyspacesinlinesofar = true
+		lineindent            int
+		opishaccum            *Token
+	)
+	idxSepsGroupersClosers = len(SepsGroupers) / 2
+
+	topos := func(at *Pos) *scan.Position {
+		return &scan.Position{Filename: at.FilePath, Column: at.Col1, Line: at.Ln1, Offset: at.Off0}
+	}
+	accumed := func() {
+		if opishaccum != nil {
+			if len(errs) == 0 {
+				opishaccum.Meta.Orig = opishaccum.Str
+				tokens = append(tokens, *opishaccum)
+			}
+			opishaccum = nil
+		}
+	}
+	on := func(at *Pos, origSym string, token Token) {
+		accumed()
+		if onlyspacesinlinesofar = false; len(errs) == 0 {
+			token.Meta.init(topos(at), lineindent, origSym)
+			tokens = append(tokens, token)
+		}
+	}
+	onerr := func(at *Pos, err error) {
+		opishaccum, tokens = nil, nil
+		errs = append(errs, Err(topos(at), err.Error()))
+	}
+
+	allseps := SepsOthers + SepsGroupers
+	Scan(src, filePath, func(kind TokenKind, at *Pos, untilOff0 int) {
+		lexeme := src[at.Off0:untilOff0]
+		switch kind {
+		case TOKEN_IDENT:
+			on(at, lexeme, Token{flag: TOKEN_IDENT, Str: lexeme})
+		case TOKEN_STR:
+			if s, err := strconv.Unquote(lexeme); err == nil {
+				on(at, lexeme, Token{flag: TOKEN_STR, Str: s})
+			} else {
+				onerr(at, err)
+			}
+		case TOKEN_FLOAT:
+			if f, err := strconv.ParseFloat(lexeme, 64); err == nil {
+				on(at, lexeme, Token{flag: TOKEN_FLOAT, Float: f})
+			} else {
+				onerr(at, err)
+			}
+		case TOKEN_UINT:
+			if u, err := strconv.ParseUint(lexeme, 0, 64); err == nil {
+				on(at, lexeme, Token{flag: TOKEN_UINT, Uint: u})
+			} else {
+				onerr(at, err)
+			}
+		case TOKEN_COMMENT:
+			on(at, lexeme, Token{flag: TOKEN_COMMENT})
+		case TOKEN_OPISH:
+			var issep bool
+			if len(lexeme) == 1 {
+				for i := 0; i < len(allseps); i++ {
+					if issep = (lexeme[0] == allseps[i]); issep {
+						on(at, lexeme, Token{flag: TOKEN_SEPISH, Str: lexeme})
+						break
+					}
+				}
+			}
+			if !issep {
+				if onlyspacesinlinesofar = false; opishaccum == nil {
+					opishaccum = &Token{flag: TOKEN_OPISH}
+					opishaccum.Meta.init(topos(at), lineindent, "")
+				}
+				opishaccum.Str += lexeme
+			}
+		case -1:
+			accumed()
+			for _, r := range lexeme {
+				if r == '\n' {
+					lineindent, onlyspacesinlinesofar = 0, true
+				} else if RestrictedWhitespace && r != ' ' {
+					if RestrictedWhitespaceRewriter == nil {
+						onerr(at, errors.New("illegal white-space "+strconv.QuoteRune(r)+": only '\\n' and ' ' permissible"))
+					} else if onlyspacesinlinesofar {
+						lineindent += RestrictedWhitespaceRewriter(r)
+					}
+				} else if onlyspacesinlinesofar {
+					lineindent++
+				}
+			}
+		}
+	})
+	accumed()
 	return
 }

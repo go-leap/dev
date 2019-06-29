@@ -1,7 +1,7 @@
 package udevlex
 
 import (
-	"strings"
+	"strconv"
 	"unicode"
 	"unicode/utf8"
 )
@@ -13,10 +13,14 @@ type Pos struct {
 	Col1     int
 }
 
+func (me *Pos) String() string {
+	return me.FilePath + ":" + strconv.Itoa(me.Ln1) + ":" + strconv.Itoa(me.Col1)
+}
+
 var (
-	ScannerLineCommentPrefix                 = "//"
-	ScannerLongCommentPrefixAndSuffix        = "/**/"
-	ScannerStringDelims               string = "'\""
+	ScannerLineCommentPrefix               = "//"
+	ScannerLongCommentPrefixAndSuffix      = "/**/"
+	ScannerStringDelim                byte = '"'
 )
 
 type scanState struct {
@@ -27,6 +31,10 @@ type scanState struct {
 	cur    rune
 	isLf   bool
 	numDot bool
+}
+
+func (me *scanState) isNumOrLetterOrUnderscore() bool {
+	return me.src[me.Off0] == '_' || unicode.In(me.cur, unicode.Letter, unicode.Number)
 }
 
 func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int)) {
@@ -44,34 +52,34 @@ func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int)) {
 
 		if waiton != nil {
 			if tokkind := waiton(&s); tokkind != 0 {
-				on(tokkind, &s.since, s.Off0-s.since.Off0)
+				on(tokkind, &s.since, s.Off0)
 				waiton = nil
 			}
 		}
 		if waiton == nil && !s.isLf {
 			if /* NUM-LIT? */ src[s.Off0] > '/' && src[s.Off0] < ':' {
 				s.since, waiton, s.numDot = s.Pos, scanWaitOnLitNumber, false
-			} else /* STR-LIT? */ if strings.IndexByte(ScannerStringDelims, src[s.Off0]) != -1 {
+			} else /* STR-LIT? */ if src[s.Off0] == ScannerStringDelim {
 				s.since, waiton = s.Pos, scanWaitOnLitString
 			} else /* COMMENT? */ if offl := s.Off0 + len(ScannerLineCommentPrefix); offl <= len(src) && ScannerLineCommentPrefix == src[s.Off0:offl] {
 				s.since, waiton = s.Pos, scanWaitOnCommentLine
 			} else /* COMMENT? */ if offl = s.Off0 + s.lcl; offl <= len(src) && src[s.Off0:offl] == ScannerLongCommentPrefixAndSuffix[:s.lcl] {
 				s.since, waiton = s.Pos, scanWaitOnCommentLong
-			} else /* IDENT? */ if src[s.Off0] == '_' || unicode.IsLetter(s.cur) {
+			} else /* IDENT? */ if s.isNumOrLetterOrUnderscore( /* cat N not for 0..9 but for ² and ⅜ etc. */ ) {
 				s.since, waiton = s.Pos, scanWaitOnIdent
 			}
 		}
 		if waiton == nil {
 			if rl := utf8.RuneLen(s.cur); unicode.IsSpace(s.cur) {
-				on(TOKEN_SPACE, &s.Pos, rl)
+				on(-1, &s.Pos, s.Off0+rl)
 			} else {
-				on(TOKEN_OTHER, &s.Pos, rl)
+				on(TOKEN_OPISH, &s.Pos, s.Off0+rl)
 			}
 		}
 	}
 
 	if s.cur, s.Off0 = -1, len(src); waiton != nil {
-		on(waiton(&s), &s.since, s.Off0-s.since.Off0)
+		on(waiton(&s), &s.since, s.Off0)
 	}
 }
 
@@ -83,12 +91,12 @@ func scanWaitOnCommentLine(s *scanState) (ret TokenKind) {
 }
 func scanWaitOnCommentLong(s *scanState) (ret TokenKind) {
 	if s.cur == -1 || (s.Off0 >= (s.since.Off0+len(ScannerLongCommentPrefixAndSuffix)) && s.src[s.Off0-s.lcl:s.Off0] == ScannerLongCommentPrefixAndSuffix[s.lcl:]) {
-		ret = _TOKEN_COMMENT_ENCL
+		ret = TOKEN_COMMENT
 	}
 	return
 }
 func scanWaitOnIdent(s *scanState) (ret TokenKind) {
-	if s.cur == -1 || (s.src[s.Off0] != '_' && !unicode.In(s.cur, unicode.Letter, unicode.Number)) {
+	if s.cur == -1 || !s.isNumOrLetterOrUnderscore() {
 		ret = TOKEN_IDENT
 	}
 	return
@@ -108,8 +116,7 @@ func scanWaitOnLitNumber(s *scanState) (ret TokenKind) {
 			} else {
 				numend = true
 			}
-		} else if s.src[s.Off0] != '_' && (s.src[s.Off0] < '0' || s.src[s.Off0] > '9') &&
-			!unicode.In(s.cur, unicode.Letter, unicode.Number) {
+		} else if (s.src[s.Off0] < '0' || s.src[s.Off0] > '9') && !s.isNumOrLetterOrUnderscore() {
 			numend = true
 		}
 	}

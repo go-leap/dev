@@ -20,8 +20,6 @@ const ( // note, order of enumerants is being relied-on in Kind()
 	TOKEN_SEPISH
 	TOKEN_RUNE
 	TOKEN_UINT
-	TOKEN_OTHER
-	TOKEN_SPACE
 )
 
 // Token represents a lexeme.

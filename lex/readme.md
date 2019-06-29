@@ -43,9 +43,9 @@ var (
 
 ```go
 var (
-	ScannerLineCommentPrefix                 = "//"
-	ScannerLongCommentPrefixAndSuffix        = "/**/"
-	ScannerStringDelims               string = "'\""
+	ScannerLineCommentPrefix               = "//"
+	ScannerLongCommentPrefixAndSuffix      = "/**/"
+	ScannerStringDelim                byte = '"'
 )
 ```
 
@@ -56,6 +56,12 @@ func Lex(src io.Reader, filePath string, toksCap int) (tokens Tokens, errs []*Er
 ```
 Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while
 lexing.
+
+#### func  Lex2
+
+```go
+func Lex2(src string, filePath string, toksCap int) (tokens Tokens, errs []*Error)
+```
 
 #### func  Scan
 
@@ -106,6 +112,12 @@ type Pos struct {
 }
 ```
 
+
+#### func (*Pos) String
+
+```go
+func (me *Pos) String() string
+```
 
 #### type Token
 
@@ -211,8 +223,6 @@ const (
 	TOKEN_SEPISH
 	TOKEN_RUNE
 	TOKEN_UINT
-	TOKEN_OTHER
-	TOKEN_SPACE
 )
 ```
 
