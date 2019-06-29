@@ -105,27 +105,17 @@ type Pos struct {
 
 ```go
 type Scanner struct {
-	FileName  string
-	Position  Pos
-	OnComment func(string, bool)
-	OnString  func(string)
-	OnIdent   func(string)
-	OnOther   func(rune)
-	OnNumber  func(string, bool)
+	FileName string
+	Position Pos
+	On       func(TokenKind, int, int)
 }
 ```
 
 
-#### func (*Scanner) Init
-
-```go
-func (me *Scanner) Init(src string)
-```
-
 #### func (*Scanner) Scan
 
 ```go
-func (me *Scanner) Scan()
+func (me *Scanner) Scan(src string, srcFilePath string)
 ```
 
 #### type Token

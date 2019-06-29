@@ -1,5 +1,9 @@
 package udevlex
 
+import (
+	"unicode"
+)
+
 type Pos struct {
 	FilePath string
 	Offset0  int
@@ -14,56 +18,49 @@ var (
 )
 
 type Scanner struct {
-	src       string
-	FileName  string
-	Position  Pos
-	OnComment func(string, bool)
-	OnString  func(string)
-	OnIdent   func(string)
-	OnOther   func(rune)
-	OnNumber  func(string, bool)
+	FileName string
+	Position Pos
+	On       func(TokenKind, int, int)
 }
 
-func (me *Scanner) Init(src string) {
-	me.src, me.Position.FilePath = src, me.FileName
-	me.Position.Col1, me.Position.Line1, me.Position.Offset0 = 1, 1, 0
-}
+func (me *Scanner) Scan(src string, srcFilePath string) {
+	me.Position.FilePath, me.Position.Offset0, me.Position.Line1, me.Position.Col1 =
+		me.FileName, 0, 1, 1
 
-func (me *Scanner) Scan() {
-	type onwhat byte
-	const (
-		_ onwhat = iota
-		oncomment
-		onstring
-		onident
-		onnumber
-	)
 	var off0 int
+	var rcur rune
 	var isnewln bool
 	var islast bool
 
-	var waitends func() (onwhat, bool)
-	waitsince, src, offlast, lcl := -1, me.src, len(me.src)-1, len(ScannerLongComment)/2
-	waitforendoflinecomment := func() (on onwhat, islong bool) {
+	var waitends func() TokenKind
+	waitsince, offlast, lcl := -1, len(src)-1, len(ScannerLongComment)/2
+
+	wait4endlinecomment := func() (ret TokenKind) {
 		if islast || isnewln {
-			on = oncomment
+			ret = TOKEN_COMMENT
 		}
 		return
 	}
-	waitforendoflongcomment := func() (on onwhat, islong bool) {
+	wait4endlongcomment := func() (ret TokenKind) {
 		if islast || (off0 >= (waitsince+len(ScannerLongComment)) && src[off0-lcl:off0] == ScannerLongComment[lcl:]) {
-			on, islong = oncomment, true
+			ret = _TOKEN_COMMENT_ENCL
 		}
 		return
 	}
-	waitforendofstring := func() (on onwhat, _ bool) {
+	wait4endstring := func() (ret TokenKind) {
 		if islast || (off0 > (waitsince+1) && src[off0-1] == ScannerStringDelim && src[off0-2] != '\\') {
-			on = onstring
+			ret = TOKEN_STR
 		}
+		return
+	}
+	wait4endnumber := func() (ret TokenKind) {
+		// begin with 0..9
+		// inside can have 0..9 or letters or `_` or `.`
+		// end with 0..9 followed by non-inside (else peek at next for inside-compat)
 		return
 	}
 
-	for off0 = range src {
+	for off0, rcur = range src {
 		me.Position.Offset0 = off0
 		islast, isnewln = (off0 == offlast), (src[off0] == '\n')
 		if isnewln {
@@ -73,30 +70,25 @@ func (me *Scanner) Scan() {
 		}
 
 		if waitends != nil {
-			if on, b := waitends(); on != 0 {
-				switch on {
-				case oncomment:
-					me.OnComment(src[waitsince:off0], b)
-				case onident:
-					me.OnIdent(src[waitsince:off0])
-				case onnumber:
-					me.OnNumber(src[waitsince:off0], b)
-				case onstring:
-					me.OnString(src[waitsince:off0])
-				}
+			if tokkind := waitends(); tokkind != 0 {
+				me.On(tokkind, waitsince, off0)
 				waitsince, waitends = -1, nil
 			}
 		}
-		if waitends == nil {
-			canbeginwait := !isnewln
+		if waitends == nil && !isnewln {
 			switch {
-			case canbeginwait && src[off0] == ScannerStringDelim:
-				waitsince, waitends = off0, waitforendofstring
-			case canbeginwait && src[off0:off0+len(ScannerLineComment)] == ScannerLineComment:
-				waitsince, waitends = off0, waitforendoflinecomment
-			case canbeginwait && src[off0:off0+lcl] == ScannerLongComment[:lcl]:
-				waitsince, waitends = off0, waitforendoflongcomment
+			case src[off0] == ScannerStringDelim:
+				waitsince, waitends = off0, wait4endstring
+			case src[off0:off0+len(ScannerLineComment)] == ScannerLineComment:
+				waitsince, waitends = off0, wait4endlinecomment
+			case src[off0:off0+lcl] == ScannerLongComment[:lcl]:
+				waitsince, waitends = off0, wait4endlongcomment
+			case unicode.IsNumber(rcur):
+				waitsince, waitends = off0, wait4endnumber
 			}
+		}
+		if waitends == nil {
+
 		}
 	}
 }
