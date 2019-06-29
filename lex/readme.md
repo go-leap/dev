@@ -41,6 +41,14 @@ var (
 )
 ```
 
+```go
+var (
+	ScannerLineComment      = "//"
+	ScannerLongComment      = "/**/"
+	ScannerStringDelim byte = '"'
+)
+```
+
 #### func  Lex
 
 ```go
@@ -81,17 +89,6 @@ func (me *Error) Error() string
 ```
 Error implements Go's standard `error` interface.
 
-#### type IScanner
-
-```go
-type IScanner interface {
-	OnError(func(*Pos, string))
-	OnToken(func(*Pos, PrimTokenKind, string))
-	Scan()
-}
-```
-
-
 #### type Pos
 
 ```go
@@ -104,23 +101,31 @@ type Pos struct {
 ```
 
 
-#### type PrimTokenKind
+#### type Scanner
 
 ```go
-type PrimTokenKind int32
+type Scanner struct {
+	FileName  string
+	Position  Pos
+	OnComment func(string, bool)
+	OnString  func(string)
+	OnIdent   func(string)
+	OnOther   func(rune)
+	OnNumber  func(string, bool)
+}
 ```
 
 
+#### func (*Scanner) Init
+
 ```go
-const (
-	PrimTokenKindOther   PrimTokenKind = 0
-	PrimTokenKindChar    PrimTokenKind = -5
-	PrimTokenKindComment PrimTokenKind = -8
-	PrimTokenKindFloat   PrimTokenKind = -4
-	PrimTokenKindIdent   PrimTokenKind = -2
-	PrimTokenKindInt     PrimTokenKind = -3
-	PrimTokenKindString  PrimTokenKind = -6
-)
+func (me *Scanner) Init(src string)
+```
+
+#### func (*Scanner) Scan
+
+```go
+func (me *Scanner) Scan()
 ```
 
 #### type Token
