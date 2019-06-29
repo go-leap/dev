@@ -3,6 +3,7 @@ package udevlex
 import (
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 type Pos struct {
@@ -24,12 +25,11 @@ func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int)) {
 	var off0 int
 	var rcur rune
 	var isnewln bool
-	var numhasdot bool
+	var numdot bool
 
-	var waitends func() TokenKind
+	var wait4end func() TokenKind
 	var waitsince Pos
 	lcl := len(ScannerLongCommentPrefixAndSuffix) / 2
-
 	wait4endlinecomment := func() (ret TokenKind) {
 		if rcur == -1 || isnewln {
 			ret = TOKEN_COMMENT
@@ -49,27 +49,27 @@ func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int)) {
 		return
 	}
 	wait4endident := func() (ret TokenKind) {
-		if rcur == -1 || (src[off0] != '_' && !unicode.IsLetter(rcur)) {
+		if rcur == -1 || (src[off0] != '_' && !unicode.In(rcur, unicode.Letter, unicode.Number)) {
 			ret = TOKEN_IDENT
 		}
 		return
 	}
 	wait4endnumber := func() (ret TokenKind) {
-		numdone := (rcur == -1)
-		if !numdone {
+		numend := (rcur == -1)
+		if !numend {
 			if src[off0] == '.' {
-				if off1 := off0 + 1; off1 < len(src) && src[off1] > 47 && src[off1] < 58 {
-					numhasdot = true
+				if off1 := off0 + 1; (!numdot) && off1 < len(src) && src[off1] > '/' && src[off1] < ':' {
+					numdot = true
 				} else {
-					numdone = true
+					numend = true
 				}
-			} else if src[off0] != '_' && (src[off0] < 48 || src[off0] > 57) &&
-				!unicode.IsLetter(rcur) {
-				numdone = true
+			} else if src[off0] != '_' && (src[off0] < '0' || src[off0] > '9') &&
+				!unicode.In(rcur, unicode.Letter, unicode.Number) {
+				numend = true
 			}
 		}
-		if numdone {
-			if numhasdot {
+		if numend {
+			if numdot {
 				ret = TOKEN_FLOAT
 			} else {
 				ret = TOKEN_UINT
@@ -79,40 +79,40 @@ func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int)) {
 	}
 
 	for off0, rcur = range src {
-		pos.Offset0 = off0
-		isnewln = (src[off0] == '\n')
-		if isnewln {
+		if pos.Offset0, isnewln = off0, (src[off0] == '\n'); isnewln {
 			pos.Col1, pos.Line1 = 1, pos.Line1+1
 		} else {
 			pos.Col1++
 		}
 
-		if waitends != nil {
-			if tokkind := waitends(); tokkind != 0 {
+		if wait4end != nil {
+			if tokkind := wait4end(); tokkind != 0 {
 				on(tokkind, &waitsince, off0-waitsince.Offset0)
-				waitends = nil
+				wait4end = nil
 			}
 		}
-		if waitends == nil && !isnewln {
-			if /* NUM-LIT? */ src[off0] > 47 && src[off0] < 58 {
-				waitsince, waitends, numhasdot = pos, wait4endnumber, false
+		if wait4end == nil && !isnewln {
+			if /* NUM-LIT? */ src[off0] > '/' && src[off0] < ':' {
+				waitsince, wait4end, numdot = pos, wait4endnumber, false
 			} else /* STR-LIT? */ if strings.IndexByte(ScannerStringDelims, src[off0]) != -1 {
-				waitsince, waitends = pos, wait4endstring
-			} else /* COMMENT? */ if ScannerLineCommentPrefix == src[off0:off0+len(ScannerLineCommentPrefix)] {
-				// TODO: bounds-check above
-				waitsince, waitends = pos, wait4endlinecomment
-			} else /* COMMENT? */ if src[off0:off0+lcl] == ScannerLongCommentPrefixAndSuffix[:lcl] {
-				// TODO: bounds-check above
-				waitsince, waitends = pos, wait4endlongcomment
+				waitsince, wait4end = pos, wait4endstring
+			} else /* COMMENT? */ if offl := off0 + len(ScannerLineCommentPrefix); offl <= len(src) && ScannerLineCommentPrefix == src[off0:offl] {
+				waitsince, wait4end = pos, wait4endlinecomment
+			} else /* COMMENT? */ if offl = off0 + lcl; offl <= len(src) && src[off0:offl] == ScannerLongCommentPrefixAndSuffix[:lcl] {
+				waitsince, wait4end = pos, wait4endlongcomment
 			} else /* IDENT? */ if src[off0] == '_' || unicode.IsLetter(rcur) {
-				waitsince, waitends = pos, wait4endident
+				waitsince, wait4end = pos, wait4endident
 			}
 		}
-		if waitends == nil {
-
+		if wait4end == nil {
+			if rl := utf8.RuneLen(rcur); unicode.IsSpace(rcur) {
+				on(TOKEN_SPACE, &pos, rl)
+			} else {
+				on(TOKEN_OTHER, &pos, rl)
+			}
 		}
 	}
-	if rcur, off0 = -1, len(src); waitends != nil {
-		on(waitends(), &waitsince, off0-waitsince.Offset0)
+	if rcur, off0 = -1, len(src); wait4end != nil {
+		on(wait4end(), &waitsince, off0-waitsince.Offset0)
 	}
 }
