@@ -72,22 +72,26 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 		case TOKEN_IDENT:
 			on(at, lexeme, Token{Kind: TOKEN_IDENT, Str: lexeme})
 		case TOKEN_STR:
+			if l := len(lexeme) - 1; l > 0 && lexeme[0] == '"' && lexeme[l] == '"' {
+				// TODO drop this if and do \n->\\n instead
+				lexeme = "`" + lexeme[1:l] + "`"
+			}
 			if s, err := strconv.Unquote(lexeme); err == nil {
 				on(at, lexeme, Token{Kind: TOKEN_STR, Str: s})
 			} else {
-				onerr(at, err.Error())
+				onerr(at, "text-string literal: "+err.Error()+" (check delimiters and escape codes)")
 			}
 		case TOKEN_FLOAT:
 			if f, err := strconv.ParseFloat(lexeme, 64); err == nil {
 				on(at, lexeme, Token{Kind: TOKEN_FLOAT, Float: f})
 			} else {
-				onerr(at, err.Error())
+				onerr(at, "floating-point literal: "+err.Error())
 			}
 		case TOKEN_UINT:
 			if u, err := strconv.ParseUint(lexeme, 0, 64); err == nil {
 				on(at, lexeme, Token{Kind: TOKEN_UINT, Uint: u})
 			} else {
-				onerr(at, err.Error())
+				onerr(at, "unsigned-integer literal: "+err.Error())
 			}
 		case TOKEN_COMMENT:
 			on(at, lexeme, Token{Kind: TOKEN_COMMENT})
