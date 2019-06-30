@@ -499,21 +499,32 @@ func (me Tokens) IsAnyOneOf(any ...string) bool {
 // each 'non-indented' line (with `LineIndent` <= `minLineIndent`) in `me` begins a new
 // 'chunk' and any subsequent 'indented' (`LineIndent` > `minLineIndent`) lines also belong to it.
 func (me Tokens) IndentBasedChunks(minLineIndent int) (chunks []Tokens) {
-	var cur int
+	var chunkfrom int
 	if minLineIndent < 0 {
 		minLineIndent = me[0].LineIndent
 	}
 	for i, linenum, l := 0, me[0].Pos.Ln1, len(me); i < l; i++ {
+		// if me[i].Kind == TOKEN_STR {
+		// 	if idx := strings.IndexByte(me[i].Lexeme, '\n'); idx > 0 {
+		// 		numlfs := 1
+		// 		for b := idx + 1; b < len(me[i].Lexeme); b++ {
+		// 			if me[i].Lexeme[b] == '\n' {
+		// 				numlfs++
+		// 			}
+		// 		}
+		// 		linenum = me[i].Ln1 + numlfs
+		// 	}
+		// }
 		if me[i].Pos.Ln1 > linenum && me[i].LineIndent <= minLineIndent {
-			if tlc := me[cur:i]; len(tlc) > 0 {
-				chunks = append(chunks, tlc)
+			if toks := me[chunkfrom:i]; len(toks) > 0 {
+				chunks = append(chunks, toks)
 			}
-			cur, linenum = i, me[i].Pos.Ln1
+			chunkfrom, linenum = i, me[i].Pos.Ln1
 		}
 	}
-	if cur < len(me) {
-		if tlc := me[cur:]; len(tlc) > 0 {
-			chunks = append(chunks, tlc)
+	if chunkfrom < len(me) {
+		if toks := me[chunkfrom:]; len(toks) > 0 {
+			chunks = append(chunks, toks)
 		}
 	}
 	return
