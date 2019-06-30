@@ -18,9 +18,12 @@ func (me *Pos) String() string {
 }
 
 var (
-	ScannerLineCommentPrefix               = "//"
-	ScannerLongCommentPrefixAndSuffix      = "/**/"
-	ScannerStringDelim                byte = '"'
+	// ScannerLineCommentPrefix must be set before any calls to Lex or Scan and then never again.
+	ScannerLineCommentPrefix = "//"
+	// ScannerLongCommentPrefixAndSuffix must be set before any calls to Lex or Scan and then never again.
+	ScannerLongCommentPrefixAndSuffix = "/**/"
+	// ScannerStringDelim must be set before any calls to Lex or Scan and then never again.
+	ScannerStringDelim byte = '"'
 )
 
 type scanState struct {

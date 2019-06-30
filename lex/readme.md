@@ -39,9 +39,12 @@ var (
 
 ```go
 var (
-	ScannerLineCommentPrefix               = "//"
-	ScannerLongCommentPrefixAndSuffix      = "/**/"
-	ScannerStringDelim                byte = '"'
+	// ScannerLineCommentPrefix must be set before any calls to Lex or Scan and then never again.
+	ScannerLineCommentPrefix = "//"
+	// ScannerLongCommentPrefixAndSuffix must be set before any calls to Lex or Scan and then never again.
+	ScannerLongCommentPrefixAndSuffix = "/**/"
+	// ScannerStringDelim must be set before any calls to Lex or Scan and then never again.
+	ScannerStringDelim byte = '"'
 )
 ```
 
@@ -109,14 +112,10 @@ type Token struct {
 	// Meta holds a `Token`'s `Position`, `LineIndent` and `Orig` source sub-string.
 	Meta TokenMeta
 
-	// Str is set for non-number-literal lexemes.
-	Str string
-	// Float is only set if `Kind` returns `TOKEN_FLOAT`.
-	Float float64
-	// Uint is only set if `Kind` returns `TOKEN_UINT` or `TOKEN_RUNE`.
-	Uint uint64
-
 	Kind TokenKind
+
+	// Val is `uint64` or `float64` or `string` for literals and comments, else `nil`
+	Val interface{}
 }
 ```
 
@@ -154,13 +153,6 @@ Or returns `me` if not `nil`, else `fallback`.
 ```go
 func (me *Token) Pos(lineOffset int, posOffset int) *Pos
 ```
-
-#### func (*Token) Rune
-
-```go
-func (me *Token) Rune() (r rune)
-```
-Rune returns the `rune` represented by this `Token` of `TOKEN_RUNE` `Kind`.
 
 #### func (*Token) String
 

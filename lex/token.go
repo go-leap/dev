@@ -23,14 +23,10 @@ type Token struct {
 	// Meta holds a `Token`'s `Position`, `LineIndent` and `Orig` source sub-string.
 	Meta TokenMeta
 
-	// Str is set for non-number-literal lexemes.
-	Str string
-	// Float is only set if `Kind` returns `TOKEN_FLOAT`.
-	Float float64
-	// Uint is only set if `Kind` returns `TOKEN_UINT` or `TOKEN_RUNE`.
-	Uint uint64
-
 	Kind TokenKind
+
+	// Val is `uint64` or `float64` or `string` for literals and comments, else `nil`
+	Val interface{}
 }
 
 func (me *Token) Pos(lineOffset int, posOffset int) *Pos {
@@ -56,11 +52,6 @@ func (me *Token) Or(fallback *Token) *Token {
 		return fallback
 	}
 	return me
-}
-
-// Rune returns the `rune` represented by this `Token` of `TOKEN_RUNE` `Kind`.
-func (me *Token) Rune() (r rune) {
-	return rune(me.Uint)
 }
 
 // String returns the original source sub-string that this `Token` was produced from.

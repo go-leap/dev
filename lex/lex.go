@@ -2,6 +2,7 @@ package udevlex
 
 import (
 	"strconv"
+	"strings"
 )
 
 var (
@@ -47,7 +48,6 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 	accumed := func() {
 		if opishaccum != nil {
 			if len(errs) == 0 {
-				opishaccum.Meta.Orig = opishaccum.Str
 				tokens = append(tokens, *opishaccum)
 			}
 			opishaccum = nil
@@ -65,42 +65,48 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 		errs = append(errs, &Error{Msg: errmsg, Pos: *at})
 	}
 
-	allseps := SepsOthers + SepsGroupers
+	allseps, lcl := SepsOthers+SepsGroupers, len(ScannerLongCommentPrefixAndSuffix)/2
 	Scan(string(srcUtf8WithoutBom), filePath, func(kind TokenKind, at *Pos, untilOff0 int) {
 		lexeme := string(srcUtf8WithoutBom[at.Off0:untilOff0])
 		switch kind {
 		case TOKEN_IDENT:
-			on(at, lexeme, Token{Kind: TOKEN_IDENT, Str: lexeme})
+			on(at, lexeme, Token{Kind: TOKEN_IDENT})
 		case TOKEN_STR:
 			if l := len(lexeme) - 1; l > 0 && lexeme[0] == '"' && lexeme[l] == '"' {
 				// TODO drop this if and do \n->\\n instead
 				lexeme = "`" + lexeme[1:l] + "`"
 			}
 			if s, err := strconv.Unquote(lexeme); err == nil {
-				on(at, lexeme, Token{Kind: TOKEN_STR, Str: s})
+				on(at, lexeme, Token{Kind: TOKEN_STR, Val: s})
 			} else {
 				onerr(at, "text-string literal: "+err.Error()+" (check delimiters and escape codes)")
 			}
 		case TOKEN_FLOAT:
 			if f, err := strconv.ParseFloat(lexeme, 64); err == nil {
-				on(at, lexeme, Token{Kind: TOKEN_FLOAT, Float: f})
+				on(at, lexeme, Token{Kind: TOKEN_FLOAT, Val: f})
 			} else {
 				onerr(at, "floating-point literal: "+err.Error())
 			}
 		case TOKEN_UINT:
 			if u, err := strconv.ParseUint(lexeme, 0, 64); err == nil {
-				on(at, lexeme, Token{Kind: TOKEN_UINT, Uint: u})
+				on(at, lexeme, Token{Kind: TOKEN_UINT, Val: u})
 			} else {
 				onerr(at, "unsigned-integer literal: "+err.Error())
 			}
 		case TOKEN_COMMENT:
-			on(at, lexeme, Token{Kind: TOKEN_COMMENT})
+			commenttext := lexeme
+			if strings.HasPrefix(commenttext, ScannerLineCommentPrefix) {
+				commenttext = commenttext[len(ScannerLineCommentPrefix):]
+			} else {
+				commenttext = commenttext[lcl : len(commenttext)-lcl]
+			}
+			on(at, lexeme, Token{Kind: TOKEN_COMMENT, Val: commenttext})
 		case TOKEN_OPISH:
 			var issep bool
 			if len(lexeme) == 1 {
 				for i := 0; i < len(allseps); i++ {
 					if issep = (lexeme[0] == allseps[i]); issep {
-						on(at, lexeme, Token{Kind: TOKEN_SEPISH, Str: lexeme})
+						on(at, lexeme, Token{Kind: TOKEN_SEPISH})
 						break
 					}
 				}
@@ -110,7 +116,7 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 					opishaccum = &Token{Kind: TOKEN_OPISH}
 					opishaccum.Meta.init(at, lineindent, "")
 				}
-				opishaccum.Str += lexeme
+				opishaccum.Meta.Orig += lexeme
 			}
 		case -1:
 			accumed()
