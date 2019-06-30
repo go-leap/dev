@@ -109,10 +109,10 @@ func (me *Pos) String() string
 
 ```go
 type Token struct {
-	// Meta holds a `Token`'s `Position`, `LineIndent` and `Orig` source sub-string.
-	Meta TokenMeta
-
-	Kind TokenKind
+	Lexeme string
+	Pos
+	LineIndent int
+	Kind       TokenKind
 
 	// Val is `uint64` or `float64` or `string` for literals and comments, else `nil`
 	Val interface{}
@@ -141,18 +141,18 @@ func (me *Token) IsLineComment() bool
 func (me *Token) IsLongComment() bool
 ```
 
+#### func (*Token) OffPos
+
+```go
+func (me *Token) OffPos(lineOffset int, posOffset int) *Pos
+```
+
 #### func (*Token) Or
 
 ```go
 func (me *Token) Or(fallback *Token) *Token
 ```
 Or returns `me` if not `nil`, else `fallback`.
-
-#### func (*Token) Pos
-
-```go
-func (me *Token) Pos(lineOffset int, posOffset int) *Pos
-```
 
 #### func (*Token) String
 
@@ -181,19 +181,6 @@ const (
 	TOKEN_UINT
 )
 ```
-
-#### type TokenMeta
-
-```go
-type TokenMeta struct {
-	Orig string
-	Pos
-	LineIndent int
-}
-```
-
-TokenMeta provides a `Token`'s `Position`, `LineIndent` and `Orig` source
-sub-string.
 
 #### type Tokens
 
@@ -273,7 +260,7 @@ pair exists, `didBreak` is `false` and `pref` is `nil` and `suff` is `me`.
 ```go
 func (me Tokens) Chunked(byOrig string, stopChunkingOn string) (chunks []Tokens)
 ```
-Chunked splits `me` into `chunks` separated by `TokenMeta.Orig` occurrences of
+Chunked splits `me` into `chunks` separated by `TokenLexeme` occurrences of
 `byOrig`, stopping at the first occurrence of `stopChunkingOn` (if specified).
 
 #### func (Tokens) Cliques
@@ -300,7 +287,7 @@ CountKind returns the number of `Token`s with the specified `Kind`.
 func (me Tokens) EqLenAndOffsets(toks Tokens, checkInnerOffsetsToo bool) bool
 ```
 EqLenAndOffsets returns at least whether `me` and `toks` have the same `len` and
-the `First` and `Last` of both share the same `TokenMeta.Pos.Off0`. If
+the `First` and `Last` of both share the same `TokenPos.Off0`. If
 `checkInnerOffsetsToo` is `true`, all other `Tokens` (not just the `First` and
 `Last` ones) are compared as well.
 
@@ -311,9 +298,9 @@ func (me Tokens) FindSub(beginsWith Tokens, endsWith Tokens) (slice Tokens)
 ```
 FindSub initially calls `FromUntil` but if the result is `nil` because
 `beginsWith` / `endsWith` aren't sub-slices of `me`, it figures out the proper
-beginner/ender from `TokenMeta.Pos.Off0` values of the `First(nil)` of
-`beginsWith` and the `Last(nil)` of `endsWith`. In any case, only the first
-`Token` in `beginsWith` and the last in `endsWith` are ever considered.
+beginner/ender from `TokenPos.Off0` values of the `First(nil)` of `beginsWith`
+and the `Last(nil)` of `endsWith`. In any case, only the first `Token` in
+`beginsWith` and the last in `endsWith` are ever considered.
 
 #### func (Tokens) First
 
@@ -432,7 +419,7 @@ func (me Tokens) Orig() (s string)
 ```go
 func (me Tokens) Pos() *Pos
 ```
-Pos returns the `TokenMeta.Pos` of the `First` `Token` in `me`.
+Pos returns the `TokenPos` of the `First` `Token` in `me`.
 
 #### func (Tokens) Prev
 

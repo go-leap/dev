@@ -56,7 +56,7 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 	on := func(at *Pos, origSym string, token Token) {
 		accumed()
 		if onlyspacesinlinesofar = false; len(errs) == 0 {
-			token.Meta.init(at, lineindent, origSym)
+			token.init(at, lineindent, origSym)
 			tokens = append(tokens, token)
 		}
 	}
@@ -114,9 +114,9 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 			if !issep {
 				if onlyspacesinlinesofar = false; opishaccum == nil {
 					opishaccum = &Token{Kind: TOKEN_OPISH}
-					opishaccum.Meta.init(at, lineindent, "")
+					opishaccum.init(at, lineindent, "")
 				}
-				opishaccum.Meta.Orig += lexeme
+				opishaccum.Lexeme += lexeme
 			}
 		case -1:
 			accumed()
