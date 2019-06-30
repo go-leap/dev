@@ -147,6 +147,12 @@ func (me *Token) IsLongComment() bool
 func (me *Token) OffPos(lineOffset int, posOffset int) *Pos
 ```
 
+#### func (*Token) OffPosEnd
+
+```go
+func (me *Token) OffPosEnd(lineOffset int, posOffset int) *Pos
+```
+
 #### func (*Token) Or
 
 ```go

@@ -2,6 +2,7 @@ package udevlex
 
 import (
 	"strings"
+	"unicode/utf8"
 )
 
 // TokenKind enumerates the possible values that could be returned by `Token.Kind`.
@@ -37,6 +38,21 @@ func (me *Token) OffPos(lineOffset int, posOffset int) *Pos {
 	pos := me.Pos
 	pos.Ln1 += lineOffset
 	pos.Off0 += posOffset
+	return &pos
+}
+
+func (me *Token) OffPosEnd(lineOffset int, posOffset int) *Pos {
+	pos := me.Pos
+	pos.Off0 += len(me.Lexeme) + posOffset
+	pos.Ln1 += lineOffset
+	if ilb := strings.LastIndexByte(me.Lexeme, '\n'); ilb >= 0 {
+		for i := 0; i < len(me.Lexeme); i++ {
+			if me.Lexeme[i] == '\n' {
+				pos.Ln1++
+			}
+		}
+		pos.Col1 = utf8.RuneCountInString(me.Lexeme[ilb+1:])
+	}
 	return &pos
 }
 
