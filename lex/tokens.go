@@ -490,44 +490,47 @@ func (me Tokens) Chunked(byOrig string, stopChunkingOn string) (chunks []Tokens)
 	return
 }
 
+func (me Tokens) ChunkedByIndent() (chunks []Tokens) {
+	var chunkfrom int
+	if len(me) == 1 || !me.MultipleLines() {
+		return []Tokens{me}
+	}
+
+	lineind := me[chunkfrom].LineIndent
+	for i, ip := 1, 0; i < len(me); i, ip = i+1, ip+1 {
+		lastln := me[ip].Ln1
+		if me[ip].StrLitMultiLine() {
+			lastln = lastln + me[ip].StrLitNumLFs()
+		}
+		if me[i].Ln1 != lastln {
+			if me[i].LineIndent <= lineind {
+				lineind = me[i].LineIndent
+				chunkfrom, chunks = i, append(chunks, me[chunkfrom:i])
+			}
+		}
+	}
+
+	if chunkfrom < len(me) {
+		chunks = append(chunks, me[chunkfrom:])
+	}
+	return
+}
+
 // IsAnyOneOf calls `Token.IsAnyOneOf` is `me` has only one `Token`.
 func (me Tokens) IsAnyOneOf(any ...string) bool {
 	return len(me) == 1 && me[0].IsAnyOneOf(any...)
 }
 
-// IndentBasedChunks breaks up `me` into a number of `chunks`:
-// each 'non-indented' line (with `LineIndent` <= `minLineIndent`) in `me` begins a new
-// 'chunk' and any subsequent 'indented' (`LineIndent` > `minLineIndent`) lines also belong to it.
-func (me Tokens) IndentBasedChunks(minLineIndent int) (chunks []Tokens) {
-	var chunkfrom int
-	if minLineIndent < 0 {
-		minLineIndent = me[0].LineIndent
+func (me Tokens) MultipleLines() bool {
+	if len(me) > 1 && me[len(me)-1].Ln1 != me[0].Ln1 {
+		return true
 	}
-	for i, linenum, l := 0, me[0].Pos.Ln1, len(me); i < l; i++ {
-		// if me[i].Kind == TOKEN_STR {
-		// 	if idx := strings.IndexByte(me[i].Lexeme, '\n'); idx > 0 {
-		// 		numlfs := 1
-		// 		for b := idx + 1; b < len(me[i].Lexeme); b++ {
-		// 			if me[i].Lexeme[b] == '\n' {
-		// 				numlfs++
-		// 			}
-		// 		}
-		// 		linenum = me[i].Ln1 + numlfs
-		// 	}
-		// }
-		if me[i].Pos.Ln1 > linenum && me[i].LineIndent <= minLineIndent {
-			if toks := me[chunkfrom:i]; len(toks) > 0 {
-				chunks = append(chunks, toks)
-			}
-			chunkfrom, linenum = i, me[i].Pos.Ln1
+	for i := range me {
+		if me[i].StrLitMultiLine() {
+			return true
 		}
 	}
-	if chunkfrom < len(me) {
-		if toks := me[chunkfrom:]; len(toks) > 0 {
-			chunks = append(chunks, toks)
-		}
-	}
-	return
+	return false
 }
 
 func (me Tokens) Orig() (s string) {

@@ -14,12 +14,12 @@ var (
 	// raising a lexing error when `RestrictedWhitespace` is `true`.
 	RestrictedWhitespaceRewriter func(rune) int
 
-	// SepsGroupers, if it is to be used, must be set before the first call to
-	// `Lex`, and must never be modified ever again for its consumers such as
-	// `Tokens.Chunked`, `Tokens.BreakOnSpace`, `Tokens.Has`, `Tokens.Cliques`
-	// to work correctly. It must be of even length beginning with all the
-	// "openers" and ending with all the "closers": two equal-length halves
-	// in one `string` such as "[(<{}>)]" or "«‹/\›»" etc.
+	// SepsGroupers, if it is to be used, must be set once and once only before
+	// the first call to `Lex`, and must never be modified ever again for its
+	// consumers such as `Tokens.Chunked`, `Tokens.BreakOnSpace`, `Tokens.Has`,
+	// `Tokens.Cliques` to work correctly. It must be of even length beginning
+	// with all the "openers" and ending with all the "closers": two equal-length
+	// halves in one `string` such as "[(<{}>)]" or "«‹/\›»" etc.
 	// ASCII bytes `< 128` only, no `>= 128` runes. Each is also only ever
 	// lexed as a `TOKEN_SEPISH` and thus can never be part of a `TOKEN_OPISH`.
 	// The mentioned methods skip their logic while passing tokens one or
@@ -33,6 +33,12 @@ var (
 	// addition to any specified in `SepsGroupers`, for non-grouping solitary
 	// non-operator seps such as eg. `,` or `;` etc.
 	SepsOthers string
+
+	// caution, a global. only mutated by Lex(), users are warned in doc-comments
+	// for SepsGroupers to set it before Lex call and never mutate it afterwards.
+	// The consumer of this is just called a lot and I cannot accept doing the
+	// always-exact-same by-2 division over and over and over again uselessly.
+	idxSepsGroupersClosers int
 )
 
 // Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while lexing.
@@ -43,7 +49,9 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 		lineindent            int
 		opishaccum            *Token
 	)
-	idxSepsGroupersClosers = len(SepsGroupers) / 2
+	if idxSepsGroupersClosers == 0 {
+		idxSepsGroupersClosers = len(SepsGroupers) / 2
+	}
 
 	accumed := func() {
 		if opishaccum != nil {

@@ -67,6 +67,24 @@ func (me *Token) IsLongComment() bool {
 	return strings.HasPrefix(me.Lexeme, pref) && strings.HasSuffix(me.Lexeme, suff)
 }
 
+func (me *Token) StrLitMultiLine() bool {
+	return me.Kind == TOKEN_STR && strings.IndexByte(me.Lexeme, '\n') > 0
+}
+
+func (me *Token) StrLitNumLFs() (ret int) {
+	if me.Kind == TOKEN_STR {
+		if idx := strings.IndexByte(me.Lexeme, '\n'); idx > 0 {
+			ret = 1
+			for i := idx + 1; i < len(me.Lexeme); i++ {
+				if me.Lexeme[i] == '\n' {
+					ret++
+				}
+			}
+		}
+	}
+	return
+}
+
 // Or returns `me` if not `nil`, else `fallback`.
 func (me *Token) Or(fallback *Token) *Token {
 	if me == nil {
@@ -89,12 +107,6 @@ func (me *Token) IsAnyOneOf(any ...string) bool {
 	}
 	return false
 }
-
-// caution, a global. only mutated by Lex(), users are warned in doc-comments
-// for SepsGroupers to set it before Lex call and never mutate it afterwards.
-// The consumer of this is just called a lot and I cannot accept doing the
-// always-exact-same by-2 division over and over and over again uselessly.
-var idxSepsGroupersClosers int
 
 func (me *Token) sepsDepthIncrement(should bool) int {
 	if should && me.Kind == TOKEN_SEPISH {

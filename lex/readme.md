@@ -15,12 +15,12 @@ var (
 	// raising a lexing error when `RestrictedWhitespace` is `true`.
 	RestrictedWhitespaceRewriter func(rune) int
 
-	// SepsGroupers, if it is to be used, must be set before the first call to
-	// `Lex`, and must never be modified ever again for its consumers such as
-	// `Tokens.Chunked`, `Tokens.BreakOnSpace`, `Tokens.Has`, `Tokens.Cliques`
-	// to work correctly. It must be of even length beginning with all the
-	// "openers" and ending with all the "closers": two equal-length halves
-	// in one `string` such as "[(<{}>)]" or "«‹/\›»" etc.
+	// SepsGroupers, if it is to be used, must be set once and once only before
+	// the first call to `Lex`, and must never be modified ever again for its
+	// consumers such as `Tokens.Chunked`, `Tokens.BreakOnSpace`, `Tokens.Has`,
+	// `Tokens.Cliques` to work correctly. It must be of even length beginning
+	// with all the "openers" and ending with all the "closers": two equal-length
+	// halves in one `string` such as "[(<{}>)]" or "«‹/\›»" etc.
 	// ASCII bytes `< 128` only, no `>= 128` runes. Each is also only ever
 	// lexed as a `TOKEN_SEPISH` and thus can never be part of a `TOKEN_OPISH`.
 	// The mentioned methods skip their logic while passing tokens one or
@@ -160,6 +160,18 @@ func (me *Token) Or(fallback *Token) *Token
 ```
 Or returns `me` if not `nil`, else `fallback`.
 
+#### func (*Token) StrLitMultiLine
+
+```go
+func (me *Token) StrLitMultiLine() bool
+```
+
+#### func (*Token) StrLitNumLFs
+
+```go
+func (me *Token) StrLitNumLFs() (ret int)
+```
+
 #### func (*Token) String
 
 ```go
@@ -269,6 +281,12 @@ func (me Tokens) Chunked(byOrig string, stopChunkingOn string) (chunks []Tokens)
 Chunked splits `me` into `chunks` separated by `TokenLexeme` occurrences of
 `byOrig`, stopping at the first occurrence of `stopChunkingOn` (if specified).
 
+#### func (Tokens) ChunkedByIndent
+
+```go
+func (me Tokens) ChunkedByIndent() (chunks []Tokens)
+```
+
 #### func (Tokens) Cliques
 
 ```go
@@ -354,15 +372,6 @@ func (me Tokens) HasSpaces() bool
 HasSpaces returns whether any two consecutive `Tokens` suggest that there is
 white-space in between each other.
 
-#### func (Tokens) IndentBasedChunks
-
-```go
-func (me Tokens) IndentBasedChunks(minLineIndent int) (chunks []Tokens)
-```
-IndentBasedChunks breaks up `me` into a number of `chunks`: each 'non-indented'
-line (with `LineIndent` <= `minLineIndent`) in `me` begins a new 'chunk' and any
-subsequent 'indented' (`LineIndent` > `minLineIndent`) lines also belong to it.
-
 #### func (Tokens) IsAnyOneOf
 
 ```go
@@ -391,6 +400,12 @@ func (me Tokens) Length() (length int)
 ```
 Length returns the length of the original source sub-string that this `Tokens`
 slice represents (without traversing it).
+
+#### func (Tokens) MultipleLines
+
+```go
+func (me Tokens) MultipleLines() bool
+```
 
 #### func (Tokens) Next
 
