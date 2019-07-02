@@ -385,14 +385,15 @@ func (me Tokens) Cliques(isBreaker func(idxCur int, idxLast int) bool) (nums map
 
 // BreakOnLeadingComments returns the `leadingComments` (which could be empty) as well as the `rest`.
 func (me Tokens) BreakOnLeadingComments() (leadingComments Tokens, rest Tokens) {
-	var stopbefore int
-	for i := range me {
-		if me[i].Kind != TOKEN_COMMENT {
-			stopbefore = i
-			break
+	if restfrom := len(me); restfrom > 0 {
+		for i := range me {
+			if me[i].Kind != TOKEN_COMMENT {
+				restfrom = i
+				break
+			}
 		}
+		leadingComments, rest = me[:restfrom], me[restfrom:]
 	}
-	leadingComments, rest = me[:stopbefore], me[stopbefore:]
 	return
 }
 
@@ -499,8 +500,8 @@ func (me Tokens) ChunkedByIndent() (chunks []Tokens) {
 	lineind := me[chunkfrom].LineIndent
 	for i, ip := 1, 0; i < len(me); i, ip = i+1, ip+1 {
 		lastln := me[ip].Ln1
-		if me[ip].StrLitMultiLine() {
-			lastln = lastln + me[ip].StrLitNumLFs()
+		if me[ip].MultiLine() {
+			lastln = lastln + me[ip].NumLFs()
 		}
 		if me[i].Ln1 != lastln {
 			if me[i].LineIndent <= lineind {
@@ -526,7 +527,7 @@ func (me Tokens) MultipleLines() bool {
 		return true
 	}
 	for i := range me {
-		if me[i].StrLitMultiLine() {
+		if me[i].MultiLine() {
 			return true
 		}
 	}

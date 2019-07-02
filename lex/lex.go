@@ -49,9 +49,7 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 		lineindent            int
 		opishaccum            *Token
 	)
-	if idxSepsGroupersClosers == 0 {
-		idxSepsGroupersClosers = len(SepsGroupers) / 2
-	}
+	idxSepsGroupersClosers = len(SepsGroupers) / 2
 
 	accumed := func() {
 		if opishaccum != nil {
@@ -80,11 +78,23 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 		case TOKEN_IDENT:
 			on(at, lexeme, Token{Kind: TOKEN_IDENT})
 		case TOKEN_STR:
-			if l := len(lexeme) - 1; l > 0 && lexeme[0] == '"' && lexeme[l] == '"' {
-				// TODO drop this if and do \n->\\n instead
-				lexeme = "`" + lexeme[1:l] + "`"
+			fixup := lexeme
+			if idx := strings.IndexByte(fixup, '\n'); idx > 0 {
+				var buf strings.Builder
+				buf.Grow(len(lexeme) + 8)
+				buf.WriteString(fixup[:idx])
+				buf.WriteString("\\n")
+				for i := idx + 1; i < len(fixup); i++ {
+					if fixup[i] == '\n' {
+						buf.WriteString(fixup[idx+1 : i])
+						buf.WriteString("\\n")
+						idx = i
+					}
+				}
+				buf.WriteString(fixup[idx+1:])
+				fixup = buf.String()
 			}
-			if s, err := strconv.Unquote(lexeme); err == nil {
+			if s, err := strconv.Unquote(fixup); err == nil {
 				on(at, lexeme, Token{Kind: TOKEN_STR, Val: s})
 			} else {
 				onerr(at, "text-string literal: "+err.Error()+" (check delimiters and escape codes)")

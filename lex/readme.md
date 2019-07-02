@@ -121,6 +121,12 @@ type Token struct {
 
 Token represents a lexeme.
 
+#### func (*Token) CanMultiLine
+
+```go
+func (me *Token) CanMultiLine() bool
+```
+
 #### func (*Token) IsAnyOneOf
 
 ```go
@@ -141,6 +147,18 @@ func (me *Token) IsLineComment() bool
 func (me *Token) IsLongComment() bool
 ```
 
+#### func (*Token) MultiLine
+
+```go
+func (me *Token) MultiLine() bool
+```
+
+#### func (*Token) NumLFs
+
+```go
+func (me *Token) NumLFs() (ret int)
+```
+
 #### func (*Token) OffPos
 
 ```go
@@ -159,18 +177,6 @@ func (me *Token) OffPosEnd(lineOffset int, posOffset int) *Pos
 func (me *Token) Or(fallback *Token) *Token
 ```
 Or returns `me` if not `nil`, else `fallback`.
-
-#### func (*Token) StrLitMultiLine
-
-```go
-func (me *Token) StrLitMultiLine() bool
-```
-
-#### func (*Token) StrLitNumLFs
-
-```go
-func (me *Token) StrLitNumLFs() (ret int)
-```
 
 #### func (*Token) String
 

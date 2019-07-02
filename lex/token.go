@@ -67,12 +67,16 @@ func (me *Token) IsLongComment() bool {
 	return strings.HasPrefix(me.Lexeme, pref) && strings.HasSuffix(me.Lexeme, suff)
 }
 
-func (me *Token) StrLitMultiLine() bool {
-	return me.Kind == TOKEN_STR && strings.IndexByte(me.Lexeme, '\n') > 0
+func (me *Token) CanMultiLine() bool {
+	return me.Kind == TOKEN_STR || (me.Kind == TOKEN_COMMENT && !strings.HasPrefix(me.Lexeme, ScannerLineCommentPrefix))
 }
 
-func (me *Token) StrLitNumLFs() (ret int) {
-	if me.Kind == TOKEN_STR {
+func (me *Token) MultiLine() bool {
+	return me.CanMultiLine() && strings.IndexByte(me.Lexeme, '\n') > 0
+}
+
+func (me *Token) NumLFs() (ret int) {
+	if me.CanMultiLine() {
 		if idx := strings.IndexByte(me.Lexeme, '\n'); idx > 0 {
 			ret = 1
 			for i := idx + 1; i < len(me.Lexeme); i++ {
