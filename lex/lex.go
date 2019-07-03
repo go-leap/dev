@@ -14,7 +14,7 @@ var (
 	// raising a lexing error when `RestrictedWhitespace` is `true`.
 	RestrictedWhitespaceRewriter func(rune) int
 
-	OnPrepStrLitForUnquote func(string) string
+	OnPrepMultiLnStrLitForUnquote func(string, bool) string
 
 	// SepsGroupers, if it is to be used, must be set once and once only before
 	// the first call to `Lex`, and must never be modified ever again for its
@@ -44,7 +44,7 @@ var (
 )
 
 // Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while lexing.
-func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens, errs []*Error) {
+func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Tokens, errs []*Error) {
 	tokens = make(Tokens, 0, toksCap) // a caller's shot-in-the-dark for an initial cap that's better than default 0
 	var (
 		onlyspacesinlinesofar = true
@@ -74,19 +74,33 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 	}
 
 	fixstrs, allseps, lcl :=
-		(OnPrepStrLitForUnquote != nil), (SepsOthers + SepsGroupers), (len(ScannerLongCommentPrefixAndSuffix) / 2)
-	Scan(string(srcUtf8WithoutBom), filePath, func(kind TokenKind, at *Pos, untilOff0 int) {
-		lexeme := string(srcUtf8WithoutBom[at.Off0:untilOff0])
+		(OnPrepMultiLnStrLitForUnquote != nil), (SepsOthers + SepsGroupers), (len(ScannerLongCommentPrefixAndSuffix) / 2)
+	Scan(string(srcUtf8WithoutBom), srcFilePath, func(kind TokenKind, at *Pos, untiloff0 int, multiline bool) {
+		lexeme := string(srcUtf8WithoutBom[at.Off0:untiloff0])
 		switch kind {
 		case TOKEN_IDENT:
 			on(at, lexeme, Token{Kind: TOKEN_IDENT})
 		case TOKEN_STR:
-			fixup := lexeme
-			if fixstrs {
-				fixup = OnPrepStrLitForUnquote(fixup)
+			var val string
+			var err error
+			fixed, delim := lexeme, lexeme[0]
+			if delim == ScannerStringDelimNoEsc {
+				if len(fixed) < 2 || fixed[len(fixed)-1] != delim {
+					val = fixed[1:]
+				} else {
+					val = fixed[1 : len(fixed)-1]
+				}
+			} else {
+				missingdelim := len(fixed) < 2 || fixed[len(fixed)-1] != delim || fixed[len(fixed)-2] == '\\'
+				if fixstrs && multiline {
+					fixed = OnPrepMultiLnStrLitForUnquote(fixed, missingdelim)
+				} else if missingdelim {
+					fixed = fixed + string(delim)
+				}
+				val, err = strconv.Unquote(fixed)
 			}
-			if s, err := strconv.Unquote(fixup); err == nil {
-				on(at, lexeme, Token{Kind: TOKEN_STR, Val: s})
+			if err == nil {
+				on(at, lexeme, Token{Kind: TOKEN_STR, Val: val})
 			} else {
 				onerr(at, "text-string literal: "+err.Error()+" (check delimiters and escape codes)")
 			}

@@ -15,7 +15,7 @@ var (
 	// raising a lexing error when `RestrictedWhitespace` is `true`.
 	RestrictedWhitespaceRewriter func(rune) int
 
-	OnPrepStrLitForUnquote func(string) string
+	OnPrepMultiLnStrLitForUnquote func(string, bool) string
 
 	// SepsGroupers, if it is to be used, must be set once and once only before
 	// the first call to `Lex`, and must never be modified ever again for its
@@ -45,15 +45,17 @@ var (
 	ScannerLineCommentPrefix = "//"
 	// ScannerLongCommentPrefixAndSuffix must be set before any calls to Lex or Scan and then never again.
 	ScannerLongCommentPrefixAndSuffix = "/**/"
-	// ScannerStringDelim must be set before any calls to Lex or Scan and then never again.
-	ScannerStringDelim byte = '"'
+	// ScannerStringDelims must be set before any calls to Lex or Scan and then never again.
+	ScannerStringDelims string = "\""
+	// ScannerStringDelimNoEscape must be set before any calls to Lex or Scan and then never again.
+	ScannerStringDelimNoEsc byte
 )
 ```
 
 #### func  Lex
 
 ```go
-func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens, errs []*Error)
+func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Tokens, errs []*Error)
 ```
 Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while
 lexing.
@@ -61,7 +63,7 @@ lexing.
 #### func  Scan
 
 ```go
-func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int))
+func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int, bool))
 ```
 
 #### func  SepsGrouperCloserForOpener
@@ -191,7 +193,7 @@ from.
 #### type TokenKind
 
 ```go
-type TokenKind = int
+type TokenKind int
 ```
 
 TokenKind enumerates the possible values that could be returned by `Token.Kind`.

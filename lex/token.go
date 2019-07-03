@@ -6,7 +6,7 @@ import (
 )
 
 // TokenKind enumerates the possible values that could be returned by `Token.Kind`.
-type TokenKind = int
+type TokenKind int
 
 const (
 	_ TokenKind = iota
