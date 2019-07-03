@@ -14,6 +14,8 @@ var (
 	// raising a lexing error when `RestrictedWhitespace` is `true`.
 	RestrictedWhitespaceRewriter func(rune) int
 
+	OnPrepStrLitForUnquote func(string) string
+
 	// SepsGroupers, if it is to be used, must be set once and once only before
 	// the first call to `Lex`, and must never be modified ever again for its
 	// consumers such as `Tokens.Chunked`, `Tokens.BreakOnSpace`, `Tokens.Has`,
@@ -71,7 +73,8 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 		errs = append(errs, &Error{Msg: errmsg, Pos: *at})
 	}
 
-	allseps, lcl := SepsOthers+SepsGroupers, len(ScannerLongCommentPrefixAndSuffix)/2
+	fixstrs, allseps, lcl :=
+		(OnPrepStrLitForUnquote != nil), (SepsOthers + SepsGroupers), (len(ScannerLongCommentPrefixAndSuffix) / 2)
 	Scan(string(srcUtf8WithoutBom), filePath, func(kind TokenKind, at *Pos, untilOff0 int) {
 		lexeme := string(srcUtf8WithoutBom[at.Off0:untilOff0])
 		switch kind {
@@ -79,20 +82,8 @@ func Lex(srcUtf8WithoutBom []byte, filePath string, toksCap int) (tokens Tokens,
 			on(at, lexeme, Token{Kind: TOKEN_IDENT})
 		case TOKEN_STR:
 			fixup := lexeme
-			if idx := strings.IndexByte(fixup, '\n'); idx > 0 {
-				var buf strings.Builder
-				buf.Grow(len(lexeme) + 8)
-				buf.WriteString(fixup[:idx])
-				buf.WriteString("\\n")
-				for i := idx + 1; i < len(fixup); i++ {
-					if fixup[i] == '\n' {
-						buf.WriteString(fixup[idx+1 : i])
-						buf.WriteString("\\n")
-						idx = i
-					}
-				}
-				buf.WriteString(fixup[idx+1:])
-				fixup = buf.String()
+			if fixstrs {
+				fixup = OnPrepStrLitForUnquote(fixup)
 			}
 			if s, err := strconv.Unquote(fixup); err == nil {
 				on(at, lexeme, Token{Kind: TOKEN_STR, Val: s})
