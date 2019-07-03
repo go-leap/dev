@@ -15,8 +15,6 @@ var (
 	// raising a lexing error when `RestrictedWhitespace` is `true`.
 	RestrictedWhitespaceRewriter func(rune) int
 
-	OnPrepMultiLnStrLitForUnquote func(string, bool) string
-
 	// SepsGroupers, if it is to be used, must be set once and once only before
 	// the first call to `Lex`, and must never be modified ever again for its
 	// consumers such as `Tokens.Chunked`, `Tokens.BreakOnSpace`, `Tokens.Has`,

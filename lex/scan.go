@@ -70,7 +70,7 @@ func Scan(src string, srcFilePath string, on func(TokenKind, *Pos, int, bool)) {
 				s.since, waiton = s.Pos, scanWaitOnCommentLine
 			} else /* COMMENT? */ if offl = s.Off0 + s.lcl; offl <= len(src) && src[s.Off0:offl] == ScannerLongCommentPrefixAndSuffix[:s.lcl] {
 				s.since, waiton = s.Pos, scanWaitOnCommentLong
-			} else /* STR-LIT? */ if strings.IndexByte(ScannerStringDelims, src[s.Off0]) != -1 {
+			} else /* STR-LIT? */ if -1 != strings.IndexByte(ScannerStringDelims, src[s.Off0]) {
 				s.since, waiton, s.strNoEsc = s.Pos, scanWaitOnLitString, src[s.Off0] == ScannerStringDelimNoEsc
 			} else /* IDENT? */ if s.isNumOrLetterOrUnderscore( /* cat N not for 0..9 but for ² and ⅜ etc. */ ) {
 				s.since, waiton = s.Pos, scanWaitOnIdent

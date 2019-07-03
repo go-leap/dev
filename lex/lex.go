@@ -3,6 +3,7 @@ package udevlex
 import (
 	"strconv"
 	"strings"
+	"unsafe"
 )
 
 var (
@@ -13,8 +14,6 @@ var (
 	// RestrictedWhitespaceRewriter, if set, is called instead of
 	// raising a lexing error when `RestrictedWhitespace` is `true`.
 	RestrictedWhitespaceRewriter func(rune) int
-
-	OnPrepMultiLnStrLitForUnquote func(string, bool) string
 
 	// SepsGroupers, if it is to be used, must be set once and once only before
 	// the first call to `Lex`, and must never be modified ever again for its
@@ -53,7 +52,7 @@ func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Toke
 	)
 	idxSepsGroupersClosers = len(SepsGroupers) / 2
 
-	accumed := func() {
+	opishaccumed := func() {
 		if opishaccum != nil {
 			if len(errs) == 0 {
 				tokens = append(tokens, *opishaccum)
@@ -62,7 +61,7 @@ func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Toke
 		}
 	}
 	on := func(at *Pos, origSym string, token Token) {
-		accumed()
+		opishaccumed()
 		if onlyspacesinlinesofar = false; len(errs) == 0 {
 			token.init(at, lineindent, origSym)
 			tokens = append(tokens, token)
@@ -73,8 +72,8 @@ func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Toke
 		errs = append(errs, &Error{Msg: errmsg, Pos: *at})
 	}
 
-	fixstrs, allseps, lcl :=
-		(OnPrepMultiLnStrLitForUnquote != nil), (SepsOthers + SepsGroupers), (len(ScannerLongCommentPrefixAndSuffix) / 2)
+	allseps, lcl :=
+		(SepsOthers + SepsGroupers), (len(ScannerLongCommentPrefixAndSuffix) / 2)
 	Scan(string(srcUtf8WithoutBom), srcFilePath, func(kind TokenKind, at *Pos, untiloff0 int, multiline bool) {
 		lexeme := string(srcUtf8WithoutBom[at.Off0:untiloff0])
 		switch kind {
@@ -83,17 +82,39 @@ func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Toke
 		case TOKEN_STR:
 			var val string
 			var err error
-			fixed, delim := lexeme, lexeme[0]
-			if delim == ScannerStringDelimNoEsc {
-				if len(fixed) < 2 || fixed[len(fixed)-1] != delim {
+			if fixed, delim := lexeme, lexeme[0]; delim == ScannerStringDelimNoEsc {
+				if missingdelim := len(fixed) < 2 || fixed[len(fixed)-1] != delim; missingdelim {
 					val = fixed[1:]
 				} else {
 					val = fixed[1 : len(fixed)-1]
 				}
 			} else {
 				missingdelim := len(fixed) < 2 || fixed[len(fixed)-1] != delim || fixed[len(fixed)-2] == '\\'
-				if fixstrs && multiline {
-					fixed = OnPrepMultiLnStrLitForUnquote(fixed, missingdelim)
+				if multiline {
+					/*
+						for esc-strs, we reuse strconv.Unquote for str-lits for
+						now, which allows "" or `` delims -- the former supports
+						escape-codes but no LFs, the latter vice versa. we aim
+						to lex str-lits with both LFs and escape-codes. so
+						rewrite LFs (\n) to escaped LFs (\\n) -- this block is
+						in essence a strings.ReplaceByteWithString('\n',"\\n").
+						the first LF byte is found into `idx` via asm, then iterate
+					*/
+					buf, idx := make([]byte, 0, len(fixed)+8), strings.IndexByte(fixed, '\n')
+					buf = append(buf, fixed[:idx]...)
+					buf = append(buf, '\\', 'n')
+					for i := idx + 1; i < len(fixed); i++ {
+						if fixed[i] == '\n' {
+							buf = append(buf, fixed[idx+1:i]...)
+							buf = append(buf, '\\', 'n')
+							idx = i
+						}
+					}
+					buf = append(buf, fixed[idx+1:]...)
+					if missingdelim {
+						buf = append(buf, '"')
+					}
+					fixed = *(*string)(unsafe.Pointer(&buf))
 				} else if missingdelim {
 					fixed = fixed + string(delim)
 				}
@@ -126,13 +147,8 @@ func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Toke
 			on(at, lexeme, Token{Kind: TOKEN_COMMENT, Val: commenttext})
 		case TOKEN_OPISH:
 			var issep bool
-			if len(lexeme) == 1 {
-				for i := 0; i < len(allseps); i++ {
-					if issep = (lexeme[0] == allseps[i]); issep {
-						on(at, lexeme, Token{Kind: TOKEN_SEPISH})
-						break
-					}
-				}
+			if issep = (-1 != strings.IndexByte(allseps, lexeme[0])); issep {
+				on(at, lexeme, Token{Kind: TOKEN_SEPISH})
 			}
 			if !issep {
 				if onlyspacesinlinesofar = false; opishaccum == nil {
@@ -141,8 +157,8 @@ func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Toke
 				}
 				opishaccum.Lexeme += lexeme
 			}
-		case -1:
-			accumed()
+		case -1: // white-space
+			opishaccumed()
 			for _, r := range lexeme {
 				if r == '\n' {
 					lineindent, onlyspacesinlinesofar = 0, true
@@ -158,6 +174,6 @@ func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Toke
 			}
 		}
 	})
-	accumed()
+	opishaccumed()
 	return
 }
