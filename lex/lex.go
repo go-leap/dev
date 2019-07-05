@@ -74,106 +74,116 @@ func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Toke
 
 	allseps, lcl :=
 		(SepsOthers + SepsGroupers), (len(ScannerLongCommentPrefixAndSuffix) / 2)
-	Scan(string(srcUtf8WithoutBom), srcFilePath, func(kind TokenKind, at *Pos, untiloff0 int, multiline bool) {
-		lexeme := string(srcUtf8WithoutBom[at.Off0:untiloff0])
-		switch kind {
-		case TOKEN_IDENT:
-			on(at, lexeme, Token{Kind: TOKEN_IDENT})
-		case TOKEN_STR:
-			var val string
-			var err error
-			if fixed, delim := lexeme, lexeme[0]; delim == ScannerStringDelimNoEsc {
-				if missingdelim := len(fixed) < 2 || fixed[len(fixed)-1] != delim; missingdelim {
-					val = fixed[1:]
+
+	Scan(string(srcUtf8WithoutBom), srcFilePath,
+		func(kind TokenKind, at *Pos, untiloff0 int, multiline bool) {
+			lexeme := string(srcUtf8WithoutBom[at.Off0:untiloff0])
+			switch kind {
+
+			case TOKEN_IDENT:
+				on(at, lexeme, Token{Kind: TOKEN_IDENT})
+
+			case TOKEN_OPISH:
+				var issep bool
+				if issep = (-1 != strings.IndexByte(allseps, lexeme[0])); issep {
+					on(at, lexeme, Token{Kind: TOKEN_SEPISH})
+				}
+				if !issep {
+					if onlyspacesinlinesofar = false; opishaccum == nil {
+						opishaccum = &Token{Kind: TOKEN_OPISH}
+						opishaccum.init(at, lineindent, "")
+					}
+					opishaccum.Lexeme += lexeme
+				}
+
+			case TOKEN_STR:
+				var val string
+				var err error
+				if fixed, delim := lexeme, lexeme[0]; delim == ScannerStringDelimNoEsc {
+					if missingdelim := len(fixed) < 2 || fixed[len(fixed)-1] != delim; missingdelim {
+						val = fixed[1:]
+					} else {
+						val = fixed[1 : len(fixed)-1]
+					}
 				} else {
-					val = fixed[1 : len(fixed)-1]
-				}
-			} else {
-				missingdelim := len(fixed) < 2 || fixed[len(fixed)-1] != delim || fixed[len(fixed)-2] == '\\'
-				if multiline {
-					/*
-						for esc-strs, we reuse strconv.Unquote for str-lits for
-						now, which allows "" or `` delims -- the former supports
-						escape-codes but no LFs, the latter vice versa. we aim
-						to lex str-lits with both LFs and escape-codes. so
-						rewrite LFs (\n) to escaped LFs (\\n) -- this block is
-						in essence a strings.ReplaceByteWithString('\n',"\\n").
-						the first LF byte is found into `idx` via asm, then iterate
-					*/
-					buf, idx := make([]byte, 0, len(fixed)+8), strings.IndexByte(fixed, '\n')
-					buf = append(buf, fixed[:idx]...)
-					buf = append(buf, '\\', 'n')
-					for i := idx + 1; i < len(fixed); i++ {
-						if fixed[i] == '\n' {
-							buf = append(buf, fixed[idx+1:i]...)
-							buf = append(buf, '\\', 'n')
-							idx = i
+					missingdelim := len(fixed) < 2 || fixed[len(fixed)-1] != delim || fixed[len(fixed)-2] == '\\'
+					if multiline {
+						/*
+							for esc-strs, we reuse strconv.Unquote for str-lits for
+							now, which allows "" or `` delims -- the former supports
+							escape-codes but no LFs, the latter vice versa. we aim
+							to lex str-lits with both LFs and escape-codes. so
+							rewrite LFs (\n) to escaped LFs (\\n) -- this block is
+							in essence a strings.ReplaceByteWithString('\n',"\\n").
+							the first LF byte is found into `idx` via asm, then iterate
+						*/
+						buf, idx := make([]byte, 0, len(fixed)+8), strings.IndexByte(fixed, '\n')
+						buf = append(buf, fixed[:idx]...)
+						buf = append(buf, '\\', 'n')
+						for i := idx + 1; i < len(fixed); i++ {
+							if fixed[i] == '\n' {
+								buf = append(buf, fixed[idx+1:i]...)
+								buf = append(buf, '\\', 'n')
+								idx = i
+							}
 						}
+						buf = append(buf, fixed[idx+1:]...)
+						if missingdelim {
+							buf = append(buf, '"')
+						}
+						fixed = *(*string)(unsafe.Pointer(&buf))
+					} else if missingdelim {
+						fixed = fixed + string(delim)
 					}
-					buf = append(buf, fixed[idx+1:]...)
-					if missingdelim {
-						buf = append(buf, '"')
-					}
-					fixed = *(*string)(unsafe.Pointer(&buf))
-				} else if missingdelim {
-					fixed = fixed + string(delim)
+					val, err = strconv.Unquote(fixed)
 				}
-				val, err = strconv.Unquote(fixed)
-			}
-			if err == nil {
-				on(at, lexeme, Token{Kind: TOKEN_STR, Val: val})
-			} else {
-				onerr(at, "text-string literal: "+err.Error()+" (check delimiters and escape codes)")
-			}
-		case TOKEN_FLOAT:
-			if f, err := strconv.ParseFloat(lexeme, 64); err == nil {
-				on(at, lexeme, Token{Kind: TOKEN_FLOAT, Val: f})
-			} else {
-				onerr(at, "floating-point literal: "+err.Error())
-			}
-		case TOKEN_UINT:
-			if u, err := strconv.ParseUint(lexeme, 0, 64); err == nil {
-				on(at, lexeme, Token{Kind: TOKEN_UINT, Val: u})
-			} else {
-				onerr(at, "unsigned-integer literal: "+err.Error())
-			}
-		case TOKEN_COMMENT:
-			commenttext := lexeme
-			if strings.HasPrefix(commenttext, ScannerLineCommentPrefix) {
-				commenttext = commenttext[len(ScannerLineCommentPrefix):]
-			} else {
-				commenttext = commenttext[lcl : len(commenttext)-lcl]
-			}
-			on(at, lexeme, Token{Kind: TOKEN_COMMENT, Val: commenttext})
-		case TOKEN_OPISH:
-			var issep bool
-			if issep = (-1 != strings.IndexByte(allseps, lexeme[0])); issep {
-				on(at, lexeme, Token{Kind: TOKEN_SEPISH})
-			}
-			if !issep {
-				if onlyspacesinlinesofar = false; opishaccum == nil {
-					opishaccum = &Token{Kind: TOKEN_OPISH}
-					opishaccum.init(at, lineindent, "")
+				if err == nil {
+					on(at, lexeme, Token{Kind: TOKEN_STR, Val: val})
+				} else {
+					onerr(at, "text-string literal: "+err.Error()+" (check delimiters and escape codes)")
 				}
-				opishaccum.Lexeme += lexeme
-			}
-		case -1: // white-space
-			opishaccumed()
-			for _, r := range lexeme {
-				if r == '\n' {
-					lineindent, onlyspacesinlinesofar = 0, true
-				} else if RestrictedWhitespace && r != ' ' {
-					if RestrictedWhitespaceRewriter == nil {
-						onerr(at, "illegal white-space "+strconv.QuoteRune(r)+": only '\\n' and ' ' permissible")
+
+			case TOKEN_FLOAT:
+				if f, err := strconv.ParseFloat(lexeme, 64); err == nil {
+					on(at, lexeme, Token{Kind: TOKEN_FLOAT, Val: f})
+				} else {
+					onerr(at, "floating-point literal: "+err.Error())
+				}
+
+			case TOKEN_UINT:
+				if u, err := strconv.ParseUint(lexeme, 0, 64); err == nil {
+					on(at, lexeme, Token{Kind: TOKEN_UINT, Val: u})
+				} else {
+					onerr(at, "unsigned-integer literal: "+err.Error())
+				}
+
+			case TOKEN_COMMENT:
+				commenttext := lexeme
+				if strings.HasPrefix(commenttext, ScannerLineCommentPrefix) {
+					commenttext = commenttext[len(ScannerLineCommentPrefix):]
+				} else {
+					commenttext = commenttext[lcl : len(commenttext)-lcl]
+				}
+				on(at, lexeme, Token{Kind: TOKEN_COMMENT, Val: commenttext})
+
+			case -1: // white-space
+				opishaccumed()
+				for _, r := range lexeme {
+					if r == '\n' {
+						lineindent, onlyspacesinlinesofar = 0, true
+					} else if RestrictedWhitespace && r != ' ' {
+						if RestrictedWhitespaceRewriter == nil {
+							onerr(at, "illegal white-space "+strconv.QuoteRune(r)+": only '\\n' and ' ' permissible")
+						} else if onlyspacesinlinesofar {
+							lineindent += RestrictedWhitespaceRewriter(r)
+						}
 					} else if onlyspacesinlinesofar {
-						lineindent += RestrictedWhitespaceRewriter(r)
+						lineindent++
 					}
-				} else if onlyspacesinlinesofar {
-					lineindent++
 				}
+
 			}
-		}
-	})
+		})
 	opishaccumed()
 	return
 }
