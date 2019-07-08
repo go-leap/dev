@@ -12,16 +12,26 @@ type Tokens []Token
 // plus all subsequent `Tokens` with `LineIndent` greater than `minLineIndent`; and in `outdented`
 // the first and all following `Tokens` with a `LineIndent` less-or-equal (if any).
 func (me Tokens) BreakOnIndent(minLineIndent int) (indented Tokens, outdented Tokens) {
-	if len(me) > 0 {
-		linenum := me[0].Pos.Ln1
-		for i := 1; i < len(me); i++ {
-			if me[i].Pos.Ln1 != linenum && me[i].LineIndent <= minLineIndent {
-				indented, outdented = me[:i], me[i:]
-				return
+	if len(me) == 1 || !me.MultipleLines() {
+		indented, outdented = me, nil
+	} else {
+		var chunkfrom int
+		for i, ip := 1, 0; i < len(me); i, ip = i+1, ip+1 {
+			lastln := me[ip].Ln1
+			if me[ip].MultiLine() {
+				lastln = lastln + me[ip].NumLFs()
+			}
+			if me[i].Ln1 != lastln && me[i].LineIndent <= me[0].LineIndent {
+				chunkfrom = i
+				break
 			}
 		}
+		if chunkfrom == 0 {
+			indented, outdented = me, nil
+		} else {
+			indented, outdented = me[:chunkfrom], me[chunkfrom:]
+		}
 	}
-	indented = me
 	return
 }
 
