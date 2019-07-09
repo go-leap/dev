@@ -53,7 +53,7 @@ var (
 #### func  Lex
 
 ```go
-func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Tokens, errs []*Error)
+func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int, indentIfRestrictedWhitespace rune) (tokens Tokens, errs []*Error)
 ```
 Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while
 lexing.

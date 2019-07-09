@@ -43,7 +43,7 @@ var (
 )
 
 // Lex returns the `Token`s lexed from `src`, or all `Error`s encountered while lexing.
-func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Tokens, errs []*Error) {
+func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int, indentIfRestrictedWhitespace rune) (tokens Tokens, errs []*Error) {
 	tokens = make(Tokens, 0, toksCap) // a caller's shot-in-the-dark for an initial cap that's better than default 0
 	var (
 		onlyspacesinlinesofar = true
@@ -171,14 +171,16 @@ func Lex(srcUtf8WithoutBom []byte, srcFilePath string, toksCap int) (tokens Toke
 				for _, r := range lexeme {
 					if r == '\n' {
 						lineindent, onlyspacesinlinesofar = 0, true
-					} else if RestrictedWhitespace && r != ' ' {
-						if RestrictedWhitespaceRewriter == nil {
-							onerr(at, "illegal white-space "+strconv.QuoteRune(r)+": only '\\n' and ' ' permissible")
-						} else if onlyspacesinlinesofar {
-							lineindent += RestrictedWhitespaceRewriter(r)
-						}
 					} else if onlyspacesinlinesofar {
-						lineindent++
+						if RestrictedWhitespace && r != indentIfRestrictedWhitespace {
+							if RestrictedWhitespaceRewriter == nil {
+								onerr(at, "illegal indenting white-space "+strconv.QuoteRune(r)+": only "+strconv.QuoteRune(indentIfRestrictedWhitespace)+" permissible in this block")
+							} else if onlyspacesinlinesofar {
+								lineindent += RestrictedWhitespaceRewriter(r)
+							}
+						} else {
+							lineindent++
+						}
 					}
 				}
 
