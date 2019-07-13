@@ -118,22 +118,25 @@ func (me *TypeRef) BitSizeIfBuiltInNumberType() int {
 	return 0
 }
 
-func (me *TypeRef) IsZeroish(exprOfThisType ISyn, canLen bool, canNum bool) ISyn {
-	return Not(me.IsntZeroish(exprOfThisType, canLen, canNum))
+func (me *TypeRef) IsZeroish(exprOfThisType ISyn, forceCanLen bool, forceCanNum bool) ISyn {
+	return Not(me.IsntZeroish(exprOfThisType, forceCanLen, forceCanNum))
 }
 
-func (me *TypeRef) IsntZeroish(exprOfThisType ISyn, canLen bool, canNum bool) (expr ISyn) {
+func (me *TypeRef) IsntZeroish(exprOfThisType ISyn, forceCanLen bool, forceCanNum bool) (expr ISyn) {
 	switch {
 	case me.Named == T.Bool.Named:
 		expr = exprOfThisType
 	case me.Named == T.Error.Named || me.Func != nil || me.Pointer.Of != nil || me.Interface != nil || me.Chan.Of != nil:
 		expr = Neq(exprOfThisType, B.Nil)
-	case canLen || me.Named == T.String.Named || me.ArrOrSlice.Of != nil || (me.Map.OfKey != nil && me.Map.ToVal != nil):
-		expr = Gt(Call(B.Len, exprOfThisType), L(0))
-	case canNum || me.Named.PkgName == "" && me.Named.TypeName != "" && (me.Named.TypeName == T.Byte.Named.TypeName || me.Named.TypeName == T.Complex128.Named.TypeName || me.Named.TypeName == T.Complex64.Named.TypeName || me.Named.TypeName == T.Float32.Named.TypeName || me.Named.TypeName == T.Float64.Named.TypeName || me.Named.TypeName == T.Int.Named.TypeName || me.Named.TypeName == T.Int16.Named.TypeName || me.Named.TypeName == T.Int32.Named.TypeName || me.Named.TypeName == T.Int64.Named.TypeName || me.Named.TypeName == T.Int8.Named.TypeName || me.Named.TypeName == T.Rune.Named.TypeName || me.Named.TypeName == T.Uint.Named.TypeName || me.Named.TypeName == T.Uint16.Named.TypeName || me.Named.TypeName == T.Uint32.Named.TypeName || me.Named.TypeName == T.Uint64.Named.TypeName || me.Named.TypeName == T.Uint8.Named.TypeName):
+	case forceCanLen || me.Named == T.String.Named || me.ArrOrSlice.Of != nil || (me.Map.OfKey != nil && me.Map.ToVal != nil):
+		expr = Neq(Call(B.Len, exprOfThisType), L(0))
+	case forceCanNum || me.Named.PkgName == "" && me.Named.TypeName != "" && (me.Named.TypeName == T.Byte.Named.TypeName || me.Named.TypeName == T.Complex128.Named.TypeName || me.Named.TypeName == T.Complex64.Named.TypeName || me.Named.TypeName == T.Float32.Named.TypeName || me.Named.TypeName == T.Float64.Named.TypeName || me.Named.TypeName == T.Int.Named.TypeName || me.Named.TypeName == T.Int16.Named.TypeName || me.Named.TypeName == T.Int32.Named.TypeName || me.Named.TypeName == T.Int64.Named.TypeName || me.Named.TypeName == T.Int8.Named.TypeName || me.Named.TypeName == T.Rune.Named.TypeName || me.Named.TypeName == T.Uint.Named.TypeName || me.Named.TypeName == T.Uint16.Named.TypeName || me.Named.TypeName == T.Uint32.Named.TypeName || me.Named.TypeName == T.Uint64.Named.TypeName || me.Named.TypeName == T.Uint8.Named.TypeName):
 		expr = Neq(exprOfThisType, L(0))
 	}
 	return
+}
+
+func (me *TypeRef) Implements() {
 }
 
 // IsBuiltinPrimType returns whether `me` refers to one of Go's built-in primitive-types such as `bool`, `string` etc.

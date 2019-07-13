@@ -380,6 +380,153 @@ func L(lit IAny) ExprLit
 ```
 L constructs an `ExprLit`.
 
+#### func (ExprLit) Addr
+
+```go
+func (me ExprLit) Addr() OpAddr
+```
+Addr implements `IExprVarish`.
+
+#### func (ExprLit) And
+
+```go
+func (me ExprLit) And(operand IAny) OpAnd
+```
+And implements `IExprBoolish`.
+
+#### func (ExprLit) At
+
+```go
+func (me ExprLit) At(operand IAny) OpIdx
+```
+At implements `IExprContainish`.
+
+#### func (ExprLit) Decr1
+
+```go
+func (me ExprLit) Decr1() OpSet
+```
+Decr1 implements `IExprVarish`.
+
+#### func (ExprLit) Deref
+
+```go
+func (me ExprLit) Deref() OpDeref
+```
+Deref implements `IExprContainish`.
+
+#### func (ExprLit) Div
+
+```go
+func (me ExprLit) Div(operand IAny) OpDiv
+```
+Div implements `IExprNumerish`.
+
+#### func (ExprLit) Eq
+
+```go
+func (me ExprLit) Eq(operand IAny) OpEq
+```
+Eq implements `IExprEqualish`.
+
+#### func (ExprLit) Geq
+
+```go
+func (me ExprLit) Geq(operand IAny) IExprBoolish
+```
+Geq implements `IExprOrdish`.
+
+#### func (ExprLit) Gt
+
+```go
+func (me ExprLit) Gt(operand IAny) IExprBoolish
+```
+Gt implements `IExprOrdish`.
+
+#### func (ExprLit) Incr1
+
+```go
+func (me ExprLit) Incr1() OpSet
+```
+Incr1 implements `IExprVarish`.
+
+#### func (ExprLit) Leq
+
+```go
+func (me ExprLit) Leq(operand IAny) IExprBoolish
+```
+Leq implements `IExprOrdish`.
+
+#### func (ExprLit) Lt
+
+```go
+func (me ExprLit) Lt(operand IAny) IExprBoolish
+```
+Lt implements `IExprOrdish`.
+
+#### func (ExprLit) Minus
+
+```go
+func (me ExprLit) Minus(operand IAny) OpSub
+```
+Minus implements `IExprNumerish`.
+
+#### func (ExprLit) Mod
+
+```go
+func (me ExprLit) Mod(operand IAny) OpMod
+```
+Mod implements `IExprNumerish`.
+
+#### func (ExprLit) Neg
+
+```go
+func (me ExprLit) Neg() OpSub
+```
+Neg implements `IExprNumerish`.
+
+#### func (ExprLit) Neq
+
+```go
+func (me ExprLit) Neq(operand IAny) OpNeq
+```
+Neq implements `IExprEqualish`.
+
+#### func (ExprLit) Not
+
+```go
+func (me ExprLit) Not() OpNot
+```
+Not implements `IExprBoolish`.
+
+#### func (ExprLit) Or
+
+```go
+func (me ExprLit) Or(operand IAny) OpOr
+```
+Or implements `IExprBoolish`.
+
+#### func (ExprLit) Plus
+
+```go
+func (me ExprLit) Plus(operand IAny) OpAdd
+```
+Plus implements `IExprNumerish`.
+
+#### func (ExprLit) Sl
+
+```go
+func (me ExprLit) Sl(startIndex IAny, stopIndex IAny) OpIdx
+```
+Sl implements `IExprContainish`.
+
+#### func (ExprLit) Times
+
+```go
+func (me ExprLit) Times(operand IAny) OpMul
+```
+Times implements `IExprNumerish`.
+
 #### type IAny
 
 ```go
@@ -3110,6 +3257,12 @@ From constructs an `ExprCall` that represents a conversion of `expr` into `me`
 type. (Returns `ExprCall` because Go's conversion syntax, eg. `int(myexpr)`, is
 covered by it due to the same emitting logic.)
 
+#### func (*TypeRef) Implements
+
+```go
+func (me *TypeRef) Implements()
+```
+
 #### func (*TypeRef) IsBuiltinPrimType
 
 ```go
@@ -3129,13 +3282,13 @@ func (me *TypeRef) IsNamedAndPublic() bool
 #### func (*TypeRef) IsZeroish
 
 ```go
-func (me *TypeRef) IsZeroish(exprOfThisType ISyn, canLen bool, canNum bool) ISyn
+func (me *TypeRef) IsZeroish(exprOfThisType ISyn, forceCanLen bool, forceCanNum bool) ISyn
 ```
 
 #### func (*TypeRef) IsntZeroish
 
 ```go
-func (me *TypeRef) IsntZeroish(exprOfThisType ISyn, canLen bool, canNum bool) (expr ISyn)
+func (me *TypeRef) IsntZeroish(exprOfThisType ISyn, forceCanLen bool, forceCanNum bool) (expr ISyn)
 ```
 
 #### func (*TypeRef) Method

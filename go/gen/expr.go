@@ -671,3 +671,68 @@ func (me OpDeref) Of(args ...IAny) *ExprCall { return Call(me, SynsFrom(nil, arg
 func (me OpAdd) Plus(operand IAny) OpAdd {
 	return Add(append(me.Operands, synFrom(operand))...)
 }
+
+// Addr implements `IExprVarish`.
+func (me ExprLit) Addr() OpAddr { return Addr(me) }
+
+// Deref implements `IExprContainish`.
+func (me ExprLit) Deref() OpDeref { return Deref(me) }
+
+// And implements `IExprBoolish`.
+func (me ExprLit) And(operand IAny) OpAnd { return And(me, synFrom(operand)) }
+
+// Or implements `IExprBoolish`.
+func (me ExprLit) Or(operand IAny) OpOr { return Or(me, synFrom(operand)) }
+
+// Eq implements `IExprEqualish`.
+func (me ExprLit) Eq(operand IAny) OpEq { return Eq(me, synFrom(operand)) }
+
+// Neq implements `IExprEqualish`.
+func (me ExprLit) Neq(operand IAny) OpNeq { return Neq(me, synFrom(operand)) }
+
+// Geq implements `IExprOrdish`.
+func (me ExprLit) Geq(operand IAny) IExprBoolish { return Geq(me, synFrom(operand)) }
+
+// Gt implements `IExprOrdish`.
+func (me ExprLit) Gt(operand IAny) IExprBoolish { return Gt(me, synFrom(operand)) }
+
+// Leq implements `IExprOrdish`.
+func (me ExprLit) Leq(operand IAny) IExprBoolish { return Leq(me, synFrom(operand)) }
+
+// Lt implements `IExprOrdish`.
+func (me ExprLit) Lt(operand IAny) IExprBoolish { return Lt(me, synFrom(operand)) }
+
+// Plus implements `IExprNumerish`.
+func (me ExprLit) Plus(operand IAny) OpAdd { return Add(me, synFrom(operand)) }
+
+// Minus implements `IExprNumerish`.
+func (me ExprLit) Minus(operand IAny) OpSub { return Sub(me, synFrom(operand)) }
+
+// Decr1 implements `IExprVarish`.
+func (me ExprLit) Decr1() OpSet { return Set(me, Sub(me, L(1))) }
+
+// Incr1 implements `IExprVarish`.
+func (me ExprLit) Incr1() OpSet { return Set(me, Add(me, L(1))) }
+
+// Times implements `IExprNumerish`.
+func (me ExprLit) Times(operand IAny) OpMul { return Mul(me, synFrom(operand)) }
+
+// Div implements `IExprNumerish`.
+func (me ExprLit) Div(operand IAny) OpDiv { return Div(me, synFrom(operand)) }
+
+// Mod implements `IExprNumerish`.
+func (me ExprLit) Mod(operand IAny) OpMod { return Mod(me, synFrom(operand)) }
+
+// At implements `IExprContainish`.
+func (me ExprLit) At(operand IAny) OpIdx { return At(me, synFrom(operand)) }
+
+// Sl implements `IExprContainish`.
+func (me ExprLit) Sl(startIndex IAny, stopIndex IAny) OpIdx {
+	return At(me, Sl(synFrom(startIndex), synFrom(stopIndex)))
+}
+
+// Not implements `IExprBoolish`.
+func (me ExprLit) Not() OpNot { return Not(me) }
+
+// Neg implements `IExprNumerish`.
+func (me ExprLit) Neg() OpSub { return Neg(me) }

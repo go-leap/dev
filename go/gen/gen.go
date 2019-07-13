@@ -56,7 +56,7 @@ type PkgImports map[string]PkgName
 // that `PkgImportNamePrefix` is set to "pkg__", its default value).
 func (me *PkgImports) Ensure(pkgImportPath string) (pkgImportName PkgName) {
 	if pkgImportPath != "" {
-		self := *me
+		self := *me // TODO: figure out why we had ptr2map here in the first place and get rid of that
 		if self == nil {
 			self = map[string]PkgName{}
 		}
