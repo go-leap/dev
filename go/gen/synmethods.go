@@ -484,6 +484,13 @@ func (me *SynStructField) JsonNameFinal() (name string) {
 	return
 }
 
+func (me *SynStructField) JsonOmitEmpty() bool {
+	if tag := me.Tags["json"]; tag != "" {
+		return ustr.Suff(tag, ",omitempty") || ustr.Has(tag, ",omitempty,")
+	}
+	return false
+}
+
 func (me SynStructFields) Exists(ok func(*SynStructField) bool) bool {
 	for i := range me {
 		if ok(&me[i]) {

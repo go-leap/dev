@@ -2749,6 +2749,12 @@ JsonName returns `me.Tags["json"][:comma]` or `me.Name`.
 func (me *SynStructField) JsonNameFinal() (name string)
 ```
 
+#### func (*SynStructField) JsonOmitEmpty
+
+```go
+func (me *SynStructField) JsonOmitEmpty() bool
+```
+
 #### type SynStructFields
 
 ```go
