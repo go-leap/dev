@@ -2741,7 +2741,13 @@ func (me *SynStructField) EffectiveNameBeginsUpper() bool
 ```go
 func (me *SynStructField) JsonName() (name string)
 ```
-JsonName returns `me.Tags["json"][:semicolon]` or `me.Name`.
+JsonName returns `me.Tags["json"][:comma]` or `me.Name`.
+
+#### func (*SynStructField) JsonNameFinal
+
+```go
+func (me *SynStructField) JsonNameFinal() (name string)
+```
 
 #### type SynStructFields
 

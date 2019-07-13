@@ -461,15 +461,25 @@ func (me *SynStructField) EffectiveNameBeginsUpper() bool {
 	return ustr.BeginsUpper(me.EffectiveName())
 }
 
-// JsonName returns `me.Tags["json"][:semicolon]` or `me.Name`.
+// JsonName returns `me.Tags["json"][:comma]` or `me.Name`.
 func (me *SynStructField) JsonName() (name string) {
 	if name = me.Tags["json"]; name != "" {
-		if i := ustr.IdxR(name, ';'); i >= 0 {
+		if i := ustr.IdxR(name, ','); i >= 0 {
 			name = name[:i]
 		}
 	}
 	if name == "" {
 		name = me.Name
+	}
+	return
+}
+
+func (me *SynStructField) JsonNameFinal() (name string) {
+	if t := me.Type.UltimateElemType(); t.Chan.Of == nil && t.Func == nil &&
+		me.Type.Chan.Of == nil && me.Type.Func == nil {
+		if name = me.JsonName(); name == "-" || (name == me.Name && !ustr.BeginsUpper(name)) {
+			name = ""
+		}
 	}
 	return
 }

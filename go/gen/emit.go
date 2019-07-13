@@ -156,6 +156,16 @@ func (me *TypeRef) emit(w *writer, noFuncKeywordBecauseSigPartOfFullBodyOrOfInte
 		me.Interface.emitTo(w)
 	case me.Struct != nil:
 		me.Struct.emitTo(w)
+	case me.Chan.Of != nil:
+		if me.Chan.DirRecv && !me.Chan.DirSend {
+			w.WriteString("<-")
+		}
+		w.WriteString("chan")
+		if me.Chan.DirSend && !me.Chan.DirRecv {
+			w.WriteString("<-")
+		}
+		w.WriteByte(' ')
+		me.Chan.Of.emitTo(w)
 	}
 }
 
