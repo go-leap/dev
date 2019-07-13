@@ -324,6 +324,18 @@ func (me *StmtIf) emitTo(w *writer) {
 	if me == nil || len(me.IfThens) == 0 || me.IfThens[0].Cond == nil {
 		return
 	}
+	if len(me.IfThens) == 1 {
+		if blit, ok1 := me.IfThens[0].Cond.(ExprLit); ok1 {
+			if bval, ok2 := blit.Val.(bool); ok2 {
+				if bval {
+					me.IfThens[0].SynBlock.emit(w, true, ';', false)
+				} else if len(me.Else.Body) > 0 {
+					me.Else.emit(w, true, ';', false)
+				}
+				return
+			}
+		}
+	}
 	finali, finalelse := len(me.IfThens)-1, len(me.Else.Body) > 0
 	for i := range me.IfThens {
 		w.WriteString("if ")
