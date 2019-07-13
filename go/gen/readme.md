@@ -506,6 +506,12 @@ func (me ExprLit) Or(operand IAny) OpOr
 ```
 Or implements `IExprBoolish`.
 
+#### func (ExprLit) Or1
+
+```go
+func (me ExprLit) Or1(operand IAny) ISyn
+```
+
 #### func (ExprLit) Plus
 
 ```go
@@ -3241,6 +3247,12 @@ func (me *TypeRef) BitSizeIfBuiltInNumberType() int
 BitSizeIfBuiltInNumberType returns 8 for `int8`, `byte`, `uint8`, or 16, 32, 64,
 128 as applicable, recognizing only direct `Named` refs to Go' native `builtin`
 number types (no type-alias dereferencing yet).
+
+#### func (*TypeRef) CanNeverImplement
+
+```go
+func (me *TypeRef) CanNeverImplement() bool
+```
 
 #### func (*TypeRef) EffectiveFieldNameWhenEmbedded
 

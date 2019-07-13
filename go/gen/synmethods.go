@@ -118,6 +118,10 @@ func (me *TypeRef) BitSizeIfBuiltInNumberType() int {
 	return 0
 }
 
+func (me *TypeRef) CanNeverImplement() bool {
+	return me.ArrOrSlice.Of != nil || me.Chan.Of != nil || me.Func != nil || me.Map.OfKey != nil || me.Struct != nil || me.IsBuiltinPrimType(false)
+}
+
 func (me *TypeRef) IsZeroish(exprOfThisType ISyn, forceCanLen bool, forceCanNum bool) ISyn {
 	return Not(me.IsntZeroish(exprOfThisType, forceCanLen, forceCanNum))
 }
@@ -126,12 +130,12 @@ func (me *TypeRef) IsntZeroish(exprOfThisType ISyn, forceCanLen bool, forceCanNu
 	switch {
 	case me.Named == T.Bool.Named:
 		expr = exprOfThisType
-	case me.Named == T.Error.Named || me.Func != nil || me.Pointer.Of != nil || me.Interface != nil || me.Chan.Of != nil:
-		expr = Neq(exprOfThisType, B.Nil)
 	case forceCanLen || me.Named == T.String.Named || me.ArrOrSlice.Of != nil || (me.Map.OfKey != nil && me.Map.ToVal != nil):
 		expr = Neq(Call(B.Len, exprOfThisType), L(0))
 	case forceCanNum || me.Named.PkgName == "" && me.Named.TypeName != "" && (me.Named.TypeName == T.Byte.Named.TypeName || me.Named.TypeName == T.Complex128.Named.TypeName || me.Named.TypeName == T.Complex64.Named.TypeName || me.Named.TypeName == T.Float32.Named.TypeName || me.Named.TypeName == T.Float64.Named.TypeName || me.Named.TypeName == T.Int.Named.TypeName || me.Named.TypeName == T.Int16.Named.TypeName || me.Named.TypeName == T.Int32.Named.TypeName || me.Named.TypeName == T.Int64.Named.TypeName || me.Named.TypeName == T.Int8.Named.TypeName || me.Named.TypeName == T.Rune.Named.TypeName || me.Named.TypeName == T.Uint.Named.TypeName || me.Named.TypeName == T.Uint16.Named.TypeName || me.Named.TypeName == T.Uint32.Named.TypeName || me.Named.TypeName == T.Uint64.Named.TypeName || me.Named.TypeName == T.Uint8.Named.TypeName):
 		expr = Neq(exprOfThisType, L(0))
+	default:
+		expr = Neq(exprOfThisType, B.Nil)
 	}
 	return
 }
@@ -472,7 +476,7 @@ func (me *SynStructField) JsonName() (name string) {
 		}
 	}
 	if name == "" {
-		name = me.Name
+		name = me.EffectiveName()
 	}
 	return
 }
@@ -480,7 +484,7 @@ func (me *SynStructField) JsonName() (name string) {
 func (me *SynStructField) JsonNameFinal() (name string) {
 	if t := me.Type.UltimateElemType(); t.Chan.Of == nil && t.Func == nil &&
 		me.Type.Chan.Of == nil && me.Type.Func == nil {
-		if name = me.JsonName(); name == "-" || (name == me.Name && !ustr.BeginsUpper(name)) {
+		if name = me.JsonName(); name == "-" || (name == me.EffectiveName() && !ustr.BeginsUpper(name)) {
 			name = ""
 		}
 	}
