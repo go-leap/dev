@@ -324,7 +324,22 @@ func (me *StmtIf) emitTo(w *writer) {
 	if me == nil || len(me.IfThens) == 0 || me.IfThens[0].Cond == nil {
 		return
 	}
-	if len(me.IfThens) == 1 {
+	if len(me.IfThens) > 1 { // drop all else-if-false blocks and maybe move tailing else-if-true block to else if that's empty
+		for i := 1; i < len(me.IfThens); i++ {
+			if blit, ok1 := me.IfThens[i].Cond.(ExprLit); ok1 {
+				if bval, ok2 := blit.Val.(bool); ok2 {
+					if !bval {
+						me.IfThens = append(me.IfThens[:i], me.IfThens[i+1:]...)
+						i--
+					} else if i == len(me.IfThens)-1 && len(me.Else.Body) == 0 {
+						me.Else.Body = me.IfThens[i].Body
+						me.IfThens = me.IfThens[:i]
+					}
+				}
+			}
+		}
+	}
+	if len(me.IfThens) == 1 { // in case we only have an if-true or if-false
 		if blit, ok1 := me.IfThens[0].Cond.(ExprLit); ok1 {
 			if bval, ok2 := blit.Val.(bool); ok2 {
 				if bval {
