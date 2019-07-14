@@ -681,6 +681,17 @@ func (me ExprLit) Deref() OpDeref { return Deref(me) }
 // And implements `IExprBoolish`.
 func (me ExprLit) And(operand IAny) OpAnd { return And(me, synFrom(operand)) }
 
+func (me ExprLit) And1(operand IAny) ISyn {
+	if v, ok := me.Val.(bool); ok {
+		if v {
+			return synFrom(operand)
+		} else {
+			return me
+		}
+	}
+	return And(me, synFrom(operand))
+}
+
 // Or implements `IExprBoolish`.
 func (me ExprLit) Or(operand IAny) OpOr {
 	return Or(me, synFrom(operand))

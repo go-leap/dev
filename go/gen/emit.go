@@ -527,9 +527,47 @@ func (me OpDot) emitTo(w *writer) {
 	}
 }
 
-func (me OpAnd) emitTo(w *writer) { me.Op.emit(w, " && ") }
+func (me OpAnd) emitTo(w *writer) {
+	for i := 0; i < len(me.Operands); i++ {
+		if l, ok1 := me.Operands[i].(ExprLit); ok1 {
+			if b, ok2 := l.Val.(bool); ok2 {
+				if !b {
+					w.WriteString("false")
+					return
+				} else if len(me.Operands) > 1 {
+					me.Operands = append(me.Operands[:i], me.Operands[i+1:]...)
+					i--
+				}
+			}
+		}
+	}
+	if len(me.Operands) == 1 {
+		me.Operands[0].emitTo(w)
+	} else {
+		me.Op.emit(w, " && ")
+	}
+}
 
-func (me OpOr) emitTo(w *writer) { me.Op.emit(w, " || ") }
+func (me OpOr) emitTo(w *writer) {
+	for i := 0; i < len(me.Operands); i++ {
+		if l, ok1 := me.Operands[i].(ExprLit); ok1 {
+			if b, ok2 := l.Val.(bool); ok2 {
+				if b {
+					w.WriteString("true")
+					return
+				} else if len(me.Operands) > 1 {
+					me.Operands = append(me.Operands[:i], me.Operands[i+1:]...)
+					i--
+				}
+			}
+		}
+	}
+	if len(me.Operands) == 1 {
+		me.Operands[0].emitTo(w)
+	} else {
+		me.Op.emit(w, " || ")
+	}
+}
 
 func (me OpEq) emitTo(w *writer) { me.Op.emit(w, " == ") }
 

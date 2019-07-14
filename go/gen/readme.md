@@ -397,6 +397,12 @@ func (me ExprLit) And(operand IAny) OpAnd
 ```
 And implements `IExprBoolish`.
 
+#### func (ExprLit) And1
+
+```go
+func (me ExprLit) And1(operand IAny) ISyn
+```
+
 #### func (ExprLit) At
 
 ```go
