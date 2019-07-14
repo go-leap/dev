@@ -207,8 +207,10 @@ start:
 		w.WriteByte('{')
 	}
 	for i := range me.Body {
-		me.Body[i].emitTo(w)
-		w.WriteByte(sep)
+		if me.Body[i] != nil {
+			me.Body[i].emitTo(w)
+			w.WriteByte(sep)
+		}
 	}
 	if addFinalRet {
 		K.Return.emitTo(w)
