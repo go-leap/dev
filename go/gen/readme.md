@@ -2898,6 +2898,12 @@ func (me *SynStructField) EffectiveName() string
 func (me *SynStructField) EffectiveNameBeginsUpper() bool
 ```
 
+#### func (*SynStructField) Equiv
+
+```go
+func (me *SynStructField) Equiv(to *SynStructField) bool
+```
+
 #### func (*SynStructField) JsonName
 
 ```go
@@ -3269,6 +3275,12 @@ func (me *TypeRef) CanNeverImplement() bool
 func (me *TypeRef) EffectiveFieldNameWhenEmbedded() string
 ```
 
+#### func (*TypeRef) Equiv
+
+```go
+func (me *TypeRef) Equiv(to *TypeRef) bool
+```
+
 #### func (*TypeRef) From
 
 ```go
@@ -3293,6 +3305,12 @@ IsBuiltinPrimType returns whether `me` refers to one of Go's built-in
 primitive-types such as `bool`, `string` etc. (If
 `orIsUnderlyingBuiltinPrimType`, it walks the `ArrOrSlice` / `Pointer` / `Map` /
 `Chan` as applicable.)
+
+#### func (*TypeRef) IsEmptyInterface
+
+```go
+func (me *TypeRef) IsEmptyInterface() bool
+```
 
 #### func (*TypeRef) IsNamedAndPublic
 
@@ -3356,6 +3374,12 @@ TypeStruct represents Go's `struct{..}` construct.
 func TdStruct(fields ...SynStructField) *TypeStruct
 ```
 TdStruct constructs a `TypeStruct`.
+
+#### func (*TypeStruct) Equiv
+
+```go
+func (me *TypeStruct) Equiv(to *TypeStruct) bool
+```
 
 #### func (*TypeStruct) Field
 

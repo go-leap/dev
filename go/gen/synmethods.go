@@ -165,6 +165,10 @@ func (me *TypeRef) IsBuiltinPrimType(orIsUnderlyingBuiltinPrimType bool) bool {
 	return false
 }
 
+func (me *TypeRef) IsEmptyInterface() bool {
+	return me.Interface != nil && len(me.Interface.Embeds) == 0 && len(me.Interface.Methods) == 0
+}
+
 func (me *TypeRef) IsNamedAndPublic() bool {
 	return me.Named.PkgName != "" || (me.Named.TypeName != "" && ustr.BeginsUpper(me.Named.TypeName))
 }
@@ -196,6 +200,31 @@ func (me *TypeRef) EffectiveFieldNameWhenEmbedded() string {
 		return me.Pointer.Of.EffectiveFieldNameWhenEmbedded()
 	}
 	return "?"
+}
+
+func (me *TypeRef) Equiv(to *TypeRef) bool {
+	if me != nil && to != nil && me != to {
+		if me.Pointer.Of != nil {
+			return me.Pointer.Of.Equiv(to.Pointer.Of)
+		}
+		if me.Struct != nil {
+			return me.Struct.Equiv(to.Struct)
+		}
+		if me.Map.OfKey != nil {
+			return me.Map.OfKey.Equiv(to.Map.OfKey) && me.Map.ToVal.Equiv(to.Map.ToVal)
+		}
+		if me.Chan.Of != nil {
+			return me.Chan.Of.Equiv(to.Chan.Of) && me.Chan.DirRecv == to.Chan.DirRecv && me.Chan.DirSend == to.Chan.DirSend
+		}
+		if me.ArrOrSlice.Of != nil {
+			return me.ArrOrSlice.Of.Equiv(to.ArrOrSlice.Of) && me.ArrOrSlice.IsFixedLen == to.ArrOrSlice.IsFixedLen && me.ArrOrSlice.IsEllipsis == to.ArrOrSlice.IsEllipsis
+		}
+		if me.Named.TypeName != "" {
+			return me.Named == to.Named
+		}
+		return me.IsEmptyInterface() && to.IsEmptyInterface()
+	}
+	return me == to
 }
 
 func (me *TypeRef) String() string {
@@ -455,6 +484,30 @@ func (me *TypeStruct) Field(name string, tryJsonNamesToo bool) (fld *SynStructFi
 		}
 	}
 	return nil
+}
+
+func (me *TypeStruct) Equiv(to *TypeStruct) bool {
+	if me != nil && to != nil && me != to && len(me.Fields) == len(to.Fields) {
+		for i := range me.Fields {
+			if !me.Fields[i].Equiv(&to.Fields[i]) {
+				return false
+			}
+		}
+		return true
+	}
+	return me == to
+}
+
+func (me *SynStructField) Equiv(to *SynStructField) bool {
+	if me != nil && to != nil && me != to && me.Type.Equiv(to.Type) && me.Name == to.Name && len(me.Tags) == len(to.Tags) {
+		for k, v := range me.Tags {
+			if vt, ok := to.Tags[k]; (!ok) || vt != v {
+				return false
+			}
+		}
+		return true
+	}
+	return me == to
 }
 
 func (me *SynStructField) EffectiveName() string {
