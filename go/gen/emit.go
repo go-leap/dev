@@ -203,6 +203,9 @@ start:
 			goto start
 		}
 	}
+	if len(me.Body) == 0 && !addFinalRet {
+		return
+	}
 	if wrapInCurlyBraces {
 		w.WriteByte('{')
 	}
