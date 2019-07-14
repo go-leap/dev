@@ -45,6 +45,9 @@ var (
 	// intended to remain zero-valued (Name="")
 	None Named
 
+	// intended to remain (Name="_")
+	Nope = Named{Name: "_"}
+
 	// singletons for simple (operand-less / arg-less) keywords
 	K struct {
 		Break    StmtBreak

@@ -196,6 +196,13 @@ func (me SynBlock) emitTo(w *writer) {
 }
 
 func (me SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep byte, addFinalRet bool) {
+start:
+	if len(me.Body) == 1 {
+		if b, ok := me.Body[0].(SynBlock); ok {
+			me = b
+			goto start
+		}
+	}
 	if wrapInCurlyBraces {
 		w.WriteByte('{')
 	}
