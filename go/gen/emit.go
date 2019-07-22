@@ -191,11 +191,11 @@ func (me Syns) emitTo(w *writer) {
 }
 
 func (me SynBlock) emitTo(w *writer) {
-	me.emit(w, true, ';', false)
+	me.emit(w, true, false, ';', false)
 	w.WriteByte(';')
 }
 
-func (me SynBlock) emit(w *writer, wrapInCurlyBraces bool, sep byte, addFinalRet bool) {
+func (me SynBlock) emit(w *writer, wrapInCurlyBraces bool, forceCurliesEvenIfEmpty bool, sep byte, addFinalRet bool) {
 start:
 	if len(me.Body) == 1 {
 		if b, ok := me.Body[0].(SynBlock); ok {
@@ -203,7 +203,7 @@ start:
 			goto start
 		}
 	}
-	if len(me.Body) == 0 && !addFinalRet {
+	if len(me.Body) == 0 && !(addFinalRet || forceCurliesEvenIfEmpty) {
 		return
 	}
 	if wrapInCurlyBraces {
@@ -265,7 +265,7 @@ func (me *SynFunc) emitTo(w *writer) {
 	}
 	w.WriteString(me.Named.Name)
 	if me.Type.emit(w, true); !noop {
-		me.SynBlock.emit(w, true, ';', hasnamedrets && !hasfinalret)
+		me.SynBlock.emit(w, true, true, ';', hasnamedrets && !hasfinalret)
 	} else {
 		w.WriteByte('{')
 		K.Return.emitTo(w)
@@ -355,9 +355,9 @@ func (me *StmtIf) emitTo(w *writer) {
 		if blit, ok1 := me.IfThens[0].Cond.(ExprLit); ok1 {
 			if bval, ok2 := blit.Val.(bool); ok2 {
 				if bval {
-					me.IfThens[0].SynBlock.emit(w, true, ';', false)
+					me.IfThens[0].SynBlock.emit(w, true, true, ';', false)
 				} else if len(me.Else.Body) > 0 {
-					me.Else.emit(w, true, ';', false)
+					me.Else.emit(w, true, true, ';', false)
 				}
 				return
 			}
@@ -367,13 +367,13 @@ func (me *StmtIf) emitTo(w *writer) {
 	for i := range me.IfThens {
 		w.WriteString("if ")
 		me.IfThens[i].Cond.emitTo(w)
-		me.IfThens[i].SynBlock.emit(w, true, ';', false)
+		me.IfThens[i].SynBlock.emit(w, true, true, ';', false)
 		if i != finali || finalelse {
 			w.WriteString(" else ")
 		}
 	}
 	if finalelse {
-		me.Else.emit(w, true, ';', false)
+		me.Else.emit(w, true, true, ';', false)
 	}
 }
 
@@ -381,7 +381,7 @@ func (me *SynCase) emitTo(w *writer) {
 	w.WriteString("case ")
 	me.Cond.emitTo(w)
 	w.WriteByte(':')
-	me.SynBlock.emit(w, false, ';', false)
+	me.SynBlock.emit(w, false, false, ';', false)
 }
 
 func (me *StmtSwitch) emitTo(w *writer) {
@@ -395,7 +395,7 @@ func (me *StmtSwitch) emitTo(w *writer) {
 	}
 	if len(me.Default.Body) > 0 {
 		w.WriteString("default: ")
-		me.Default.emit(w, false, ';', false)
+		me.Default.emit(w, false, false, ';', false)
 	}
 	w.WriteByte('}')
 }
@@ -424,7 +424,7 @@ func (me *StmtFor) emitRange(w *writer) {
 	}
 	w.WriteString("range ")
 	me.Range.Over.emitTo(w)
-	me.emit(w, true, ';', false)
+	me.emit(w, true, true, ';', false)
 }
 func (me *StmtFor) emitLoop(w *writer) {
 	w.WriteString("for ")
@@ -439,7 +439,7 @@ func (me *StmtFor) emitLoop(w *writer) {
 	if me.Loop.Step != nil {
 		me.Loop.Step.emitTo(w)
 	}
-	me.emit(w, true, ';', false)
+	me.emit(w, true, true, ';', false)
 }
 
 func (me Op) emit(w *writer, operator string) {
@@ -682,7 +682,7 @@ func (me *ExprCall) emitTo(w *writer) {
 func (me *StmtLabel) emitTo(w *writer) {
 	me.Named.emitTo(w)
 	w.WriteByte(':')
-	me.SynBlock.emit(w, false, ';', false)
+	me.SynBlock.emit(w, false, false, ';', false)
 }
 
 func (me *SynRaw) emitTo(w *writer) {
@@ -729,7 +729,7 @@ func (me *SourceFile) CodeGen(codeGenCommentNotice string, pkgImportPathsToNames
 // CodeGenPlain generates the code represented by `me` into `src`, without `go/format`ting it.
 func (me *SourceFile) CodeGenPlain(codeGenCommentNotice string, pkgImportPathsToNames PkgImports, emitNoOpFuncBodies bool) []byte {
 	wdecls := writer{emitNoOpFuncBodies: emitNoOpFuncBodies, pkgImportsRegistered: pkgImportPathsToNames, pkgImportsActuallyEmitted: make(map[PkgName]bool, len(pkgImportPathsToNames))}
-	me.SynBlock.emit(&wdecls, false, '\n', false)
+	me.SynBlock.emit(&wdecls, false, false, '\n', false)
 
 	var wmain writer
 	me.DocComments.emit(&wmain, true)

@@ -3269,6 +3269,12 @@ number types (no type-alias dereferencing yet).
 func (me *TypeRef) CanNeverImplement() bool
 ```
 
+#### func (*TypeRef) CanNil
+
+```go
+func (me *TypeRef) CanNil() bool
+```
+
 #### func (*TypeRef) EffectiveFieldNameWhenEmbedded
 
 ```go
@@ -3289,12 +3295,6 @@ func (me *TypeRef) From(expr IAny) *ExprCall
 From constructs an `ExprCall` that represents a conversion of `expr` into `me`
 type. (Returns `ExprCall` because Go's conversion syntax, eg. `int(myexpr)`, is
 covered by it due to the same emitting logic.)
-
-#### func (*TypeRef) Implements
-
-```go
-func (me *TypeRef) Implements()
-```
 
 #### func (*TypeRef) IsBuiltinPrimType
 

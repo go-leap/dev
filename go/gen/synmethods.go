@@ -140,7 +140,8 @@ func (me *TypeRef) IsntZeroish(exprOfThisType ISyn, forceCanLen bool, forceCanNu
 	return
 }
 
-func (me *TypeRef) Implements() {
+func (me *TypeRef) CanNil() bool {
+	return me.Func != nil || me.Chan.Of != nil || me.Pointer.Of != nil || me.Map.OfKey != nil || me.ArrOrSlice.Of != nil || me.Interface != nil
 }
 
 // IsBuiltinPrimType returns whether `me` refers to one of Go's built-in primitive-types such as `bool`, `string` etc.
