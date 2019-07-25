@@ -439,6 +439,14 @@ func (me *StmtSwitch) Case(cond ISyn, thens ...ISyn) *StmtSwitch {
 // Otherwise, `synCasesOrCondsAndThens` are alternating pairs of `Cond`s-and-thens
 // that are used to construct the individual `SynCase`s to add.
 func (me *StmtSwitch) CasesFrom(areAllSynCases bool, synCasesOrCondsAndThens ...ISyn) *StmtSwitch {
+	if len(synCasesOrCondsAndThens) == 1 {
+		if synCasesOrCondsAndThens[0] == nil {
+			return me
+		} else if syns, ok := synCasesOrCondsAndThens[0].(Syns); ok && len(syns) == 0 {
+			return me
+		}
+	}
+
 	if div := 2; len(me.Cases) == 0 {
 		if areAllSynCases {
 			div = 1
