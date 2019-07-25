@@ -80,6 +80,10 @@ var (
 
 	// singletons for common var names
 	Vars struct {
+		// `"b"`, suitable for bytes and buffers
+		B Named
+		// `"d"`, suitable for data
+		D Named
 		// `"err"`
 		Err NamedTyped
 		// `"e"`, suits temporary/intermediate error vars

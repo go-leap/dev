@@ -444,7 +444,7 @@ func (me *StmtFor) emitLoop(w *writer) {
 
 func (me Op) emit(w *writer, operator string) {
 	last, unary, canparens, andor :=
-		len(me.Operands), len(me.Operands) == 1, (operator != "=" && operator != ":="), (operator == " && " || operator == " || ")
+		len(me.Operands)-1, len(me.Operands) == 1, (operator != "=" && operator != ":="), (operator == " && " || operator == " || ")
 	parens := canparens && andor
 
 	if andor {
@@ -466,7 +466,7 @@ func (me Op) emit(w *writer, operator string) {
 				if (!parens) && operator == "." {
 					if _, parens = me.Operands[i].(*TypeRef); (!parens) && i == last {
 						name, _ := me.Operands[i].(Named)
-						parens = name.Name == "type"
+						parens = (name.Name == "type")
 					}
 				}
 			}
