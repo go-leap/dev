@@ -380,6 +380,12 @@ func (me Tokens) HasSpaces() bool
 HasSpaces returns whether any two consecutive `Tokens` suggest that there is
 white-space in between each other.
 
+#### func (Tokens) Index
+
+```go
+func (me Tokens) Index(orig string, deep bool) int
+```
+
 #### func (Tokens) IsAnyOneOf
 
 ```go

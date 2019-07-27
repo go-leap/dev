@@ -83,16 +83,20 @@ func (me Tokens) CountKind(kind TokenKind) (count int) {
 // Has returns whether any of the `Tokens` was produced from the specified
 // original source sub-string.
 func (me Tokens) Has(orig string, deep bool) bool {
+	return -1 != me.Index(orig, deep)
+}
+
+func (me Tokens) Index(orig string, deep bool) int {
 	var depth int
 	skipsubs := len(SepsGroupers) > 0 && !deep
 	for i := range me {
 		if d := me[i].sepsDepthIncrement(skipsubs); d != 0 {
 			depth += d
 		} else if depth == 0 && me[i].Lexeme == orig {
-			return true
+			return i
 		}
 	}
-	return false
+	return -1
 }
 
 // HasKind returns whether any of the `Tokens` is of the specified `Kind`.
