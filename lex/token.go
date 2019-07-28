@@ -99,6 +99,9 @@ func (me *Token) Or(fallback *Token) *Token {
 
 // String returns the original source sub-string that this `Token` was produced from.
 func (me *Token) String() string {
+	if me == nil {
+		return ""
+	}
 	return me.Lexeme
 }
 
