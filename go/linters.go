@@ -105,10 +105,10 @@ func lintGolintCensored(msg string) bool {
 
 func LintGoVet(pkgimppath string) udev.SrcMsgs {
 	perline := func(ln string) string {
-		if ustr.Pref(ln, "vet: ") || ustr.Pref(ln, "exit status ") {
+		if ustr.Pref(ln, "vet: ") || ustr.Pref(ln, "exit status ") || ustr.Pref(ln, "# ") || ustr.Has(ln, "\"go help vet\"") {
 			return ""
 		}
 		return ln
 	}
-	return udev.CmdExecOnSrc(true, perline, "go", "vet", "-shadow=true", "-shadowstrict", "-all", pkgimppath)
+	return udev.CmdExecOnSrc(true, perline, "go", "vet", pkgimppath)
 }
