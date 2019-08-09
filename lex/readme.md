@@ -41,11 +41,14 @@ var (
 var (
 	// ScannerLineCommentPrefix must be set before any calls to Lex or Scan and then never again.
 	ScannerLineCommentPrefix = "//"
+
 	// ScannerLongCommentPrefixAndSuffix must be set before any calls to Lex or Scan and then never again.
 	ScannerLongCommentPrefixAndSuffix = "/**/"
+
 	// ScannerStringDelims must be set before any calls to Lex or Scan and then never again.
 	ScannerStringDelims string = "\""
-	// ScannerStringDelimNoEscape must be set before any calls to Lex or Scan and then never again.
+
+	// ScannerStringDelimNoEscape must be set before any calls to Lex or Scan and then never again. It must also be mentioned inside `ScannerStringDelims`.
 	ScannerStringDelimNoEsc byte
 )
 ```
