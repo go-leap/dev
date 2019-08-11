@@ -86,6 +86,15 @@ func (me Tokens) Has(orig string, deep bool) bool {
 	return -1 != me.Index(orig, deep)
 }
 
+func (me Tokens) ConsistsOnlyOfCommentsOrNothing() bool {
+	for i := range me {
+		if me[i].Kind != TOKEN_COMMENT {
+			return false
+		}
+	}
+	return true
+}
+
 func (me Tokens) Index(orig string, deep bool) int {
 	var depth int
 	skipsubs := len(SepsGroupers) > 0 && !deep
@@ -505,7 +514,7 @@ func (me Tokens) Chunked(byOrig string, stopChunkingOn string) (chunks []Tokens)
 	return
 }
 
-func (me Tokens) ChunkedByIndent() (chunks []Tokens) {
+func (me Tokens) ChunkedByIndent(moveCommentOnlyChunks bool, ifMovePreferNextInsteadOfPrev bool) (chunks []Tokens) {
 	var chunkfrom int
 	if len(me) == 1 || !me.MultipleLines() {
 		return []Tokens{me}
@@ -524,9 +533,24 @@ func (me Tokens) ChunkedByIndent() (chunks []Tokens) {
 			}
 		}
 	}
-
 	if chunkfrom < len(me) {
 		chunks = append(chunks, me[chunkfrom:])
+	}
+
+	if moveCommentOnlyChunks {
+		for i := 0; i < len(chunks); i++ {
+			if cur := chunks[i]; cur.ConsistsOnlyOfCommentsOrNothing() {
+				pref, suff := chunks[:i], chunks[i+1:]
+				if pl := len(pref) - 1; (ifMovePreferNextInsteadOfPrev || pl < 0) && len(suff) != 0 {
+					suff[0] = append(cur, suff[0]...)
+				} else if pl >= 0 {
+					pref[pl] = append(pref[pl], cur...)
+				} else {
+					continue
+				}
+				chunks, i = append(pref, suff...), i-1
+			}
+		}
 	}
 	return
 }

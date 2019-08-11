@@ -295,7 +295,7 @@ Chunked splits `me` into `chunks` separated by `TokenLexeme` occurrences of
 #### func (Tokens) ChunkedByIndent
 
 ```go
-func (me Tokens) ChunkedByIndent() (chunks []Tokens)
+func (me Tokens) ChunkedByIndent(moveCommentOnlyChunks bool, ifMovePreferNextInsteadOfPrev bool) (chunks []Tokens)
 ```
 
 #### func (Tokens) Cliques
@@ -308,6 +308,12 @@ non-white-space-separated lexemes and its number of `Tokens` If no such sequence
 exists or if it would equal `me` entirely, `nums` will be `nil`, else any value
 in it will be `> 1`. If `isBreaker` isn't `nil`, it can identify
 language-specific tokens that break up this logic, such as `,`.
+
+#### func (Tokens) ConsistsOnlyOfCommentsOrNothing
+
+```go
+func (me Tokens) ConsistsOnlyOfCommentsOrNothing() bool
+```
 
 #### func (Tokens) CountKind
 
