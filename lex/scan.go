@@ -15,6 +15,9 @@ type Pos struct {
 }
 
 func (me *Pos) String() string {
+	if me == nil {
+		return "‹pos=nil›"
+	}
 	return me.FilePath + ":" + strconv.Itoa(me.Ln1) + ":" + strconv.Itoa(me.Col1)
 }
 
