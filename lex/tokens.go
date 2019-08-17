@@ -590,9 +590,8 @@ func (me Tokens) String() string {
 	}
 	var buf bytes.Buffer
 	for i := 0; i < len(me); i++ {
-		buf.WriteString(" ‹")
+		buf.WriteString("·")
 		buf.WriteString(me[i].String())
-		buf.WriteString("›   ")
 	}
-	return buf.String()[1:]
+	return buf.String()[2:]
 }
