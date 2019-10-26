@@ -305,7 +305,7 @@ func queryModSrcIn(fullsrcfilepath string, srcin string) string {
 
 func Query_Gogetdoc(fullsrcfilepath string, srcin string, bytepos string, onlyDocAndDecl bool, docFromPlainToMarkdown bool) *Gogetdoc {
 	var ggd Gogetdoc
-	cmdargs := []string{"-json", "-u", "-linelength", "50", "-pos", fullsrcfilepath + ":#" + bytepos}
+	cmdargs := []string{"-json", "-u", "-linelength", "42", "-pos", fullsrcfilepath + ":#" + bytepos}
 	if len(srcin) > 0 {
 		cmdargs = append(cmdargs, "-modified")
 		srcin = queryModSrcIn(fullsrcfilepath, srcin)
